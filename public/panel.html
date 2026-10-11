@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      Página aparte de la guía, a propósito.
+
+      No entra en el paquete de la aplicación (que está a 120 de 122 KB de presupuesto), no se
+      prerenderiza, no está en el sitemap y no se traduce: la lee una persona y siempre la misma.
+      Por eso es HTML a mano con un archivo de estilo y otro de guion, sin framework y sin build.
+
+      La protección no está aquí: la pone Cloudflare Access delante de /panel y de /api/panel (ver
+      docs/DESPLIEGUE.md). El Worker además falla cerrado si no ve la cabecera que inyecta Access.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'none'"
+    />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/panel.css" />
+    <title>Panel · Visit Zibatá</title>
+  </head>
+  <body>
+    <header class="cabecera">
+      <h1>Panel de Visit Zibatá</h1>
+      <nav class="ventana" aria-label="Ventana de tiempo">
+        <button type="button" data-dias="7">7 días</button>
+        <button type="button" data-dias="30" aria-current="true">30 días</button>
+        <button type="button" data-dias="90">90 días</button>
+        <button type="button" data-dias="365">1 año</button>
+      </nav>
+    </header>
+
+    <main id="contenido" aria-busy="true">
+      <p class="estado" id="estado">Cargando…</p>
+    </main>
+
+    <footer class="pie">
+      <p>
+        Las comparticiones son vistas previas de apps de mensajería: un piso de cuántas veces se pegó
+        el enlace, no cuánta gente lo abrió. El promedio de estrellas no sale del servidor, ni
+        siquiera aquí: lo que se ve es cuántas notas tiene cada lugar.
+      </p>
+    </footer>
+
+    <script type="module" src="/panel.js"></script>
+  </body>
+</html>

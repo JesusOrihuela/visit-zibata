@@ -2,6 +2,32 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado semántico.
 
+## [4.15.0]: 2026-10-11
+
+### Anadido
+
+- **Panel privado en `/panel`**, con las visitas por dia, las paginas mas abiertas, los enlaces
+  compartidos, los lugares mas guardados y cuantas notas tiene cada uno. Lo protege Cloudflare
+  Access, que es configuracion y no codigo nuestro: aqui no hay inicio de sesion, ni contrasenas, ni
+  sesiones. El Worker comprueba ademas la cabecera que Access inyecta y **falla cerrado**: sin ella,
+  403.
+- Es una pagina aparte de la guia (HTML, CSS y JavaScript a mano en `public/`), no entra en el
+  paquete de la aplicacion, no se prerenderiza, no esta en el sitemap y lleva `noindex`.
+
+### Cambiado
+
+- `scripts/analitica/ver.ts` decia que no habria panel "porque proteger algo es el trabajo que este
+  proyecto no quiere tener". La objecion era buena y dejo de aplicar: la proteccion es ahora una
+  regla en un panel ajeno. El comando se queda, porque sirve para lo que el panel no: leerlo desde
+  la terminal y mirar la base local con `--local`.
+- **El panel tampoco ensena el promedio de estrellas.** Podria discutirse (quien mantiene la guia no
+  es el publico), pero la regla vale mas entera que con una excepcion, y esta seria justo la que
+  alguien copiaria manana. Se ve cuantas notas hay, nunca cuanto valen. Hay una prueba que lo exige
+  en el SQL.
+- Los lugares mas guardados salen **sin el umbral de cinco**. Ese umbral existe porque un numero
+  chico delata a quien lo guardo, y aqui no hay a quien delatar: lo que se guarda es una cuenta sin
+  correo ni nombre. Sin los numeros chicos el panel no sirve para lo que se hizo.
+
 ## [4.14.0]: 2026-10-11
 
 Tercer paso del plan de [docs/CUENTAS.md](docs/CUENTAS.md). Las calificaciones y las visitas llegan

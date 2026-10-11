@@ -1,0 +1,230 @@
+/*
+ * Estilo del panel privado. No comparte hoja con la guía a propósito: la de la guía la compila Vite
+ * con nombres con huella, y este archivo se sirve tal cual desde public/.
+ *
+ * Tipografía del sistema por la misma razón. Las de la guía también viajan con huella en el nombre,
+ * y enlazarlas desde aquí obligaría a conocer el resultado del build. Los colores sí son los de la
+ * marca (ver docs/MARCA.md), que son texto y no dependen de nada.
+ */
+:root {
+  --olivo: #536c2a;
+  --lima: #8cba37;
+  --papel: #f7f4ed;
+  --tinta: #2e3326;
+  --tenue: #6b7260;
+  --borde: #ddd8cb;
+  --fondo: #fcfaf6;
+  --superficie: #ffffff;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --papel: #1b1d18;
+    --tinta: #e8e5dc;
+    --tenue: #9aa18c;
+    --borde: #343a2c;
+    --fondo: #14160f;
+    --superficie: #1b1d18;
+    --lima: #b8d77c;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0 1rem 3rem;
+  background: var(--fondo);
+  color: var(--tinta);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+  align-items: baseline;
+  justify-content: space-between;
+  max-width: 68rem;
+  margin: 0 auto;
+  padding: 1.5rem 0 1rem;
+  border-bottom: 1px solid var(--borde);
+}
+
+h1 {
+  margin: 0;
+  font-size: 1.25rem;
+  letter-spacing: -0.01em;
+}
+
+.ventana {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.ventana button {
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+  background: var(--superficie);
+  color: var(--tenue);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.ventana button[aria-current="true"] {
+  border-color: var(--olivo);
+  background: var(--olivo);
+  color: var(--papel);
+}
+
+main {
+  max-width: 68rem;
+  margin: 0 auto;
+}
+
+.estado {
+  padding: 3rem 0;
+  color: var(--tenue);
+  text-align: center;
+}
+
+.tarjetas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+}
+
+.tarjeta {
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--borde);
+  border-radius: 0.6rem;
+  background: var(--superficie);
+}
+
+.tarjeta dt {
+  margin: 0;
+  color: var(--tenue);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tarjeta dd {
+  margin: 0.15rem 0 0;
+  font-size: 1.6rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+section {
+  margin: 2rem 0;
+}
+
+h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* El espacio real va en el HTML (si no, un lector de pantalla lee el titulo y la nota de corrido);
+   este margen es el que separa a la vista. */
+h2 .nota {
+  margin-left: 0.25rem;
+  color: var(--tenue);
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+
+.grafica {
+  /* El color de las barras: `currentColor` dentro del SVG lo toma de aqui. */
+  color: var(--lima);
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--borde);
+  border-radius: 0.6rem;
+  background: var(--superficie);
+}
+
+/* Las tablas largas se desplazan solas en vez de empujar la página de lado. */
+.tabla {
+  overflow-x: auto;
+  border: 1px solid var(--borde);
+  border-radius: 0.6rem;
+  background: var(--superficie);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 0.45rem 0.8rem;
+  text-align: left;
+  white-space: nowrap;
+}
+
+th {
+  position: sticky;
+  top: 0;
+  background: var(--superficie);
+  color: var(--tenue);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+tbody tr + tr td {
+  border-top: 1px solid var(--borde);
+}
+
+td.cifra {
+  width: 1%;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* La barra ocupa lo que sobra, así que la fila se lee como una tabla y como un gráfico a la vez. */
+td.barra {
+  width: 45%;
+  padding-right: 1rem;
+}
+
+td.barra span {
+  display: block;
+  width: 0;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--lima);
+}
+
+.vacio {
+  padding: 1.25rem;
+  color: var(--tenue);
+}
+
+.pie {
+  max-width: 68rem;
+  margin: 2.5rem auto 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--borde);
+  color: var(--tenue);
+  font-size: 0.85rem;
+}
+
+.pie p {
+  margin: 0;
+  max-width: 48rem;
+}

@@ -50,6 +50,7 @@ npm run dev            # http://localhost:5173
 | --- | --- |
 | `npm run dev` | Servidor de desarrollo |
 | `npm run build` | Valida datos, comprueba tipos y genera `dist/` (incluye las 234 páginas, el sitemap y las teselas del mapa) |
+| `/panel` | Pagina privada con los numeros (visitas, comparticiones, corazones), detras de Cloudflare Access |
 | `npm run preview` | Sirve `dist/` localmente |
 | `npm run check` | Lint + tipos + tests + build |
 | `npm run lint` / `lint:fix` | Biome (lint y formato) |

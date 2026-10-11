@@ -4,9 +4,11 @@
  * Las visitas, en una tabla que se lee. Por debajo es `wrangler d1 execute`, que devuelve un JSON
  * crudo con metadatos de la consulta; aquí se queda solo lo que interesa y se le pone forma.
  *
- * No hay panel ni endpoint de lectura a propósito: una página que muestre estos números habría que
- * protegerla, y proteger algo es justo el trabajo que este proyecto no quiere tener. Los números los
- * mira quien tiene las llaves de Cloudflare, desde su propia máquina.
+ * Desde la v4.15.0 también hay un panel en `/panel`, detrás de Cloudflare Access. Este comando se
+ * queda porque sirve para lo que el panel no: leerlo desde la terminal mientras se trabaja, y mirar
+ * la base local con `--local`. La objeción original ("proteger algo es el trabajo que este proyecto
+ * no quiere tener") dejó de aplicar cuando la protección pasó a ser una regla en un panel ajeno en
+ * vez de código nuestro.
  *
  * Desde la v4.13 también sale el conteo de **comparticiones**: las veces que una app de mensajería
  * pidió una página para dibujar la tarjetita de un enlace. No es tráfico y por eso va aparte, pero

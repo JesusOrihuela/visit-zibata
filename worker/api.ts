@@ -30,6 +30,18 @@ import {
   visitasDe,
 } from './marcas.ts'
 import {
+  COMPARTIDAS,
+  desdeHace,
+  diasDe,
+  MAS_CALIFICADOS,
+  MAS_GUARDADOS,
+  POR_DIA,
+  POR_IDIOMA,
+  POR_PAGINA,
+  puedeVerElPanel,
+  RESUMEN,
+} from './panel.ts'
+import {
   CONTEO_CORAZONES,
   CONTEO_NOTAS,
   type FilaCorazones,
@@ -130,6 +142,42 @@ export async function atenderApi(peticion: Request, entorno: EntornoApi): Promis
       entorno.ANALITICA.prepare(CONTEO_NOTAS).bind(limite).all<FilaNotas>(),
     ])
     return json(senalesDe(corazones.results ?? [], notas.results ?? []), 200, 'public, max-age=300')
+  }
+
+  /*
+   * El panel privado. Va antes de la identidad porque no la usa: quien entra aquí ya pasó por
+   * Cloudflare Access, que es otra puerta y no la de las cuentas anónimas (ver worker/panel.ts).
+   */
+  if (ruta === '/api/panel' && peticion.method === 'GET') {
+    if (!puedeVerElPanel(peticion)) return json({ error: 'sin permiso' }, 403)
+    const url = new URL(peticion.url)
+    const dias = diasDe(url)
+    const desde = desdeHace(dias)
+    const consulta = <T>(sql: string) =>
+      (entorno.ANALITICA as Base).prepare(sql).bind(desde).all<T>()
+
+    const [resumen, porDia, porPagina, porIdioma, compartidas, guardados, calificados] =
+      await Promise.all([
+        entorno.ANALITICA.prepare(RESUMEN).bind(desde).first<Record<string, number>>(),
+        consulta<{ fecha: string; visitas: number }>(POR_DIA),
+        consulta<{ ruta: string; idioma: string; visitas: number }>(POR_PAGINA),
+        consulta<{ idioma: string; visitas: number }>(POR_IDIOMA),
+        consulta<{ ruta: string; veces: number }>(COMPARTIDAS),
+        entorno.ANALITICA.prepare(MAS_GUARDADOS).all<{ lugar: string; corazones: number }>(),
+        entorno.ANALITICA.prepare(MAS_CALIFICADOS).all<{ lugar: string; notas: number }>(),
+      ])
+
+    return json({
+      dias,
+      desde,
+      resumen: resumen ?? {},
+      porDia: porDia.results ?? [],
+      porPagina: porPagina.results ?? [],
+      porIdioma: porIdioma.results ?? [],
+      compartidas: compartidas.results ?? [],
+      guardados: guardados.results ?? [],
+      calificados: calificados.results ?? [],
+    })
   }
 
   // A partir de aquí hace falta cuenta.

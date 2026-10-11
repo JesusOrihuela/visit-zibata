@@ -15,6 +15,22 @@ ataque se reduce a lo que el navegador ejecuta y a los enlaces que ofrece la gu�
   calificaciones y el recuento de fichas abiertas (que solo sirve para ordenar sus listas) viven en
   `localStorage` del dispositivo y nunca salen de él.
 
+## El panel privado
+
+`/panel` es la única página del sitio que no es pública. La protege **Cloudflare Access** (ver
+[DESPLIEGUE.md](DESPLIEGUE.md)), no código nuestro: aquí no hay inicio de sesión, ni contraseñas, ni
+sesiones que mantener. El Worker comprueba además que llegue la cabecera `Cf-Access-Jwt-Assertion`
+que Access inyecta, y **falla cerrado**: sin ella responde 403.
+
+No se verifica la firma de ese testigo, y no es un atajo. Esa verificación protege contra quien
+alcanza tu servidor **saltándose** Cloudflare, que es el caso de un origen propio con IP pública. Un
+Worker no tiene ese caso: solo se ejecuta dentro de Cloudflare, y Cloudflare borra las cabeceras
+`Cf-*` que vengan de fuera. Si estos datos salieran algún día de un Worker, habría que verificarla
+contra el JWKS del equipo.
+
+La página lleva su propia CSP (`default-src 'self'`), `noindex, nofollow`, y no está en el sitemap.
+Su estilo y su guión son archivos aparte justamente para no necesitar `'unsafe-inline'`.
+
 ## Content Security Policy
 
 Se inyecta en el build como `<meta http-equiv="Content-Security-Policy">` (GitHub Pages no permite
