@@ -9,6 +9,7 @@
  * se adjunte solo a cada petición.
  */
 import { base64url, cumpleLaPrueba, digestDe } from '../src/lib/prueba-de-trabajo.ts'
+import { type EntornoAcceso, puedeVerElPanel } from './acceso.ts'
 import { ALTA, type Base, huella, nuevaCuenta, RESOLVER, secretoDe } from './cuenta.ts'
 import {
   ANADIR,
@@ -38,7 +39,6 @@ import {
   POR_DIA,
   POR_IDIOMA,
   POR_PAGINA,
-  puedeVerElPanel,
   RESUMEN,
 } from './panel.ts'
 import {
@@ -49,7 +49,7 @@ import {
   senalesDe,
 } from './senales.ts'
 
-export interface EntornoApi {
+export interface EntornoApi extends EntornoAcceso {
   ANALITICA?: Base
 }
 
@@ -149,7 +149,7 @@ export async function atenderApi(peticion: Request, entorno: EntornoApi): Promis
    * Cloudflare Access, que es otra puerta y no la de las cuentas anónimas (ver worker/panel.ts).
    */
   if (ruta === '/api/panel' && peticion.method === 'GET') {
-    if (!puedeVerElPanel(peticion)) return json({ error: 'sin permiso' }, 403)
+    if (!(await puedeVerElPanel(peticion, entorno))) return json({ error: 'sin permiso' }, 403)
     const url = new URL(peticion.url)
     const dias = diasDe(url)
     const desde = desdeHace(dias)

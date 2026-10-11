@@ -10,6 +10,7 @@
   },
   "scripts": {
     "dev": "vite",
+    "worker:dev": "wrangler dev --var PANEL_ABIERTO:si",
     "build": "npm run data:validate && tsc -b && vite build",
     "preview": "vite preview",
     "typecheck": "tsc -b",

@@ -152,14 +152,27 @@ Para ponerla, una sola vez:
 3. Añade un segundo dominio a la misma aplicación con la ruta `api/panel`. Hacen falta los dos: uno
    protege la página y el otro los datos.
 4. Política: **Allow**, con **Include** -> **Emails** -> tu correo.
-5. Guardar.
+5. Guardar, y copiar la **Application Audience (AUD) Tag** que aparece en la aplicación.
+6. Poner esos dos identificadores en `wrangler.jsonc`, en `vars`, y volver a publicar:
+
+```jsonc
+"vars": {
+  "ACCESS_TEAM": "tu-equipo.cloudflareaccess.com",
+  "ACCESS_AUD": "la-etiqueta-aud-de-la-aplicacion"
+}
+```
+
+No son secretos (el dominio del equipo sale en la URL de inicio de sesión y la etiqueta AUD
+identifica la aplicación, como un `client_id`), por eso van versionados. **Vacíos, el panel está
+cerrado**: el Worker verifica la firma del testigo de Access contra el JWKS del equipo y comprueba
+que el destinatario sea esa etiqueta, y sin los dos datos no puede, así que responde 403.
 
 A partir de ahí, abrir `visitzibata.com/panel` pide identificarse una vez y deja una cookie; la
 página y sus datos pasan por la misma puerta. El plan gratuito de Zero Trust cubre 50 personas.
 
-En local no hay Access, así que el panel se abre sin nada en `http://127.0.0.1:8787/panel` con
-`wrangler dev`. Es la única forma de desarrollarlo y no abre nada en producción, porque la salida
-mira el nombre de host (ver `worker/panel.ts`).
+En local no hay Access. El panel se abre con `npm run worker:dev`, que pasa `PANEL_ABIERTO`, y no
+con `wrangler dev` a secas. Esa variable solo existe en ese comando: en producción no está, y la
+salida ya no depende del nombre de host (ver `worker/acceso.ts`).
 
 ### Ver los números desde la terminal
 

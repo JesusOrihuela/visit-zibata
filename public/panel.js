@@ -191,7 +191,10 @@ async function cargar(dias) {
   try {
     const respuesta = await fetch(`/api/panel?dias=${dias}`)
     if (respuesta.status === 403) {
-      fallar('Sin permiso. Falta poner Cloudflare Access delante de /panel y de /api/panel.')
+      fallar(
+        'Sin permiso. Falta la regla de Cloudflare Access delante de /panel y de /api/panel, o ' +
+          'falta poner ACCESS_TEAM y ACCESS_AUD en wrangler.jsonc.',
+      )
       return
     }
     if (respuesta.status === 503) {

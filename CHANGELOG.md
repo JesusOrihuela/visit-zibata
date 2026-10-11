@@ -14,6 +14,19 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 - Es una pagina aparte de la guia (HTML, CSS y JavaScript a mano en `public/`), no entra en el
   paquete de la aplicacion, no se prerenderiza, no esta en el sitemap y lleva `noindex`.
 
+### Seguridad
+
+- **El Worker ya no se sirve en `workers.dev`.** Ahi el nombre de host no es el dominio, asi que no
+  lo cubrian ni la regla de Access del panel ni la de limite de peticiones del alta de cuentas: era
+  una puerta de atras a lo que hay detras de las dos.
+- **La firma del testigo de Access se verifica**, contra el JWKS del equipo y con emisor,
+  destinatario y vigencia. La primera version de este cambio solo miraba que la cabecera existiera,
+  con el argumento de que Cloudflare borra las cabeceras `Cf-*` de fuera. El argumento fallaba en dos
+  casos que estan escritos en [docs/SEGURIDAD.md](docs/SEGURIDAD.md): una regla de Access que no
+  cubra la ruta exacta, y `workers.dev`.
+- **La salida de desarrollo es una variable explicita** (`PANEL_ABIERTO`, que pone
+  `npm run worker:dev`) y no el nombre de host.
+
 ### Cambiado
 
 - `scripts/analitica/ver.ts` decia que no habria panel "porque proteger algo es el trabajo que este

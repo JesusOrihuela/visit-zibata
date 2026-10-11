@@ -7,43 +7,8 @@ import {
   MAS_GUARDADOS,
   POR_DIA,
   POR_PAGINA,
-  puedeVerElPanel,
   RESUMEN,
 } from './panel.ts'
-
-const peticion = (url: string, cabeceras: Record<string, string> = {}) =>
-  new Request(url, { headers: cabeceras })
-
-describe('la puerta del panel', () => {
-  it('deja pasar a quien trae la cabecera que inyecta Cloudflare Access', () => {
-    expect(
-      puedeVerElPanel(
-        peticion('https://visitzibata.com/api/panel', { 'cf-access-jwt-assertion': 'eyJhbGci...' }),
-      ),
-    ).toBe(true)
-  })
-
-  it('falla cerrado: sin esa cabecera, en el dominio, no hay datos', () => {
-    // Si alguien quita la regla de Access por error, esto responde 403 en vez de publicar todo.
-    expect(puedeVerElPanel(peticion('https://visitzibata.com/api/panel'))).toBe(false)
-    expect(puedeVerElPanel(peticion('https://visitzibata.com/api/panel?dias=7'))).toBe(false)
-  })
-
-  it('en local se entra sin Access, que es la única forma de desarrollarlo', () => {
-    expect(puedeVerElPanel(peticion('http://localhost:8787/api/panel'))).toBe(true)
-    expect(puedeVerElPanel(peticion('http://127.0.0.1:8787/api/panel'))).toBe(true)
-  })
-
-  it('un nombre de host que solo se parece a local no entra', () => {
-    for (const url of [
-      'https://localhost.visitzibata.com/api/panel',
-      'https://notlocalhost/api/panel',
-      'https://127.0.0.1.atacante.com/api/panel',
-    ]) {
-      expect(puedeVerElPanel(peticion(url))).toBe(false)
-    }
-  })
-})
 
 describe('la ventana de tiempo', () => {
   const dias = (busqueda: string) => diasDe(new URL(`https://x/api/panel${busqueda}`))

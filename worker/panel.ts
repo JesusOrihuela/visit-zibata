@@ -11,15 +11,9 @@
  *
  * ## Cómo se protege
  *
- * Access se pone delante de `/panel` y de `/api/panel`, y a lo que deja pasar le añade la cabecera
- * `Cf-Access-Jwt-Assertion`. Aquí se comprueba que esa cabecera exista y **se falla cerrado**: sin
- * ella no hay datos.
- *
- * No se verifica la firma del testigo, y conviene explicar por qué no es un atajo. Esa verificación
- * protege contra quien alcanza tu servidor **saltándose** Cloudflare, que es el caso de un origen
- * propio con una IP pública. Un Worker no tiene ese caso: solo se ejecuta dentro de Cloudflare, y
- * Cloudflare borra las cabeceras `Cf-*` que llegan de fuera. Si algún día estos datos salieran de un
- * Worker, habría que verificar la firma contra el JWKS del equipo.
+ * Access se pone delante de `/panel` y de `/api/panel`, y a lo que deja pasar le añade un testigo
+ * firmado en la cabecera `Cf-Access-Jwt-Assertion`. La firma se verifica en `worker/acceso.ts`, que
+ * explica por qué mirar solo que la cabecera exista no bastaba.
  *
  * ## Qué no enseña
  *
@@ -28,21 +22,6 @@
  * excepción, y una excepción aquí sería justo la que alguien copiaría mañana. Lo que sí sale es
  * cuántas notas hay y el empuje que producen.
  */
-
-/** La cabecera que inyecta Cloudflare Access en todo lo que deja pasar. */
-const ACCESS = 'cf-access-jwt-assertion'
-
-/**
- * ¿Puede ver el panel quien hace esta petición?
- *
- * En local no hay Access, y sin esta salida no habría forma de desarrollarlo. No abre nada en
- * producción: allí el nombre de host es el del dominio, nunca `localhost`.
- */
-export function puedeVerElPanel(peticion: Request): boolean {
-  if (peticion.headers.get(ACCESS)) return true
-  const host = new URL(peticion.url).hostname
-  return host === 'localhost' || host === '127.0.0.1'
-}
 
 /** Cuántos días mira el panel. Se pide por `?dias=`, con un tope para no barrer la tabla entera. */
 export function diasDe(url: URL): number {

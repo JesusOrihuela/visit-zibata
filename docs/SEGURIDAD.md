@@ -19,14 +19,26 @@ ataque se reduce a lo que el navegador ejecuta y a los enlaces que ofrece la gu�
 
 `/panel` es la única página del sitio que no es pública. La protege **Cloudflare Access** (ver
 [DESPLIEGUE.md](DESPLIEGUE.md)), no código nuestro: aquí no hay inicio de sesión, ni contraseñas, ni
-sesiones que mantener. El Worker comprueba además que llegue la cabecera `Cf-Access-Jwt-Assertion`
-que Access inyecta, y **falla cerrado**: sin ella responde 403.
+sesiones que mantener.
 
-No se verifica la firma de ese testigo, y no es un atajo. Esa verificación protege contra quien
-alcanza tu servidor **saltándose** Cloudflare, que es el caso de un origen propio con IP pública. Un
-Worker no tiene ese caso: solo se ejecuta dentro de Cloudflare, y Cloudflare borra las cabeceras
-`Cf-*` que vengan de fuera. Si estos datos salieran algún día de un Worker, habría que verificarla
-contra el JWKS del equipo.
+El Worker **verifica la firma** del testigo que Access inyecta en `Cf-Access-Jwt-Assertion`, contra
+el JWKS del equipo y con RS256 a secas, y comprueba emisor, destinatario (`aud`) y vigencia. Sin
+dependencias: `crypto.subtle` lo trae.
+
+La primera versión solo miraba que la cabecera existiera, con el argumento de que un Worker vive
+dentro de Cloudflare y Cloudflare borra las cabeceras `Cf-*` de fuera. El argumento tenía dos
+agujeros y conviene dejarlos escritos, porque los dos son fáciles de reintroducir:
+
+1. **Access solo intercepta las rutas que cubre su regla.** Si la aplicación cubre `/panel` pero no
+   `/api/panel`, esa petición llega al Worker sin pasar por ninguna puerta y quien la hace escribe
+   la cabecera él mismo.
+2. **Un Worker se sirve también en `workers.dev`** salvo que se apague, y ahí la regla del dominio
+   no existe. Está apagado con `workers_dev: false`, y eso también cierra la puerta de atrás al
+   límite de peticiones del alta de cuentas, que está atado al dominio.
+
+Falla cerrado en todos los casos: sin configuración, sin testigo, con uno que no verifica o con el
+JWKS caído, la respuesta es 403. La única salida es `PANEL_ABIERTO`, que solo existe en desarrollo
+(`npm run worker:dev`) y es una variable explicita, no un nombre de host.
 
 La página lleva su propia CSP (`default-src 'self'`), `noindex, nofollow`, y no está en el sitemap.
 Su estilo y su guión son archivos aparte justamente para no necesitar `'unsafe-inline'`.
