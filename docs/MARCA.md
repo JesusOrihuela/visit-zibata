@@ -176,7 +176,7 @@ Hecho, por orden en que se fue resolviendo:
    `/en/place/el-hornero`, `/zona/paseo-zibata` y `/en/area/paseo-zibata`. Llevan la palabra que se
    ve en pantalla, no la del código: la URL se comparte y se dicta, así que es interfaz. El hash se quedó en el camino porque lo que va después de `#` nunca llega
    al servidor, así que ningún rastreador veía más que la portada.
-4. **Una página real por ruta**: 232 archivos HTML generados en el build desde el dataset, cada uno
+4. **Una página real por ruta**: 234 archivos HTML generados en el build desde el dataset, cada uno
    con su `<title>`, su `description` y su `canonical`.
 5. **`hreflang`** `es`, `en` y `x-default` entre las dos versiones de cada página, con el español
    como `x-default`.

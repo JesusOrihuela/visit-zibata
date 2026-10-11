@@ -3,7 +3,7 @@
 El sitio es 100 % estático: `npm run build` produce `dist/` y cualquier servidor de archivos lo sirve. No
 hay backend, base de datos, variables secretas ni servicios de pago.
 
-Desde la v4.6.0 el build escribe **232 páginas HTML** (una por ruta y por idioma), `sitemap.xml`,
+Desde la v4.6.0 el build escribe **234 páginas HTML** (una por ruta y por idioma), `sitemap.xml`,
 `robots.txt` y `404.html`. Los archivos son planos (`dist/lugar/tomassa.html`), no carpetas con
 índice, para que `/lugar/tomassa` se sirva directo y no haya que redirigir a `/lugar/tomassa/`.
 
@@ -190,7 +190,7 @@ SITE_URL=https://mi-dominio/ npm run build   # canonical, hreflang, sitemap y Op
 npm run images:og-places                     # después del build: dist/og/<slug>.jpg
 ```
 
-`SITE_URL` ya no es solo cosa de Open Graph: de ahí salen el `canonical` y las `hreflang` de las 232
+`SITE_URL` ya no es solo cosa de Open Graph: de ahí salen el `canonical` y las `hreflang` de las 234
 páginas y las URLs del `sitemap.xml`. Sin ella el build funciona, pero esos enlaces quedan relativos
 y el sitemap no sirve para enviarlo a un buscador.
 
@@ -223,7 +223,7 @@ Para comprobar el prerenderizado sin abrir el navegador:
 curl -I http://localhost:4173/lugar/tomassa      # 200, sin redirección
 curl -I http://localhost:4173/en/place/tomassa   # 200
 curl -I http://localhost:4173/lugar/inventado    # 404
-grep -c "<url>" dist/sitemap.xml                 # 232
+grep -c "<url>" dist/sitemap.xml                 # 234
 ```
 
 Para imitar un hosting en subruta (404 reales, 301 de directorios), este repositorio se probó

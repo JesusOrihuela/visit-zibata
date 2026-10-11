@@ -7,9 +7,7 @@ import { InfoDialog } from './InfoDialog.tsx'
 describe('InfoDialog', () => {
   it('muestra una sola página y lleva a las otras dos', async () => {
     const onGoTo = vi.fn()
-    render(
-      <InfoDialog topic="privacidad" onClose={vi.fn()} onGoTo={onGoTo} onShowTutorial={vi.fn()} />,
-    )
+    render(<InfoDialog topic="privacidad" onClose={vi.fn()} onGoTo={onGoTo} />)
 
     expect(screen.getByRole('dialog', { name: 'Privacidad' })).toBeInTheDocument()
     expect(screen.getByText(/no usa cuentas ni cookies de rastreo/)).toBeInTheDocument()
@@ -28,9 +26,7 @@ describe('InfoDialog', () => {
   })
 
   it('la página "Acerca" incluye créditos, versión y firma, y ningún enlace muerto', () => {
-    render(
-      <InfoDialog topic="acerca" onClose={vi.fn()} onGoTo={vi.fn()} onShowTutorial={vi.fn()} />,
-    )
+    render(<InfoDialog topic="acerca" onClose={vi.fn()} onGoTo={vi.fn()} />)
     expect(screen.getByText(/OpenStreetMap/)).toBeInTheDocument()
     expect(screen.getByText(/Versión/)).toBeInTheDocument()
     // El único enlace es la firma de autoría, y apunta a algún sitio: sin canal de contacto
@@ -40,27 +36,18 @@ describe('InfoDialog', () => {
     expect(enlaces[0]).toHaveAttribute('href', 'https://aurariola.com')
   })
 
-  it('desde cualquier página se puede volver a abrir el tutorial', async () => {
-    // Desde que el tutorial se recuerda por dispositivo y ya no reaparece solo, esta es la única
-    // forma de volver a verlo.
-    const onShowTutorial = vi.fn()
-    render(
-      <InfoDialog
-        topic="acerca"
-        onClose={vi.fn()}
-        onGoTo={vi.fn()}
-        onShowTutorial={onShowTutorial}
-      />,
-    )
+  it('desde cualquier página se llega al tutorial, que es un tema más', async () => {
+    // Desde que se recuerda por dispositivo y ya no reaparece solo, esta es la forma de volver a
+    // verlo. Va por `onGoTo` como los otros tres, para que tenga ruta y el botón atrás lo cierre.
+    const onGoTo = vi.fn()
+    render(<InfoDialog topic="acerca" onClose={vi.fn()} onGoTo={onGoTo} />)
     await userEvent.click(screen.getByRole('button', { name: 'Ver el tutorial' }))
-    expect(onShowTutorial).toHaveBeenCalled()
+    expect(onGoTo).toHaveBeenCalledWith('tutorial')
   })
 
   it('se cierra con Escape', async () => {
     const onClose = vi.fn()
-    render(
-      <InfoDialog topic="sugerir" onClose={onClose} onGoTo={vi.fn()} onShowTutorial={vi.fn()} />,
-    )
+    render(<InfoDialog topic="sugerir" onClose={onClose} onGoTo={vi.fn()} />)
     await userEvent.keyboard('{Escape}')
     expect(onClose).toHaveBeenCalled()
   })

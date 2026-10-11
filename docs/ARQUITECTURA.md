@@ -244,13 +244,13 @@ el navegador no trae ninguna de las dos, el botón no se dibuja.
 
 ## Una página por ruta (SEO y vistas previas)
 
-`scripts/build/prerender.ts` es un plugin de build que escribe **232 páginas** (116 por idioma: la
+`scripts/build/prerender.ts` es un plugin de build que escribe **234 páginas** (117 por idioma: la
 portada, las 11 zonas activas, 101 locales y 3 páginas de información), más `sitemap.xml` y
 `robots.txt`. Las zonas sin actividad no tienen página: no se indexa lo que no se puede visitar. Nada de
 esto se escribe a mano: sale de `data/commercial/*.json` en cada compilación, así que añadir un local
 o cambiarle el nombre se refleja solo en la siguiente publicación.
 
-Las 232 cargan exactamente la misma aplicación; lo único distinto es el `<head>`: `<html lang>`,
+Las 234 cargan exactamente la misma aplicación; lo único distinto es el `<head>`: `<html lang>`,
 `<title>`, `description`, `canonical` y las tres `hreflang` (`es`, `en` y `x-default` apuntando al
 español, que es el idioma por omisión del sitio). Las dos listas de páginas se generan con el mismo
 recorrido, así que la gemela en el otro idioma ocupa la misma posición y las `hreflang` salen sin

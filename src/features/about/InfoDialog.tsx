@@ -9,7 +9,7 @@ import { createPortal } from 'react-dom'
 import { Signature } from '../../components/brand/Signature.tsx'
 import { APP_VERSION, canSuggest } from '../../config/site.ts'
 import { t, useLocale } from '../../i18n/index.ts'
-import { INFO_TOPICS, type InfoTopic } from '../../lib/url-state.ts'
+import { INFO_TOPICS, type InfoPagina, type InfoTopic } from '../../lib/url-state.ts'
 import styles from './InfoDialog.module.css'
 
 /** Pesa lo suyo y casi nadie lo abre: viaja en su propio trozo, no en el arranque de la guía. */
@@ -19,11 +19,19 @@ const SuggestForm = lazy(() =>
 
 type TopicKey = 'about' | 'privacy' | 'contribute'
 
-const TOPIC: Record<InfoTopic, TopicKey> = {
+const TOPIC: Record<InfoPagina, TopicKey> = {
   acerca: 'about',
   privacidad: 'privacy',
   sugerir: 'contribute',
 }
+
+/** El nombre de cada tema en la fila de enlaces. El tutorial no es página de texto, pero sí enlace. */
+const ENLACE = {
+  acerca: 'about.open',
+  privacidad: 'about.privacy',
+  sugerir: 'about.fix',
+  tutorial: 'about.tutorial',
+} as const satisfies Record<InfoTopic, string>
 
 /**
  * Cada página se lee en capas: un titular con lo esencial, el cuerpo y un detalle para quien siga
@@ -58,14 +66,12 @@ const PAGE = {
 } as const
 
 interface InfoDialogProps {
-  topic: InfoTopic
+  topic: InfoPagina
   onClose: () => void
   onGoTo: (topic: InfoTopic) => void
-  /** Vuelve a abrir el tutorial. Sin esto no habría forma de verlo otra vez (ver onboarding/seen.ts). */
-  onShowTutorial: () => void
 }
 
-export function InfoDialog({ topic, onClose, onGoTo, onShowTutorial }: InfoDialogProps) {
+export function InfoDialog({ topic, onClose, onGoTo }: InfoDialogProps) {
   // La hoja se redibuja al cambiar de idioma aunque se abra sola (p. ej. en una prueba).
   useLocale()
   const dialogRef = useRef<HTMLDivElement>(null)
@@ -161,17 +167,9 @@ export function InfoDialog({ topic, onClose, onGoTo, onShowTutorial }: InfoDialo
               className={styles.moreLink}
               onClick={() => onGoTo(other)}
             >
-              {t(PAGE[TOPIC[other]].link)}
+              {t(ENLACE[other])}
             </button>
           ))}
-          {/*
-           * El tutorial va aquí y no en una página propia: no tiene texto que leer ni URL que
-           * compartir, es un botón. Desde que se recuerda por dispositivo y ya no reaparece solo,
-           * esta es la única forma de volver a verlo.
-           */}
-          <button type="button" className={styles.moreLink} onClick={onShowTutorial}>
-            {t('about.tutorial')}
-          </button>
         </nav>
       </div>
     </div>,

@@ -155,6 +155,7 @@ function pagesFor(
     acerca: { title: 'about.title', lead: 'about.aboutLead' },
     privacidad: { title: 'about.privacy', lead: 'about.privacyLead' },
     sugerir: { title: 'about.contribute', lead: 'about.contributeLead' },
+    tutorial: { title: 'about.tutorialTitle', lead: 'about.tutorialLead' },
   }
   for (const topic of INFO_TOPICS) {
     const keys = INFO[topic]

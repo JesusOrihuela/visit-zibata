@@ -24,8 +24,15 @@
  */
 import type { Locale } from '../i18n/index.ts'
 
-export const INFO_TOPICS = ['acerca', 'privacidad', 'sugerir'] as const
+export const INFO_TOPICS = ['acerca', 'privacidad', 'sugerir', 'tutorial'] as const
 export type InfoTopic = (typeof INFO_TOPICS)[number]
+
+/**
+ * Los temas que son una página de texto. El tutorial también tiene ruta, para que se comparta y
+ * para que el botón atrás lo cierre como a los otros tres, pero no es texto que leer: es la ventana
+ * de cuatro pasos sobre gestos del mapa, y la dibuja otro componente.
+ */
+export type InfoPagina = Exclude<InfoTopic, 'tutorial'>
 
 /**
  * Los segmentos de ruta por idioma. El tema de información se guarda siempre con su clave en
@@ -37,8 +44,8 @@ const SEGMENTS = {
 } as const satisfies Record<Locale, Record<string, string>>
 
 const INFO_SLUGS = {
-  es: { acerca: 'acerca', privacidad: 'privacidad', sugerir: 'sugerir' },
-  en: { acerca: 'about', privacidad: 'privacy', sugerir: 'suggest' },
+  es: { acerca: 'acerca', privacidad: 'privacidad', sugerir: 'sugerir', tutorial: 'tutorial' },
+  en: { acerca: 'about', privacidad: 'privacy', sugerir: 'suggest', tutorial: 'tutorial' },
 } as const satisfies Record<Locale, Record<InfoTopic, string>>
 
 /** Prefijo de ruta de cada idioma. El español no lleva: es el idioma por omisión del sitio. */

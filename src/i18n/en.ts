@@ -186,6 +186,8 @@ export const en = {
   'about.title': 'About this guide',
   'about.fix': 'Suggest a change',
   'about.tutorial': 'See the tutorial',
+  'about.tutorialTitle': 'How to use the guide',
+  'about.tutorialLead': 'The four steps to move around the map, find a place and save it.',
   'about.moreLabel': 'More about the guide',
   'about.independent': 'An independent guide to the area’s businesses and services.',
   'about.languageEs': 'Español',

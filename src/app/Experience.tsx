@@ -540,21 +540,29 @@ function ReadyExperience({ catalog }: { catalog: Catalog }) {
         </BottomSheet>
       )}
 
-      {state.infoTopic && (
+      {state.infoTopic && state.infoTopic !== 'tutorial' && (
         <InfoDialog
           topic={state.infoTopic}
           onClose={() => dispatch({ type: 'closeInfo' })}
           onGoTo={openInfo}
-          onShowTutorial={() => {
-            dispatch({ type: 'closeInfo' })
-            dispatch({ type: 'showTutorial' })
-          }}
         />
       )}
 
-      {state.tutorialVisible && (
+      {/*
+       * El tutorial se abre de dos maneras y se cierra de una. Solo en la primera visita sale sin
+       * tocar la URL, porque cambiarla al entrar dejaría /info/tutorial como puerta de la guía y
+       * como lo que se copia de la barra de direcciones. Abierto a propósito desde los enlaces sí
+       * tiene ruta, y entonces el botón atrás lo cierra como a las otras tres ventanas.
+       */}
+      {(state.tutorialVisible || state.infoTopic === 'tutorial') && (
         <Suspense fallback={null}>
-          <OnboardingModal open onClose={() => dispatch({ type: 'dismissTutorial' })} />
+          <OnboardingModal
+            open
+            onClose={() => {
+              dispatch({ type: 'dismissTutorial' })
+              if (state.infoTopic === 'tutorial') dispatch({ type: 'closeInfo' })
+            }}
+          />
         </Suspense>
       )}
 

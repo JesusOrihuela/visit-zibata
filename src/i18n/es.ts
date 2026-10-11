@@ -196,6 +196,9 @@ export const es = {
   'about.title': 'Acerca de esta guía',
   'about.fix': 'Sugiere un cambio',
   'about.tutorial': 'Ver el tutorial',
+  'about.tutorialTitle': 'Cómo usar la guía',
+  'about.tutorialLead':
+    'Los cuatro pasos para moverte por el mapa, encontrar un lugar y guardarlo.',
   'about.moreLabel': 'Más sobre la guía',
   'about.independent': 'Guía independiente de establecimientos y servicios de la zona.',
   'about.languageEs': 'Español',

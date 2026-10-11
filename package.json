@@ -2,7 +2,7 @@
   "name": "visit-zibata",
   "private": true,
   "license": "MIT",
-  "version": "4.12.1",
+  "version": "4.13.0",
   "description": "Guía interactiva 3D de Zibatá, Querétaro: la guía de zibateños para zibateños. Sitio estático, sin backend.",
   "type": "module",
   "engines": {

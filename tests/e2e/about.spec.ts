@@ -58,11 +58,26 @@ test.describe('Información de la guía', () => {
     // Quien abre /info/acerca viene a leer eso, no a que le expliquen el mapa por encima.
     await expect(page.getByRole('button', { name: 'Saltar' })).toHaveCount(0)
 
-    // Y desde que se recuerda por dispositivo, esta es la única forma de volver a verlo.
+    // Y desde que se recuerda por dispositivo, esta es la forma de volver a verlo.
     await about.getByRole('button', { name: 'Ver el tutorial' }).click()
     await expect(page.getByRole('button', { name: 'Saltar' })).toBeVisible()
     // Por el id del título: "Explora Zibatá" también es el botón de la barra superior.
     await expect(page.locator('#onboarding-title')).toHaveText('Explora Zibatá')
+    // Tiene ruta propia, como las otras tres, y la hoja de debajo se cierra.
+    await expect(page).toHaveURL(/\/info\/tutorial$/)
+    await expect(page.getByRole('dialog', { name: 'Acerca de esta guía' })).toHaveCount(0)
+
+    // Y por eso el botón atrás lo cierra en vez de sacarte de la guía.
+    await page.goBack()
+    await expect(page.getByRole('button', { name: 'Saltar' })).toHaveCount(0)
+    await expect(page).toHaveURL(/\/info\/acerca$/)
+  })
+
+  test('la página del tutorial se abre directamente, como las otras tres', async ({ page }) => {
+    await openApp(page, { path: 'info/tutorial' })
+    await expect(page.getByRole('button', { name: 'Saltar' })).toBeVisible()
+    // Los cuatro temas se comportan igual: misma clase de ruta y el mismo trato en el sitemap.
+    await expect(page.locator('meta[name="robots"]')).toHaveCount(0)
   })
 
   test('el idioma se cambia desde la barra y se recuerda', async ({ page }) => {

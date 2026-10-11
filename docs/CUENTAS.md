@@ -335,7 +335,7 @@ requisito de `Range` se quitó porque fue el que tumbó el mapa al mudarse a un 
 estáticos, y un requisito que nadie vuelve a comprobar es una trampa esperando a la siguiente mudanza.
 
 **Esto ya está hecho y no espera al backend:** el build prerenderiza una página por lugar, por plaza
-y por página de información, en los dos idiomas (232 archivos), cada una con su `<title>`, su
+y por página de información, en los dos idiomas (234 archivos), cada una con su `<title>`, su
 `description`, su `canonical`, sus `hreflang` y su imagen de vista previa. No necesitó servidor ni
 dependencia nueva: es el mismo patrón de los plugins de `vite.config.ts`, emitiendo varios archivos
 ([ARQUITECTURA.md](ARQUITECTURA.md) § Una página por ruta).

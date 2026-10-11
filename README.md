@@ -16,7 +16,7 @@ En la interfaz y en las URLs esas agrupaciones se llaman **zona**; en los datos 
   con teléfono ([research/](research/audit-report.md) guarda fuentes y confianza por registro). 18
   categorías con sus giros, y un local puede tener dos giros reales (El Hornero es parrilla argentina y
   pizzería).
-- **Una página real por ruta**, en los dos idiomas: 232 archivos HTML con su título, su descripción, su
+- **Una página real por ruta**, en los dos idiomas: 234 archivos HTML con su título, su descripción, su
   canonical, sus `hreflang` y sus datos estructurados, más una imagen de vista previa por local. Es lo
   que hace que cada ficha se indexe y se comparta por separado.
 - Escritorio (panel lateral) y móvil (hoja inferior), en **español e inglés** (se cambia de un toque en
@@ -46,7 +46,7 @@ npm run dev            # http://localhost:5173
 | Comando | Descripción |
 | --- | --- |
 | `npm run dev` | Servidor de desarrollo |
-| `npm run build` | Valida datos, comprueba tipos y genera `dist/` (incluye las 232 páginas, el sitemap y las teselas del mapa) |
+| `npm run build` | Valida datos, comprueba tipos y genera `dist/` (incluye las 234 páginas, el sitemap y las teselas del mapa) |
 | `npm run preview` | Sirve `dist/` localmente |
 | `npm run check` | Lint + tipos + tests + build |
 | `npm run lint` / `lint:fix` | Biome (lint y formato) |
