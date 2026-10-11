@@ -15,6 +15,34 @@ ataque se reduce a lo que el navegador ejecuta y a los enlaces que ofrece la gu�
   calificaciones y el recuento de fichas abiertas (que solo sirve para ordenar sus listas) viven en
   `localStorage` del dispositivo y nunca salen de él.
 
+## El panel privado
+
+`/panel` es la única página del sitio que no es pública. La protege **Cloudflare Access** (ver
+[DESPLIEGUE.md](DESPLIEGUE.md)), no código nuestro: aquí no hay inicio de sesión, ni contraseñas, ni
+sesiones que mantener.
+
+El Worker **verifica la firma** del testigo que Access inyecta en `Cf-Access-Jwt-Assertion`, contra
+el JWKS del equipo y con RS256 a secas, y comprueba emisor, destinatario (`aud`) y vigencia. Sin
+dependencias: `crypto.subtle` lo trae.
+
+La primera versión solo miraba que la cabecera existiera, con el argumento de que un Worker vive
+dentro de Cloudflare y Cloudflare borra las cabeceras `Cf-*` de fuera. El argumento tenía dos
+agujeros y conviene dejarlos escritos, porque los dos son fáciles de reintroducir:
+
+1. **Access solo intercepta las rutas que cubre su regla.** Si la aplicación cubre `/panel` pero no
+   `/api/panel`, esa petición llega al Worker sin pasar por ninguna puerta y quien la hace escribe
+   la cabecera él mismo.
+2. **Un Worker se sirve también en `workers.dev`** salvo que se apague, y ahí la regla del dominio
+   no existe. Está apagado con `workers_dev: false`, y eso también cierra la puerta de atrás al
+   límite de peticiones del alta de cuentas, que está atado al dominio.
+
+Falla cerrado en todos los casos: sin configuración, sin testigo, con uno que no verifica o con el
+JWKS caído, la respuesta es 403. La única salida es `PANEL_ABIERTO`, que solo existe en desarrollo
+(`npm run worker:dev`) y es una variable explicita, no un nombre de host.
+
+La página lleva su propia CSP (`default-src 'self'`), `noindex, nofollow`, y no está en el sitemap.
+Su estilo y su guión son archivos aparte justamente para no necesitar `'unsafe-inline'`.
+
 ## Content Security Policy
 
 Se inyecta en el build como `<meta http-equiv="Content-Security-Policy">` (GitHub Pages no permite

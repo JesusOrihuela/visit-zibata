@@ -14,12 +14,14 @@
  * los assets y las imágenes se sirven sin pasar por aquí: así no cuestan invocación ni se cuentan
  * como visitas.
  */
+
+import type { EntornoAcceso } from './acceso.ts'
 import { APUNTE, APUNTE_COMPARTICION, comparticionDe, visitaDe } from './analitica.ts'
 import { atenderApi } from './api.ts'
 import type { Base } from './cuenta.ts'
 
 /** Lo mínimo de la plataforma que este Worker usa. */
-interface Entorno {
+interface Entorno extends EntornoAcceso {
   ASSETS: { fetch(request: Request): Promise<Response> }
   /**
    * La base. Puede no estar (en desarrollo, o antes de crearla): entonces no se cuenta y la API

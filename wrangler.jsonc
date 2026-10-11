@@ -14,6 +14,24 @@
   "main": "./worker/index.ts",
   "observability": { "enabled": true },
   /*
+   * Sin `workers.dev`. Ahí el Worker se sirve en un nombre de host que no es el dominio, así que no
+   * lo cubren ni la regla de Cloudflare Access del panel ni la de límite de peticiones del alta de
+   * cuentas. Es una puerta de atrás a todo lo que hay detrás de las dos.
+   */
+  "workers_dev": false,
+  /*
+   * Los dos identificadores de la aplicación de Cloudflare Access que protege el panel. No son
+   * secretos (el dominio del equipo sale en la URL de inicio de sesión y la etiqueta AUD identifica
+   * la aplicación, como un `client_id`), así que van versionados.
+   *
+   * **Vacíos, el panel está cerrado.** Es deliberado: un despliegue a medias deja fuera a todo el
+   * mundo en vez de publicar los números. Ver docs/DESPLIEGUE.md para de dónde salen.
+   */
+  "vars": {
+    "ACCESS_TEAM": "",
+    "ACCESS_AUD": ""
+  },
+  /*
    * La base de visitas. El `database_id` no es un secreto: identifica la base, no da acceso a ella,
    * y por eso va versionado. Si falta o el enlace no existe, el sitio funciona igual y no se cuenta
    * nada (worker/index.ts lo comprueba).

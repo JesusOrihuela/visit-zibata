@@ -135,7 +135,46 @@ La IP la usa Cloudflare para contar y no llega nunca a este codigo ni a la base.
 El orden importa: la base tiene que existir **antes** del primer `wrangler deploy` con el enlace
 puesto, o la publicacion falla.
 
-### Ver los números
+### El panel privado
+
+En `/panel` hay una página con los números: visitas por día, páginas más abiertas, enlaces
+compartidos, lugares más guardados y cuántas notas tiene cada uno. No lleva inicio de sesión propio,
+y ese es el punto: **la puerta la pone Cloudflare Access**, que es configuración y no código nuestro.
+
+Sin esa regla puesta, el Worker responde 403 y la página lo dice con esas palabras. Falla cerrado a
+propósito: si alguien borra la regla por error, el panel deja de funcionar en vez de quedar abierto.
+
+Para ponerla, una sola vez:
+
+1. Panel de Cloudflare, **Zero Trust** (se activa gratis la primera vez), **Access** ->
+   **Applications** -> **Add an application** -> **Self-hosted**.
+2. Nombre: `Panel de Visit Zibatá`. Dominio `visitzibata.com` con la ruta `panel`.
+3. Añade un segundo dominio a la misma aplicación con la ruta `api/panel`. Hacen falta los dos: uno
+   protege la página y el otro los datos.
+4. Política: **Allow**, con **Include** -> **Emails** -> tu correo.
+5. Guardar, y copiar la **Application Audience (AUD) Tag** que aparece en la aplicación.
+6. Poner esos dos identificadores en `wrangler.jsonc`, en `vars`, y volver a publicar:
+
+```jsonc
+"vars": {
+  "ACCESS_TEAM": "tu-equipo.cloudflareaccess.com",
+  "ACCESS_AUD": "la-etiqueta-aud-de-la-aplicacion"
+}
+```
+
+No son secretos (el dominio del equipo sale en la URL de inicio de sesión y la etiqueta AUD
+identifica la aplicación, como un `client_id`), por eso van versionados. **Vacíos, el panel está
+cerrado**: el Worker verifica la firma del testigo de Access contra el JWKS del equipo y comprueba
+que el destinatario sea esa etiqueta, y sin los dos datos no puede, así que responde 403.
+
+A partir de ahí, abrir `visitzibata.com/panel` pide identificarse una vez y deja una cookie; la
+página y sus datos pasan por la misma puerta. El plan gratuito de Zero Trust cubre 50 personas.
+
+En local no hay Access. El panel se abre con `npm run worker:dev`, que pasa `PANEL_ABIERTO`, y no
+con `wrangler dev` a secas. Esa variable solo existe en ese comando: en producción no está, y la
+salida ya no depende del nombre de host (ver `worker/acceso.ts`).
+
+### Ver los números desde la terminal
 
 ```bash
 npm run analitica:ver                 # las páginas más abiertas de los últimos 30 días
