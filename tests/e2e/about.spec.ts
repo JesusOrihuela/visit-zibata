@@ -73,12 +73,11 @@ test.describe('Información de la guía', () => {
     await expect(page).toHaveURL(/\/info\/acerca$/)
   })
 
-  test('la página del tutorial existe pero no se indexa', async ({ page }) => {
-    // Tiene ruta para compartirla y para el botón atrás, no para competir en un buscador: son
-    // cuatro pasos sobre gestos del mapa, sin texto que indexar.
+  test('la página del tutorial se abre directamente, como las otras tres', async ({ page }) => {
     await openApp(page, { path: 'info/tutorial' })
     await expect(page.getByRole('button', { name: 'Saltar' })).toBeVisible()
-    await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/)
+    // Los cuatro temas se comportan igual: misma clase de ruta y el mismo trato en el sitemap.
+    await expect(page.locator('meta[name="robots"]')).toHaveCount(0)
   })
 
   test('el idioma se cambia desde la barra y se recuerda', async ({ page }) => {

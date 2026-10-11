@@ -223,7 +223,7 @@ Para comprobar el prerenderizado sin abrir el navegador:
 curl -I http://localhost:4173/lugar/tomassa      # 200, sin redirección
 curl -I http://localhost:4173/en/place/tomassa   # 200
 curl -I http://localhost:4173/lugar/inventado    # 404
-grep -c "<url>" dist/sitemap.xml                 # 232 (las dos del tutorial van con noindex)
+grep -c "<url>" dist/sitemap.xml                 # 234
 ```
 
 Para imitar un hosting en subruta (404 reales, 301 de directorios), este repositorio se probó

@@ -36,11 +36,6 @@ interface Page {
   image?: string
   /** Datos estructurados de esta página, ya con URLs absolutas. Las de información no llevan. */
   jsonLd?: Record<string, unknown>
-  /**
-   * Fuera del sitemap y con `noindex`. Existe para que la ruta se pueda compartir y para que el
-   * botón atrás la cierre, no para competir en un buscador.
-   */
-  fueraDelIndice?: boolean
 }
 
 const text = (value: unknown, locale: Locale): string => {
@@ -168,9 +163,6 @@ function pagesFor(
       href: route({ infoTopic: topic }),
       title: fill(copy['seo.title'], { name: String(copy[keys.title]) }),
       description: trim(String(copy[keys.lead])),
-      // El tutorial son cuatro pasos sobre gestos del mapa: no hay texto que indexar, y una entrada
-      // de buscador que lleva a una ventana explicando cómo arrastrar no le sirve a nadie.
-      fueraDelIndice: topic === 'tutorial',
     })
   }
   return pages
@@ -245,8 +237,6 @@ export function prerender(options: { base: string; siteUrl?: string }): Plugin {
       )
 
       const written: string[] = []
-      /** Las que entran en el sitemap: todas menos las marcadas `fueraDelIndice`. */
-      const indexables: string[] = []
       for (const locale of LOCALES) {
         const pages = byLocale.get(locale) ?? []
         pages.forEach((page, index) => {
@@ -306,12 +296,6 @@ export function prerender(options: { base: string; siteUrl?: string }): Plugin {
             `<link rel="canonical" href="${escapeHtml(absolute(page.href))}" />`,
           )
           html = html.replace('</head>', `  ${alternates.filter(Boolean).join('\n  ')}\n  </head>`)
-          if (page.fueraDelIndice) {
-            html = html.replace(
-              '</head>',
-              '  <meta name="robots" content="noindex, follow" />\n  </head>',
-            )
-          }
           if (page.jsonLd) {
             html = html.replace('</head>', `  ${bloque(page.jsonLd)}\n  </head>`)
           }
@@ -326,12 +310,11 @@ export function prerender(options: { base: string; siteUrl?: string }): Plugin {
           mkdirSync(dirname(file), { recursive: true })
           writeFileSync(file, html)
           written.push(page.href)
-          if (!page.fueraDelIndice) indexables.push(page.href)
         })
       }
 
       const now = new Date().toISOString().slice(0, 10)
-      const urls = indexables
+      const urls = written
         .map(
           (href) =>
             `  <url><loc>${escapeHtml(absolute(href))}</loc><lastmod>${now}</lastmod></url>`,
@@ -345,10 +328,7 @@ export function prerender(options: { base: string; siteUrl?: string }): Plugin {
         join(dist, 'robots.txt'),
         `User-agent: *\nAllow: /\n${siteUrl ? `Sitemap: ${new URL('sitemap.xml', siteUrl).href}\n` : ''}`,
       )
-      const fuera = written.length - indexables.length
-      console.log(
-        `✓ prerenderizado: ${written.length} páginas (${indexables.length} en el sitemap, ${fuera} sin indexar), sitemap y robots.txt`,
-      )
+      console.log(`✓ prerenderizado: ${written.length} páginas, sitemap y robots.txt`)
     },
   }
 }

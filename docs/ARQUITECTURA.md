@@ -250,10 +250,6 @@ portada, las 11 zonas activas, 101 locales y 3 páginas de información), más `
 esto se escribe a mano: sale de `data/commercial/*.json` en cada compilación, así que añadir un local
 o cambiarle el nombre se refleja solo en la siguiente publicación.
 
-Dos de las 234, las del tutorial, llevan `noindex` y se quedan fuera del `sitemap.xml`: existen
-para que la ruta se comparta y para que el botón atrás cierre la ventana como a las otras tres, no
-para competir en un buscador. Son cuatro pasos sobre gestos del mapa, sin texto que indexar.
-
 Las 234 cargan exactamente la misma aplicación; lo único distinto es el `<head>`: `<html lang>`,
 `<title>`, `description`, `canonical` y las tres `hreflang` (`es`, `en` y `x-default` apuntando al
 español, que es el idioma por omisión del sitio). Las dos listas de páginas se generan con el mismo
