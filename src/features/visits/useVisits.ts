@@ -6,10 +6,17 @@
  * puedes desmarcar y la visita se borra; al día siguiente ya no, porque esa visita ya ocurrió. Por eso
  * se guardan las fechas y no un número suelto: con ellas se sabe cuántas veces fuiste, cuándo fue la
  * última y si la de hoy se puede deshacer.
+ *
+ * Desde la v4.13 también viajan a la cuenta, con el mismo patrón que los favoritos y las notas: el
+ * gesto es local e instantáneo y el envío va detrás. **No alimentan ninguna señal pública**: se
+ * inflan recargando y repiten con más ruido lo que ya dice el corazón. Están en el servidor para que
+ * el historial propio no se pierda al cambiar de dispositivo, y para nada más.
  */
 import { useCallback, useSyncExternalStore } from 'react'
 import { locale } from '../../i18n/index.ts'
+import { hayCuenta } from '../../lib/cuenta.ts'
 import { createLocalStore } from '../../lib/localStore.ts'
+import { enviar } from '../../lib/sincronizar.ts'
 
 /** Fechas (AAAA-MM-DD, hora local) en las que se marcó una visita, de la más antigua a la última. */
 export type VisitDates = readonly string[]
@@ -59,6 +66,8 @@ export const visitsStore = createLocalStore<ReadonlyMap<string, VisitDates>>(
 
 /** Marca la visita de hoy o, si ya estaba marcada hoy, la deshace. Devuelve las fechas resultantes. */
 export function toggleVisitToday(placeId: string, day = today()): VisitDates {
+  // Lo que ya había antes de las cuentas sube con el primer gesto, no al entrar.
+  subirLasQueYaHabia()
   const next = new Map(visitsStore.read())
   const dates = [...(next.get(placeId) ?? [])]
   if (dates.at(-1) === day) dates.pop()
@@ -68,7 +77,18 @@ export function toggleVisitToday(placeId: string, day = today()): VisitDates {
   // Map conserva el orden de inserción: el primero es el lugar que hace más que no se visita.
   while (next.size > MAX_PLACES) next.delete(next.keys().next().value as string)
   visitsStore.write(next)
+  // Se manda la lista entera del lugar y no un incremento: así desmarcar también viaja, y dos
+  // dispositivos que marcaron días distintos no dejan nada que conciliar.
+  enviar('/api/visitas', { fechas: { [placeId]: next.get(placeId) ?? [] } })
   return next.get(placeId) ?? []
+}
+
+/** Sube de una vez las visitas que ya estaban en este dispositivo. Solo antes de que haya cuenta. */
+function subirLasQueYaHabia(): void {
+  if (hayCuenta()) return
+  const fechas = Object.fromEntries(visitsStore.read())
+  if (Object.keys(fechas).length === 0) return
+  enviar('/api/visitas', { fechas })
 }
 
 export function useVisits() {

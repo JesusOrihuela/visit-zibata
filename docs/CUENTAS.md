@@ -170,20 +170,28 @@ el navegador de quien crea la cuenta. Con 101 locales y público de barrio, no s
 
 Cada paso deja algo funcionando y se puede parar ahí:
 
-1. **Identidad y credencial de dispositivo, sin datos todavía.** Crear la cuenta, devolver el secreto,
-   reconocerla. Prueba el camino entero con el riesgo más bajo posible.
-2. **Favoritos al servidor**, con lo local como caché y la escritura optimista. Es la pieza que prueba
-   el patrón completo: carga, error, escritura pendiente y conflicto.
-3. **Calificaciones y visitas**, que ya son el mismo patrón.
-4. **El corazón público en la interfaz**, con su umbral de cinco, y el promedio que solo sube.
-5. **Google como credencial extra**, con la fusión. Lo último, porque hasta aquí no hace falta.
+1. **Identidad y credencial de dispositivo, sin datos todavía.** Hecho en la v4.10.0.
+2. **Favoritos al servidor**, con lo local como caché y la escritura optimista. Hecho en la v4.11.0,
+   junto con el corazón público y su umbral de cinco, que estaba previsto como paso 4: se adelantó
+   porque sin algo visible no había forma de comprobar que el patrón servía.
+3. **Calificaciones y visitas**, que ya son el mismo patrón. Hecho en la v4.14.0, con el empuje
+   calibrado y el contador de comparticiones.
+4. **Google como credencial extra**, con la fusión. Lo último, porque hasta aquí no hace falta.
 
-### Lo que hay que reescribir cuando llegue el paso 2
+### Qué sale de cada señal
 
-La página de privacidad, otra vez, y esta vez de verdad: deja de ser cierto que *"todo se guarda
-únicamente en este navegador"*. Habrá que decir qué sube, que no hay correo ni nombre, que perder el
-navegador es perder la cuenta, y cómo se borra todo. Se escribe cuando el paso 2 esté hecho, no
-antes, para no prometer una forma que todavía puede cambiar.
+| Señal | Dónde vive | Qué hace en público |
+|---|---|---|
+| Favorito | Dispositivo y cuenta | Se publica el conteo, a partir de cinco |
+| Calificación | Dispositivo y cuenta | **Nada.** Entra en el empuje y la media no sale del servidor |
+| Visita marcada | Dispositivo y cuenta | **Nada.** Se infla recargando y repite con más ruido lo que ya dice el corazón |
+| Ficha abierta | Solo el dispositivo | Nada. No hace falta fuera, así que no sale |
+| Idioma | Solo el dispositivo | Nada |
+
+El empuje es la pieza que hace cumplir la segunda fila. El navegador recibe un número de 0 a 1 por
+lugar, con los corazones y las notas ya mezclados y ya calibrados, en vez de la media y el número de
+votos. No es que la interfaz decida no enseñar la media: es que no la tiene. Taparla en un
+componente habría sido una promesa que depende de que nadie la rompa; no enviarla es un hecho.
 
 ## Antecedentes
 

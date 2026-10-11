@@ -103,8 +103,10 @@ la base, no da acceso a ella, y por eso va versionado. Después, crea la tabla:
 npm run analitica:esquema
 ```
 
-Ese comando aplica `worker/esquema.sql`. Desde la v4.10.0 hay un segundo archivo con las tablas de
-identidad, que se aplica igual:
+Ese comando aplica `worker/esquema.sql` (visitas y comparticiones). Desde la v4.10.0 hay un segundo
+archivo con las tablas de identidad y de lo que marca cada quien, que se aplica igual. Los dos usan
+`CREATE TABLE IF NOT EXISTS`, así que volver a aplicarlos tras una actualización añade lo que falte
+sin tocar lo que ya hay:
 
 ```bash
 npx wrangler d1 execute visit-zibata-analitica --remote --file=worker/esquema-cuentas.sql

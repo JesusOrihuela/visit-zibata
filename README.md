@@ -16,6 +16,9 @@ En la interfaz y en las URLs esas agrupaciones se llaman **zona**; en los datos 
   con teléfono ([research/](research/audit-report.md) guarda fuentes y confianza por registro). 18
   categorías con sus giros, y un local puede tener dos giros reales (El Hornero es parrilla argentina y
   pizzería).
+- **Señales de la comunidad sin reseñas**: se publica cuánta gente guardó cada lugar (a partir de
+  cinco) y nada más. Las calificaciones ordenan la guía pero su media no sale del servidor, y las
+  cuentas no tienen correo, ni nombre, ni contraseña.
 - **Una página real por ruta**, en los dos idiomas: 234 archivos HTML con su título, su descripción, su
   canonical, sus `hreflang` y sus datos estructurados, más una imagen de vista previa por local. Es lo
   que hace que cada ficha se indexe y se comparta por separado.

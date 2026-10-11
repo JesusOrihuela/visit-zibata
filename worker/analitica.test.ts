@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { APUNTE, type PeticionObservada, visitaDe } from './analitica.ts'
+import {
+  APUNTE,
+  APUNTE_COMPARTICION,
+  comparticionDe,
+  type PeticionObservada,
+  visitaDe,
+} from './analitica.ts'
 
 /** Una visita normal: alguien abre una ficha desde un navegador de verdad. */
 const visita = (extra: Partial<PeticionObservada> = {}): PeticionObservada => ({
@@ -95,6 +101,54 @@ describe('el apunte', () => {
     // La prueba que de verdad importa: lo que no está en la consulta no puede llegar a la base.
     for (const prohibido of ['ip', 'user_agent', 'cookie', 'sesion', 'visitante', 'referente']) {
       expect(APUNTE.toLowerCase()).not.toContain(prohibido)
+    }
+  })
+})
+
+describe('compartir no es visitar', () => {
+  const PREVISUALIZADORES = [
+    'WhatsApp/2.23.20.0',
+    'facebookexternalhit/1.1',
+    'TelegramBot (like TwitterBot)',
+    'Slackbot-LinkExpanding 1.0',
+    'Twitterbot/1.0',
+    'Discordbot/2.0',
+  ]
+
+  it('la vista previa de una app de mensajería se apunta como compartición, no como visita', () => {
+    for (const userAgent of PREVISUALIZADORES) {
+      // La petición la hace el servidor de la app para dibujar la tarjetita, y la hace aunque nadie
+      // toque el enlace: contarla como visita inflaría el número con peticiones que nadie vio.
+      expect(visitaDe(visita({ userAgent }))).toBeNull()
+      expect(comparticionDe(visita({ userAgent }))).toEqual({
+        fecha: '2026-10-05',
+        ruta: '/lugar/tomassa',
+      })
+    }
+  })
+
+  it('una persona de verdad es una visita y no una compartición', () => {
+    expect(visitaDe(visita())).not.toBeNull()
+    expect(comparticionDe(visita())).toBeNull()
+  })
+
+  it('un rastreador no es ninguna de las dos cosas', () => {
+    const userAgent = 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'
+    expect(visitaDe(visita({ userAgent }))).toBeNull()
+    expect(comparticionDe(visita({ userAgent }))).toBeNull()
+  })
+
+  it('una página que no se entregó no cuenta para nada', () => {
+    for (const extra of [{ estado: 404 }, { metodo: 'POST' }, { tipoDeContenido: 'image/png' }]) {
+      expect(comparticionDe(visita({ ...extra, userAgent: 'WhatsApp/2.23' }))).toBeNull()
+    }
+  })
+
+  it('la compartición no guarda idioma ni nada de quien comparte', () => {
+    const sql = APUNTE_COMPARTICION.toLowerCase()
+    expect(sql).toContain('comparticiones')
+    for (const prohibido of ['ip', 'user_agent', 'idioma', 'referente', 'cuenta_id']) {
+      expect(sql).not.toContain(prohibido)
     }
   })
 })

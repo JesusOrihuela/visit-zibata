@@ -14,7 +14,7 @@
  * los assets y las imágenes se sirven sin pasar por aquí: así no cuestan invocación ni se cuentan
  * como visitas.
  */
-import { APUNTE, visitaDe } from './analitica.ts'
+import { APUNTE, APUNTE_COMPARTICION, comparticionDe, visitaDe } from './analitica.ts'
 import { atenderApi } from './api.ts'
 import type { Base } from './cuenta.ts'
 
@@ -34,17 +34,27 @@ interface Contexto {
 
 async function contar(peticion: Request, respuesta: Response, entorno: Entorno): Promise<void> {
   if (!entorno.ANALITICA) return
-  const visita = visitaDe({
+  const observada = {
     url: peticion.url,
     metodo: peticion.method,
     estado: respuesta.status,
     tipoDeContenido: respuesta.headers.get('content-type'),
     userAgent: peticion.headers.get('user-agent'),
     ahora: new Date(),
-  })
-  if (!visita) return
+  }
+  // Una petición es una cosa o la otra, nunca las dos: la vista previa de una app de mensajería no
+  // es una visita, y una visita no es una compartición.
+  const visita = visitaDe(observada)
+  const comparticion = visita ? null : comparticionDe(observada)
+  if (!visita && !comparticion) return
   try {
-    await entorno.ANALITICA.prepare(APUNTE).bind(visita.fecha, visita.ruta, visita.idioma).run()
+    if (visita) {
+      await entorno.ANALITICA.prepare(APUNTE).bind(visita.fecha, visita.ruta, visita.idioma).run()
+    } else if (comparticion) {
+      await entorno.ANALITICA.prepare(APUNTE_COMPARTICION)
+        .bind(comparticion.fecha, comparticion.ruta)
+        .run()
+    }
   } catch (error) {
     // Un contador perdido no le importa a nadie; una página caída sí. Queda en el registro del
     // Worker por si algún día los números no cuadran.

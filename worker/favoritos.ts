@@ -5,25 +5,13 @@
  * lee bien ("12 vecinos lo guardaron" dice algo verdadero). Las visitas miden curiosidad, se inflan
  * recargando y repiten la misma señal con más ruido (ver docs/CUENTAS.md).
  *
- * Dos reglas que viven aquí porque son del servidor y no de la interfaz, para que no se puedan
- * saltar desde el navegador:
+ * Aquí vive la escritura: qué acepta el servidor y con qué topes. La lectura pública (el umbral, la
+ * aritmética y el empuje que usa el orden) está en `senales.ts`, que es donde tiene sentido leerla
+ * junto con las notas.
  *
- *  - **Umbral.** Por debajo de cinco no se devuelve el número. "1 persona lo guardó" es peor que el
- *    silencio para un local recién abierto, y además delataría a quien lo guardó si solo hay uno.
- *  - **Edad mínima.** Los corazones de una cuenta recién creada no cuentan hasta pasado un rato.
- *    Convierte un ataque instantáneo en uno que hay que sostener, que es toda la defensa que se
- *    puede comprar sin gastar dinero.
+ * La edad mínima vive aquí porque la usan las dos: es del servidor y no de la interfaz, para que no
+ * se pueda saltar desde el navegador.
  */
-
-/**
- * Por debajo de esto no se publica nada, y **no sube con el tamaño de la guía a propósito**.
- *
- * Es un suelo de privacidad, no un filtro de popularidad: con uno o dos, el número delata a quien lo
- * guardó. Esa razón no cambia porque haya cien personas o cien mil, así que atarlo a la población
- * solo conseguiría esconder a los locales pequeños cuando la guía creciera, que es justo a quienes
- * esto quiere servir. Al principio casi nada llega a cinco y casi nada enseña número: es lo correcto.
- */
-export const UMBRAL = 5
 
 /**
  * Cuánto tiene que vivir una cuenta antes de que sus corazones cuenten para el público.
@@ -89,16 +77,3 @@ export const CUANTOS_TIENE = 'SELECT COUNT(*) AS total FROM favorito WHERE cuent
 
 /** Los favoritos de esta cuenta, para que el dispositivo se ponga al día. */
 export const MIOS = 'SELECT lugar_id FROM favorito WHERE cuenta_id = ?'
-
-/**
- * El conteo público. Las dos reglas van en el SQL, no en la interfaz: así no hay forma de pedirle al
- * servidor los números que decidió no publicar.
- */
-export const CONTEO = `
-SELECT f.lugar_id AS lugar, COUNT(*) AS cuantos
-  FROM favorito f
-  JOIN cuenta c ON c.id = f.cuenta_id
- WHERE c.creada <= ?
- GROUP BY f.lugar_id
-HAVING cuantos >= ?
-`.trim()

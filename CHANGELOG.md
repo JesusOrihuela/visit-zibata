@@ -2,6 +2,42 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado semántico.
 
+## [4.14.0]: 2026-10-11
+
+Tercer paso del plan de [docs/CUENTAS.md](docs/CUENTAS.md). Las calificaciones y las visitas llegan
+al servidor, y la aritmetica de la comunidad deja de tener numeros escritos a mano.
+
+### Anadido
+
+- **Las calificaciones y las visitas viajan a la cuenta**, con el mismo patron que los favoritos: el
+  gesto es local e instantaneo, el envio va detras y nunca lo bloquea ni anuncia fallos. Lo que ya
+  habia en el dispositivo sube con el primer gesto, no al entrar.
+- **El empuje de la comunidad.** El servidor manda por lugar un numero de 0 a 1 con los corazones y
+  las notas ya mezclados, en vez de la media y los votos. **La media no sale del servidor**: no es
+  que la interfaz decida no enseniarla, es que no la recibe. Taparla en un componente habria sido una
+  promesa; no enviarla es un hecho.
+- **Contador de comparticiones.** Cuando una app de mensajeria pide una pagina para dibujar la
+  tarjetita de un enlace, se apunta en su propia tabla. No es trafico (esa peticion la hace el
+  servidor de la app, y la hace aunque nadie toque el enlace), pero dice que alguien pego ese enlace
+  en algun sitio, que es una senial distinta y hasta ahora se tiraba. Sale en `npm run analitica:ver`.
+- **El corazon de la ficha refleja tu estado**: relleno si lo guardaste, de contorno si no, con el
+  mismo texto. Un solo objeto leido a dos escalas en vez de dos cosas separadas.
+
+### Cambiado
+
+- **Toda la calibracion sale del propio catalogo.** Antes habia tres constantes a mano (dividir los
+  corazones entre 25, confianza a los 20 votos, centro en 3,5 estrellas) y las tres fallaban en los
+  dos extremos: con cincuenta personas la senial valia cero, con cinco mil todo se saturaba. Ahora el
+  divisor es el percentil 75 de los conteos, el centro es la media ponderada del catalogo y la escala
+  es su desviacion. Queda un solo numero de politica, los votos de referencia de la media bayesiana.
+- **El aviso de privacidad lo dice.** Decia que las calificaciones se guardaban unicamente en este
+  navegador, y dejo de ser cierto. Ahora dice que suben, para que, y que no se publican nunca, ni
+  siquiera como promedio. En los dos idiomas, con pruebas que lo exigen en la pagina.
+- `/api/corazones` pasa a `/api/senales`, y `corazones.ts` a `senales.ts`: devuelven mas que un
+  conteo.
+- `AGENTS.md` deja de decir que la regla de no publicar medias cambiara "cuando se implemente el
+  plan". Ya esta implementada, y el motivo de que se cumpla es estructural.
+
 ## [4.13.0]: 2026-10-11
 
 ### Anadido
