@@ -12,18 +12,42 @@ import { base64url, cumpleLaPrueba, digestDe } from '../src/lib/prueba-de-trabaj
 import { ALTA, type Base, huella, nuevaCuenta, RESOLVER, secretoDe } from './cuenta.ts'
 import {
   ANADIR,
-  CONTEO,
   CUANTOS_TIENE,
   cambioDe,
   EDAD_MINIMA_MS,
   MAXIMO_POR_CUENTA,
   MIOS,
   QUITAR,
-  UMBRAL,
 } from './favoritos.ts'
+import {
+  calificacionesDe,
+  MARCAR_VISITA,
+  MIS_NOTAS,
+  MIS_VISITAS,
+  OLVIDAR_VISITAS,
+  PONER_NOTA,
+  QUITAR_NOTA,
+  visitasDe,
+} from './marcas.ts'
+import {
+  CONTEO_CORAZONES,
+  CONTEO_NOTAS,
+  type FilaCorazones,
+  type FilaNotas,
+  senalesDe,
+} from './senales.ts'
 
 export interface EntornoApi {
   ANALITICA?: Base
+}
+
+/** El cuerpo como JSON, o `undefined` si no lo es. Quien llama ya rechaza lo que no reconoce. */
+async function cuerpoDe(peticion: Request): Promise<unknown> {
+  try {
+    return await peticion.json()
+  } catch {
+    return undefined
+  }
 }
 
 const json = (datos: unknown, estado = 200, cache = 'no-store'): Response =>
@@ -99,15 +123,13 @@ export async function atenderApi(peticion: Request, entorno: EntornoApi): Promis
    * Sin `caches.default`: es una extensión de Cloudflare que obligaría a traer sus tipos enteros, y
    * a esta escala una consulta por visita a D1 no se nota (el plan gratuito da millones al día).
    */
-  if (ruta === '/api/corazones' && peticion.method === 'GET') {
+  if (ruta === '/api/senales' && peticion.method === 'GET') {
     const limite = new Date(Date.now() - EDAD_MINIMA_MS).toISOString()
-    const filas = await entorno.ANALITICA.prepare(CONTEO)
-      .bind(limite, UMBRAL)
-      .all<{ lugar: string; cuantos: number }>()
-    const conteo: Record<string, number> = {}
-    for (const fila of filas.results ?? []) conteo[fila.lugar] = fila.cuantos
-
-    return json(conteo, 200, 'public, max-age=300')
+    const [corazones, notas] = await Promise.all([
+      entorno.ANALITICA.prepare(CONTEO_CORAZONES).bind(limite).all<FilaCorazones>(),
+      entorno.ANALITICA.prepare(CONTEO_NOTAS).bind(limite).all<FilaNotas>(),
+    ])
+    return json(senalesDe(corazones.results ?? [], notas.results ?? []), 200, 'public, max-age=300')
   }
 
   // A partir de aquí hace falta cuenta.
@@ -121,13 +143,7 @@ export async function atenderApi(peticion: Request, entorno: EntornoApi): Promis
 
   if (ruta === '/api/favoritos' && peticion.method === 'POST') {
     if (!cuenta) return json({ error: 'sin cuenta' }, 401)
-    let cuerpo: unknown
-    try {
-      cuerpo = await peticion.json()
-    } catch {
-      return json({ error: 'cuerpo no válido' }, 400)
-    }
-    const cambio = cambioDe(cuerpo)
+    const cambio = cambioDe(await cuerpoDe(peticion))
     if (!cambio) return json({ error: 'cambio no válido' }, 400)
 
     if (cambio.anadir.length > 0) {
@@ -149,6 +165,79 @@ export async function atenderApi(peticion: Request, entorno: EntornoApi): Promis
           (entorno.ANALITICA as Base).prepare(QUITAR).bind(cuenta, lugar),
         ),
       ])
+    } catch {
+      return json({ error: 'no se pudo guardar' }, 500)
+    }
+    return json({ ok: true })
+  }
+
+  /*
+   * Las estrellas. Mismo patrón que los favoritos y misma promesa: lo que entra aquí alimenta el
+   * orden de todos a través del empuje, y la media no vuelve a salir por ninguna ruta de esta API.
+   */
+  if (ruta === '/api/calificaciones' && peticion.method === 'GET') {
+    if (!cuenta) return json({ notas: {} })
+    const filas = await entorno.ANALITICA.prepare(MIS_NOTAS)
+      .bind(cuenta)
+      .all<{ lugar_id: string; estrellas: number }>()
+    const notas: Record<string, number> = {}
+    for (const fila of filas.results ?? []) notas[fila.lugar_id] = fila.estrellas
+    return json({ notas })
+  }
+
+  if (ruta === '/api/calificaciones' && peticion.method === 'POST') {
+    if (!cuenta) return json({ error: 'sin cuenta' }, 401)
+    const cambio = calificacionesDe(await cuerpoDe(peticion))
+    if (!cambio) return json({ error: 'cambio no válido' }, 400)
+    const ahora = new Date().toISOString()
+    try {
+      await entorno.ANALITICA.batch(
+        Object.entries(cambio.notas).map(([lugar, estrellas]) =>
+          estrellas === null
+            ? (entorno.ANALITICA as Base).prepare(QUITAR_NOTA).bind(cuenta, lugar)
+            : (entorno.ANALITICA as Base).prepare(PONER_NOTA).bind(cuenta, lugar, estrellas, ahora),
+        ),
+      )
+    } catch {
+      return json({ error: 'no se pudo guardar' }, 500)
+    }
+    return json({ ok: true })
+  }
+
+  /*
+   * Las visitas. No alimentan ninguna señal pública: están para que el historial propio sobreviva a
+   * un cambio de dispositivo. Se manda la lista entera de cada lugar y no un incremento, porque así
+   * no hay nada que conciliar cuando dos dispositivos han marcado días distintos.
+   */
+  if (ruta === '/api/visitas' && peticion.method === 'GET') {
+    if (!cuenta) return json({ fechas: {} })
+    const filas = await entorno.ANALITICA.prepare(MIS_VISITAS)
+      .bind(cuenta)
+      .all<{ lugar_id: string; fecha: string }>()
+    const fechas: Record<string, string[]> = {}
+    for (const fila of filas.results ?? []) {
+      const lista = fechas[fila.lugar_id] ?? []
+      lista.push(fila.fecha)
+      fechas[fila.lugar_id] = lista
+    }
+    for (const lista of Object.values(fechas)) lista.sort()
+    return json({ fechas })
+  }
+
+  if (ruta === '/api/visitas' && peticion.method === 'POST') {
+    if (!cuenta) return json({ error: 'sin cuenta' }, 401)
+    const cambio = visitasDe(await cuerpoDe(peticion))
+    if (!cambio) return json({ error: 'cambio no válido' }, 400)
+    try {
+      await entorno.ANALITICA.batch(
+        Object.entries(cambio.fechas).flatMap(([lugar, fechas]) => [
+          // Se reemplaza el lugar entero: desmarcar el mismo día tiene que poder borrar una fecha.
+          (entorno.ANALITICA as Base).prepare(OLVIDAR_VISITAS).bind(cuenta, lugar),
+          ...fechas.map((fecha) =>
+            (entorno.ANALITICA as Base).prepare(MARCAR_VISITA).bind(cuenta, lugar, fecha),
+          ),
+        ]),
+      )
     } catch {
       return json({ error: 'no se pudo guardar' }, 500)
     }

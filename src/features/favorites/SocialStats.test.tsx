@@ -12,20 +12,18 @@ describe('SocialStats', () => {
     expect(container).toBeEmptyDOMElement()
   })
 
-  it('muestra los corazones, nunca la media de estrellas', () => {
+  it('muestra los corazones, nunca una nota', () => {
     setSocialStatsSource({
-      get: (placeId) =>
-        placeId === 'cafe-aurora' ? { favorites: 12, rating: { average: 4.62, count: 30 } } : null,
+      get: (placeId) => (placeId === 'cafe-aurora' ? { favorites: 12, empuje: 0.8 } : null),
     })
     render(<SocialStats placeId="cafe-aurora" />)
     expect(screen.getByText('12 personas lo guardaron')).toBeInTheDocument()
-    // La media alimenta el orden personal, pero no se publica junto al nombre del negocio.
-    expect(screen.queryByText('4.6')).not.toBeInTheDocument()
-    expect(screen.queryByText('30 valoraciones')).not.toBeInTheDocument()
+    // El empuje ordena, pero no es un número que se enseñe, y la media ni siquiera llega aquí.
+    expect(screen.queryByText(/0\.8|4\.6|valoraciones/)).not.toBeInTheDocument()
   })
 
-  it('no muestra secciones vacías cuando aún no hay datos suficientes', () => {
-    setSocialStatsSource({ get: () => ({ favorites: 0, rating: null }) })
+  it('no dibuja nada mientras el conteo no pase el umbral del servidor', () => {
+    setSocialStatsSource({ get: () => ({ favorites: null, empuje: 0.3 }) })
     const { container } = render(<SocialStats placeId="cafe-aurora" />)
     expect(container).toBeEmptyDOMElement()
   })

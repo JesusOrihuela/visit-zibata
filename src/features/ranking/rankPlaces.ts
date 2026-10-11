@@ -8,9 +8,11 @@
  *    categoría y, un poco, a su zona. Un lugar
  *    puntúa por lo que la persona hizo con él y por lo que le gusta de lugares parecidos. Una
  *    calificación baja resta.
- * 2. Comunidad (opcional): cuando haya cuentas, cuántas personas guardaron el lugar y su calificación
- *    media pesan un poco, siempre por debajo de lo que dice esta persona. La media se usa para ordenar,
- *    no se publica junto al negocio (ver features/favorites/SocialStats.tsx).
+ * 2. Comunidad (opcional): un empuje de 0 a 1 que calcula el servidor con los corazones y las notas
+ *    de todo el mundo, ya calibrado contra el propio catálogo. Pesa un poco, siempre por debajo de lo
+ *    que dice esta persona, y solo puede subir. La media de estrellas no llega hasta aquí: el
+ *    servidor manda el empuje ya hecho, así que la interfaz no puede enseñarla ni queriendo (ver
+ *    worker/senales.ts).
  * 3. Descubrimiento y segundas oportunidades: una de cada `exploreEvery` posiciones se reserva a un
  *    lugar que no ha abierto nunca (o que no abre desde hace meses), con una rotación diaria entre
  *    ellos. Así lo nuevo tiene sitio y lo que descartó hace tiempo puede volver a aparecer.
@@ -34,12 +36,16 @@ export interface PreferenceSignals {
   visits: ReadonlyMap<string, readonly string[]>
 }
 
-/** Lo que dice el resto de la gente de un lugar (con cuentas y base de datos). */
+/** Lo que dice el resto de la gente de un lugar. Lo calcula el servidor (ver worker/senales.ts). */
 export interface CommunitySignal {
-  /** Personas que lo tienen guardado. */
-  favorites: number
-  /** Media de estrellas y cuántas la sostienen; `null` si aún son pocas para decir nada. */
-  rating: { average: number; count: number } | null
+  /** Personas que lo tienen guardado, o `null` mientras son pocas para publicar el número. */
+  favorites: number | null
+  /**
+   * De 0 a 1, con los corazones y las notas de todos ya mezclados y calibrados. Solo sube: por
+   * debajo de la media del catálogo vale cero, para que una brigada de votos no pueda hundir a un
+   * negocio que no puede verlo ni rebatirlo.
+   */
+  empuje: number
 }
 
 export interface RankOptions {
@@ -73,24 +79,16 @@ const WEIGHT = {
   community: 0.3,
 }
 
-/** Lo que dice la comunidad, en la misma escala (−1 a 1) que el resto: media y respaldo. */
-function communityScore(signal: CommunitySignal | null): number {
-  if (!signal) return 0
-  const saved = Math.tanh(signal.favorites / 25)
-  if (!signal.rating) return saved
-  // Una media alta con pocas valoraciones pesa menos que una sostenida por muchas.
-  const confidence = Math.min(1, signal.rating.count / 20)
-  /*
-   * La media de la comunidad **solo puede subir, nunca bajar** (`Math.max(0, …)`).
-   *
-   * Sin ese tope, con 101 locales y pocos votos, tres votos malintencionados hunden a un negocio que
-   * no puede verlo ni rebatirlo, porque la media no se publica. Así una brigada queda reducida a un
-   * empujón: puede promover algo inmerecido, que hace menos daño y se nota antes, pero no usarse
-   * como arma. El gusto propio sí puede restar (ver `directSignal`), porque ahí nadie ataca a nadie.
-   */
-  const comunidad = Math.max(0, Math.tanh((signal.rating.average - 3.5) / 1.2))
-  return 0.5 * saved + 0.5 * confidence * comunidad
-}
+/*
+ * Antes la aritmética de la comunidad vivía aquí, con tres constantes escritas a mano: dividir los
+ * corazones entre 25, dar confianza a los 20 votos y centrar las notas en 3,5 estrellas. Las tres
+ * fallaban en los dos extremos (con cincuenta personas la señal valía cero; con cinco mil, todo se
+ * saturaba) y el 3,5 además ignoraba que las notas de consumo se amontonan en 4 y 5.
+ *
+ * Ahora la calcula el servidor contra el propio catálogo y llega hecha. Aquí solo queda el peso:
+ * cuánto importa lo que dicen los demás frente a lo que dice esta persona, que sí es una decisión
+ * de esta guía y no del tamaño de su comunidad.
+ */
 
 /** Cuánto dice la persona de un lugar concreto (puede ser negativo: una calificación de 1 o 2). */
 function directSignal(id: string, signals: PreferenceSignals, now: number): number {
@@ -207,7 +205,7 @@ export function rankPlaces(
       WEIGHT.giro *
         soft(Math.max(...allGiroIds(place).map((giro) => affinity.get(`g:${giro}`) ?? 0), 0), 3) +
       WEIGHT.plaza * soft(affinity.get(`p:${place.plazaId}`) ?? 0, 4) +
-      WEIGHT.community * communityScore(community?.(place.id) ?? null) +
+      WEIGHT.community * (community?.(place.id)?.empuje ?? 0) +
       // A igualdad de gusto manda el orden curado de la guía.
       0.05 * (1 - index / places.length)
     const visit = signals.interactions.get(place.id)

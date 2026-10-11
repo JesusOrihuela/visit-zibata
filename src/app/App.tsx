@@ -1,6 +1,6 @@
 import { CatalogProvider } from '../data/CatalogContext.tsx'
 import { StaticPlacesRepository } from '../data/StaticPlacesRepository.ts'
-import { cargarCorazones, registrarCorazones } from '../features/favorites/corazones.ts'
+import { cargarSenales, registrarSenales } from '../features/favorites/senales.ts'
 import { AppStateProvider } from './AppStateContext.tsx'
 import { Experience } from './Experience.tsx'
 
@@ -8,14 +8,14 @@ import { Experience } from './Experience.tsx'
 const repository = new StaticPlacesRepository()
 
 /*
- * Los corazones de la comunidad, fuera del render y sin esperar a nadie.
+ * Las señales de la comunidad, fuera del render y sin esperar a nadie.
  *
- * Se registra la fuente de inmediato (para que la ficha sepa a quién preguntar) y se pide el conteo
- * en paralelo. Mientras no llegue, `SocialStats` no dibuja nada, que es exactamente como se
- * comportaba la guía antes de que existiera: ningún hueco, ningún esqueleto, ningún "0 corazones".
+ * Se registra la fuente de inmediato (para que la ficha y el orden sepan a quién preguntar) y se
+ * piden las señales en paralelo. Mientras no lleguen, `SocialStats` no dibuja nada y el orden es el
+ * de siempre: ningún hueco, ningún esqueleto, ningún "0 corazones".
  */
-registrarCorazones()
-void cargarCorazones()
+registrarSenales()
+void cargarSenales()
 
 export function App() {
   return (

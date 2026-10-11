@@ -1,11 +1,13 @@
 /**
- * Señales sociales de un lugar: cuántas personas lo han guardado y su calificación media.
+ * Señales sociales de un lugar: cuántas personas lo han guardado y cuánto lo empuja la comunidad.
  *
- * Hoy la guía es un sitio estático sin cuentas ni servidor, así que no existen: el proveedor por
- * defecto devuelve `null` y la interfaz no dibuja nada (nunca un "0 corazones" ni estrellas vacías).
- * El día que el proyecto escale a cuentas, basta con registrar un proveedor que las lea de esa
- * fuente; la ficha y las tarjetas ya saben mostrarlas. Los favoritos propios seguirán viviendo en
- * `useFavorites` (este dispositivo), que es lo que se envía al contador cuando haya con qué.
+ * Sin fuente registrada no existen: el proveedor por defecto devuelve `null` y la interfaz no dibuja
+ * nada (nunca un "0 corazones" ni estrellas vacías). La fuente de verdad la registra
+ * `features/favorites/senales.ts` al arrancar.
+ *
+ * Aquí no hay medias ni votos **a propósito**, y no es un olvido: el servidor manda el empuje ya
+ * calculado justamente para que la media no llegue nunca al navegador. Lo que no se recibe no se
+ * puede enseñar por descuido (ver worker/senales.ts).
  */
 import { useSyncExternalStore } from 'react'
 import { interactionsStore } from '../ranking/preferences.ts'
@@ -15,10 +17,10 @@ import { visitsStore } from '../visits/useVisits.ts'
 import { favoritesStore } from './useFavorites.ts'
 
 export interface PlaceSocialStats {
-  /** Personas que han guardado el lugar. */
-  favorites: number
-  /** Media (1–5) y número de valoraciones; `null` mientras no haya suficientes para publicarla. */
-  rating: { average: number; count: number } | null
+  /** Personas que han guardado el lugar, o `null` mientras son pocas para publicar el número. */
+  favorites: number | null
+  /** Lo que la comunidad empuja este lugar, de 0 a 1. Lo usa el orden personal, no la interfaz. */
+  empuje: number
 }
 
 /**
@@ -64,12 +66,7 @@ export function setSocialStatsSource(next: SocialStatsSource | null): void {
 }
 
 const same = (a: PlaceSocialStats | null, b: PlaceSocialStats | null) =>
-  a === b ||
-  (a !== null &&
-    b !== null &&
-    a.favorites === b.favorites &&
-    a.rating?.average === b.rating?.average &&
-    a.rating?.count === b.rating?.count)
+  a === b || (a !== null && b !== null && a.favorites === b.favorites && a.empuje === b.empuje)
 
 function snapshotOf(placeId: string): PlaceSocialStats | null {
   const next = source.get(placeId)

@@ -15,3 +15,19 @@ CREATE TABLE IF NOT EXISTS visitas (
 
 -- Para la consulta de siempre: "lo más visitado del último mes".
 CREATE INDEX IF NOT EXISTS visitas_por_fecha ON visitas (fecha);
+
+-- Las veces que se pegó un enlace de la guía en algún sitio.
+--
+-- No es tráfico y por eso no está en `visitas`: una vista previa la pide el servidor de WhatsApp (o
+-- de Telegram, o de Slack) para dibujar la tarjeta, la pide aunque nadie toque el enlace, y contarla
+-- como visita inflaría el número con peticiones que nadie vio. Lo que sí dice es que alguien
+-- compartió esa página, que es una señal distinta y hasta ahora se tiraba a la basura.
+--
+-- Es un piso, no una cuenta: algunas apps repiten la petición, otras no previsualizan, y cada una
+-- se identifica a su manera. Dice la tendencia, no la cifra exacta.
+CREATE TABLE IF NOT EXISTS comparticiones (
+  fecha  TEXT NOT NULL,
+  ruta   TEXT NOT NULL,
+  cuenta INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (fecha, ruta)
+);

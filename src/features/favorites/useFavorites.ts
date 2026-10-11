@@ -10,7 +10,7 @@
  */
 import { useCallback, useSyncExternalStore } from 'react'
 import { createLocalStore } from '../../lib/localStore.ts'
-import { sincronizarCorazon, subirLoQueYaHabia } from './corazones.ts'
+import { sincronizarCorazon, subirLoQueYaHabia } from './senales.ts'
 
 const EMPTY: ReadonlySet<string> = new Set()
 

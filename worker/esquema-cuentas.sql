@@ -32,3 +32,32 @@ CREATE TABLE IF NOT EXISTS favorito (
 
 -- El conteo público agrupa por lugar y cruza con cuenta para la edad mínima.
 CREATE INDEX IF NOT EXISTS favorito_por_lugar ON favorito (lugar_id);
+
+-- Las estrellas. Una cuenta, una nota por lugar: volver a calificar sustituye, no suma.
+--
+-- Se guardan para que no se pierdan al cambiar de dispositivo y para alimentar el orden personal,
+-- NUNCA para publicarlas. La media no sale de este servidor: lo que viaja al navegador es un empuje
+-- ya calculado (ver worker/senales.ts), para que la interfaz no pueda enseñar una nota ni aunque
+-- alguien quiera.
+CREATE TABLE IF NOT EXISTS calificacion (
+  cuenta_id TEXT NOT NULL REFERENCES cuenta(id) ON DELETE CASCADE,
+  lugar_id  TEXT NOT NULL,
+  estrellas REAL NOT NULL,   -- 0,5 a 5, de media en media
+  creada    TEXT NOT NULL,
+  PRIMARY KEY (cuenta_id, lugar_id)
+);
+
+CREATE INDEX IF NOT EXISTS calificacion_por_lugar ON calificacion (lugar_id);
+
+-- Las visitas marcadas a mano. Una fila por cuenta, lugar y día, como la libreta del dispositivo.
+--
+-- No alimentan ninguna señal pública: se inflan recargando y repiten lo que ya dice el corazón con
+-- más ruido. Están aquí para que el historial propio sobreviva a un cambio de dispositivo.
+CREATE TABLE IF NOT EXISTS visita_marcada (
+  cuenta_id TEXT NOT NULL REFERENCES cuenta(id) ON DELETE CASCADE,
+  lugar_id  TEXT NOT NULL,
+  fecha     TEXT NOT NULL,   -- AAAA-MM-DD en el calendario de la persona
+  PRIMARY KEY (cuenta_id, lugar_id, fecha)
+);
+
+CREATE INDEX IF NOT EXISTS visita_marcada_por_cuenta ON visita_marcada (cuenta_id);

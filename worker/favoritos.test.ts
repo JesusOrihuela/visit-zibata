@@ -2,13 +2,12 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import {
   ANADIR,
-  CONTEO,
   cambioDe,
   EDAD_MINIMA_MS,
   MAXIMO_POR_CUENTA,
   MAXIMO_POR_PETICION,
-  UMBRAL,
 } from './favoritos.ts'
+import { CONTEO_CORAZONES, UMBRAL } from './senales.ts'
 
 describe('lo que pide el navegador', () => {
   it('acepta un gesto normal', () => {
@@ -48,10 +47,10 @@ describe('lo que pide el navegador', () => {
 })
 
 describe('las reglas del conteo público viven en el servidor', () => {
-  it('el umbral y la edad mínima están en el SQL, no en la interfaz', () => {
-    // Si estuvieran en el navegador, bastaría con pedir los datos a mano para saltárselas.
-    expect(CONTEO).toContain('HAVING cuantos >=')
-    expect(CONTEO).toContain('c.creada <=')
+  it('la edad mínima está en el SQL, no en la interfaz', () => {
+    // Si estuviera en el navegador, bastaría con pedir los datos a mano para saltársela. El umbral
+    // se aplica al construir la señal, y su prueba vive en senales.test.ts.
+    expect(CONTEO_CORAZONES).toContain('c.creada <=')
   })
 
   it('el umbral protege a quien guardó algo que casi nadie guardó', () => {
@@ -84,7 +83,7 @@ describe('las reglas del conteo público viven en el servidor', () => {
   })
 
   it('no se guarda nada de la persona', () => {
-    const sql = `${ANADIR} ${CONTEO}`.toLowerCase()
+    const sql = `${ANADIR} ${CONTEO_CORAZONES}`.toLowerCase()
     for (const prohibido of ['ip', 'user_agent', 'correo', 'nombre', 'referente']) {
       expect(sql).not.toContain(prohibido)
     }

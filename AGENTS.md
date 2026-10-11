@@ -4,18 +4,19 @@ Guía para agentes y colaboradores. Contexto del producto y comandos en [README.
 
 ## Reglas del proyecto
 
-- Sitio estático: nada de cuentas, API keys ni dependencias de servicios de pago en runtime. Lo único
-  que corre en el servidor es `worker/`, que sirve los archivos y suma un contador de visitas por
-  página y día (sin cookies, sin IP, sin nada por persona). Si se cae, el sitio sigue: contar no
-  puede romper la página, y hay pruebas que fijan lo que NO se guarda.
+- Sitio estático: nada de API keys ni dependencias de servicios de pago en runtime. Lo único que
+  corre en el servidor es `worker/`, que sirve los archivos, cuenta visitas y comparticiones por
+  página y día (sin cookies, sin IP, sin nada por persona) y guarda lo que marca cada quien bajo una
+  cuenta anónima sin correo ni nombre. Si se cae, el sitio sigue: nada de eso puede romper la
+  página, y hay pruebas que fijan lo que NO se guarda.
 - El mapa es MapLibre con datos propios (`public/map`). Google Maps solo como enlace externo; nunca Google
   Places, scraping ni descarga de fotos de terceros.
 - No inventar datos de negocios reales (horarios, teléfonos, descripciones, fotos). Sin publicidad,
   reservas ni rastreo, nunca.
-- Hoy tampoco hay reseñas ni notas públicas, y la guía no publica medias. Eso **cambia en parte** con
-  el plan de [docs/CUENTAS.md](docs/CUENTAS.md): se publicará un conteo de corazones (nunca una nota)
-  y las estrellas alimentarán el orden sin mostrarse. Hasta que ese plan se implemente, la regla
-  sigue valiendo tal cual.
+- Sin reseñas ni notas públicas, y **la guía nunca publica una media**. Lo único de la comunidad
+  que se ve es el conteo de corazones, y solo a partir de cinco. Las estrellas alimentan el orden,
+  pero el servidor manda un empuje ya calculado y la media no llega al navegador: no es que la
+  interfaz decida no enseñarla, es que no la recibe (ver [docs/CUENTAS.md](docs/CUENTAS.md)).
 - Datos en `data/`, validados con los esquemas de `src/data/schemas.ts`. Textos de UI en `src/i18n/es.ts`.
 - Procesamiento GIS solo en `scripts/map` (Node), nunca en el navegador.
 - Imports relativos con extensión `.ts`/`.tsx` (los scripts corren con Node sin transpilar).

@@ -8,6 +8,10 @@
  * protegerla, y proteger algo es justo el trabajo que este proyecto no quiere tener. Los números los
  * mira quien tiene las llaves de Cloudflare, desde su propia máquina.
  *
+ * Desde la v4.13 también sale el conteo de **comparticiones**: las veces que una app de mensajería
+ * pidió una página para dibujar la tarjetita de un enlace. No es tráfico y por eso va aparte, pero
+ * dice que alguien pegó ese enlace en algún sitio. Es un piso, no una cifra exacta.
+ *
  * Con `--dias=N` se cambia la ventana (30 por omisión), y con `--local` se lee la base de desarrollo
  * en vez de la publicada.
  */
@@ -18,6 +22,11 @@ interface Fila {
   ruta: string
   idioma: string
   visitas: number
+}
+
+interface Compartida {
+  ruta: string
+  veces: number
 }
 
 const argumentos = process.argv.slice(2)
@@ -33,7 +42,7 @@ SELECT ruta, idioma, SUM(cuenta) AS visitas
 `.trim()
 
 /** Wrangler escribe avisos antes del JSON, así que se recorta desde el primer corchete. */
-function consultar(sql: string): Fila[] {
+function consultar<T>(sql: string): T[] {
   /*
    * Se llama al archivo de wrangler con el propio Node, y no a `npx`. Con `shell` de por medio,
    * Windows vuelve a trocear los argumentos y parte la consulta por los espacios; y sin él, Node ya
@@ -70,7 +79,7 @@ function consultar(sql: string): Fila[] {
   }
   const inicio = salida.indexOf('[')
   if (inicio === -1) throw new Error(`Respuesta inesperada de wrangler:\n${salida}`)
-  const bloques = JSON.parse(salida.slice(inicio)) as { results: Fila[] }[]
+  const bloques = JSON.parse(salida.slice(inicio)) as { results: T[] }[]
   return bloques.flatMap((bloque) => bloque.results)
 }
 
@@ -111,9 +120,26 @@ function explicar(error: unknown): string {
  * Se corta aquí en vez de dejar que el error suba: una pila de Node no le dice nada a quien solo
  * quería ver un número, y el mensaje de `explicar()` ya trae el motivo y el siguiente paso.
  */
+const compartidas = `
+SELECT ruta, SUM(cuenta) AS veces
+  FROM comparticiones
+ WHERE fecha >= date('now', '-${dias} days')
+ GROUP BY ruta
+ ORDER BY veces DESC
+ LIMIT 10
+`.trim()
+
 let filas: Fila[]
+let enlaces: Compartida[] = []
 try {
-  filas = consultar(consulta)
+  filas = consultar<Fila>(consulta)
+  // Si la tabla todavía no existe (una base anterior a la v4.13), se sigue sin ella: el conteo de
+  // visitas es lo que vino a ver quien ejecuta esto.
+  try {
+    enlaces = consultar<Compartida>(compartidas)
+  } catch {
+    enlaces = []
+  }
 } catch (error) {
   console.error(`\n${error instanceof Error ? error.message : String(error)}\n`)
   process.exit(1)
@@ -152,3 +178,18 @@ const reparto = [...porIdioma.entries()]
   .map(([idioma, visitas]) => `${idioma} ${Math.round((visitas / total) * 100)}%`)
   .join(' · ')
 console.log(`\n  ${total} visitas en ${filas.length} páginas  (${reparto})\n`)
+
+if (enlaces.length > 0) {
+  const anchoEnlace = Math.max(...enlaces.map((fila) => fila.ruta.length), 'PÁGINA'.length)
+  console.log(`Enlaces compartidos en los últimos ${dias} días\n`)
+  console.log(`  ${'PÁGINA'.padEnd(anchoEnlace)}  ${'VECES'.padStart(5)}`)
+  console.log(`  ${'-'.repeat(anchoEnlace)}  -----`)
+  for (const fila of enlaces) {
+    console.log(`  ${fila.ruta.padEnd(anchoEnlace)}  ${String(fila.veces).padStart(5)}`)
+  }
+  // Conviene recordarlo cada vez: este número no se puede comparar con el de visitas.
+  console.log(
+    '\n  Son vistas previas de apps de mensajería: un piso de cuántas veces se pegó el enlace,\n' +
+      '  no cuánta gente lo abrió.\n',
+  )
+}

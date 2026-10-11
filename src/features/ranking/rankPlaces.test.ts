@@ -126,8 +126,7 @@ describe('rankPlaces', () => {
   })
 
   it('la comunidad orienta pero no manda sobre el gusto propio', () => {
-    const community = (id: string) =>
-      id === 'sushi-b' ? { favorites: 80, rating: { average: 4.9, count: 60 } } : null
+    const community = (id: string) => (id === 'sushi-b' ? { favorites: 80, empuje: 0.9 } : null)
     const sinGusto = ids(
       rankPlaces(places, { ...none, favorites: new Set(['cafe-a']) }, { ...options, community }),
     )
