@@ -9,6 +9,13 @@ import styles from './PlaceCard.module.css'
 import { PlacePicture } from './PlacePicture.tsx'
 import { girosOf, girosSecundariosOf } from './placeIcon.ts'
 
+/** Lo que lee un lector de pantalla en lugar del punto, que no lleva texto a la vista. */
+const ETIQUETA = {
+  open: 'filters.openNowLabel',
+  closed: 'filters.closedNowLabel',
+  unknown: 'filters.unknownHoursLabel',
+} as const
+
 interface PlaceCardProps {
   place: Place
   onOpen: (place: Place) => void
@@ -20,14 +27,21 @@ export function PlaceCard({ place, onOpen, showPlaza = false }: PlaceCardProps) 
   const catalog = useCatalog()
   const plaza = catalog.plazaById.get(place.plazaId)
   /*
-   * Un punto, y solo cuando está abierto.
+   * El punto de estado, sobre la foto y abajo a la derecha, como el de "en línea" de cualquier
+   * lista de contactos. Es un sitio que la gente ya sabe leer sin que nadie se lo explique, y cae
+   * siempre igual, así que una columna de cien tarjetas se recorre de un vistazo.
    *
-   * Sutil a propósito: la ficha ya dice "Abierto" con todas sus letras, y aquí hay cien tarjetas en
-   * una lista. Repetir la palabra cien veces la convierte en ruido; un punto se lee de reojo. No se
-   * dibuja nada para cerrado ni para los once sin horario, así que la ausencia significa "no
-   * necesariamente", que es exactamente lo que la guía sabe.
+   * Un punto y no la palabra: la ficha ya dice "Abierto" con todas sus letras, y repetirla cien
+   * veces en una lista la convierte en ruido.
+   *
+   * **Tres estados, no dos.** Verde abierto, gris cerrado, y hueco los once sin horario publicado.
+   * El tercero no es un adorno: de esos la guía no sabe si están abiertos, y pintarlos grises sería
+   * afirmar que están cerrados. Un punto hueco dice "no se sabe", que es la verdad.
+   *
+   * Gris y no rojo para cerrado. Rojo dice "algo va mal", y que una panadería esté cerrada a las
+   * once de la noche no tiene nada de malo. El rojo se queda para el aviso de la ficha.
    */
-  const abierto = getOpenStatus(place.hours ?? null, useZonedNow()).state === 'open'
+  const estado = getOpenStatus(place.hours ?? null, useZonedNow()).state
   // En la lista, el icono es de los principales; los secundarios solo se leen.
   const giros = girosOf(place, catalog)
   const secundarios = girosSecundariosOf(place, catalog)
@@ -67,33 +81,23 @@ export function PlaceCard({ place, onOpen, showPlaza = false }: PlaceCardProps) 
         onClick={() => onOpen(place)}
         aria-label={t('place.openDetail', { name: place.name })}
       >
-        <span className={styles.thumb}>
-          <PlacePicture
-            photo={place.photos[0]}
-            category={catalog.categoryOfGiro.get(place.giros[0] ?? '')}
-            icons={iconos}
-            sizes="64px"
-            ratio="1 / 1"
-            illustrationSize="sm"
-          />
+        <span className={styles.foto}>
+          <span className={styles.thumb}>
+            <PlacePicture
+              photo={place.photos[0]}
+              category={catalog.categoryOfGiro.get(place.giros[0] ?? '')}
+              icons={iconos}
+              sizes="64px"
+              ratio="1 / 1"
+              illustrationSize="sm"
+            />
+          </span>
+          <span className={styles.punto} data-estado={estado}>
+            <span className="visually-hidden">{t(ETIQUETA[estado], { name: place.name })}</span>
+          </span>
         </span>
         <span className={styles.body}>
-          {/*
-           * El punto va fuera del nombre y no dentro, por el mismo motivo que `.categoryText`
-           * existe aparte: el nombre se recorta con `text-overflow`, y un hijo dentro de esa caja
-           * se recorta con él. Los nombres largos (que son muchos) perdían su marca justo cuando
-           * más falta hace distinguirlos.
-           */}
-          <span className={styles.nameRow}>
-            <span className={styles.name}>{place.name}</span>
-            {abierto && (
-              <span className={styles.abierto}>
-                <span className="visually-hidden">
-                  {t('filters.openNowLabel', { name: place.name })}
-                </span>
-              </span>
-            )}
-          </span>
+          <span className={styles.name}>{place.name}</span>
           <span className={styles.category} title={tituloCompleto}>
             {giros.map((giro) => (
               <CategoryIcon key={giro.id} name={giro.icon} size={14} strokeWidth={2} />

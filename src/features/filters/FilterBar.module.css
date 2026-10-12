@@ -59,6 +59,14 @@
   border: 0;
   border-radius: inherit;
   background: transparent;
+  /*
+   * Sin esto, Safari no hereda el color del contenedor y con una plaza elegida pinta el nombre en
+   * tinta oscura sobre el olivo del fondo: 2,2:1, que es ilegible y una falla de WCAG. Vivía dentro
+   * del bloque `@supports (appearance: base-select)` de abajo, que Chromium cumple y WebKit no, así
+   * que el fallo solo existía en Safari y en el iPhone. Lo encontró axe en la CI, no una revisión a
+   * ojo: en Chromium se veía perfecto.
+   */
+  color: inherit;
   font-size: var(--text-sm);
   font-weight: 600;
   text-overflow: ellipsis;
@@ -195,7 +203,6 @@
   .select select {
     display: inline-flex;
     align-items: center;
-    color: inherit;
   }
 
   .select select::picker-icon {

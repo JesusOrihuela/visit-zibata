@@ -2,6 +2,42 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado semántico.
 
+## [4.19.0]: 2026-10-12
+
+### Corregido
+
+- **El nombre de la plaza elegida era ilegible en Safari y en el iPhone.** Con una zona puesta, el
+  desplegable se pinta en olivo y su texto tenía que ser blanco; en WebKit salía en tinta oscura
+  sobre el olivo, 2,2:1, cuando el mínimo son 4,5:1.
+
+  La causa estaba a la vista desde hacía tiempo: la regla `color: inherit` del `<select>` vivía
+  dentro de un bloque `@supports (appearance: base-select)`, que Chromium cumple y WebKit no. En
+  Chromium se veía perfecto, así que ninguna revisión a ojo lo iba a encontrar. Lo encontró axe en
+  la CI, en el único proyecto que usa WebKit. Ahora son 5,9:1.
+
+### Cambiado
+
+- **El punto de "abierto ahora" se mueve a la foto**, abajo a la derecha, como el indicador de "en
+  línea" de cualquier lista de contactos. Es un sitio que la gente ya sabe leer sin que se lo
+  expliquen.
+
+  También arregla lo que tenía mal donde estaba. Al lado del nombre, su posición dependía del largo
+  del texto: caía en un sitio distinto en cada fila, así que una columna de cien tarjetas no se
+  podía recorrer de un vistazo, que es justo para lo que sirve un punto. Sobre la foto cae siempre
+  igual.
+
+  Se ve un poco más (de 6 a 11 px) porque sobre una fotografía un punto de 6 px se pierde, y lleva
+  un aro del color de la tarjeta para separarlo de la imagen sin dibujarle un borde encima. El aro
+  es una variable y no un valor fijo, porque el fondo cambia al pasar el ratón.
+
+- **Ahora lo llevan todos, con tres estados.** Verde abierto, gris cerrado y hueco los once sin
+  horario publicado. Antes solo se dibujaba el verde, y la ausencia tenía que significar las otras
+  dos cosas a la vez.
+
+  El tercer estado no es un adorno. De esos once la guía no sabe si están abiertos, y pintarlos
+  grises sería afirmar que están cerrados; un punto hueco dice "no se sabe", que es la verdad. El
+  cerrado es gris y no rojo porque el rojo dice "algo va mal", y que una panadería esté cerrada a
+  las once de la noche no tiene nada de malo.
 ## [4.18.1]: 2026-10-12
 
 ### Cambiado

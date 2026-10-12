@@ -121,6 +121,8 @@ export const es = {
   'filters.openNow': 'Abierto ahora',
   // Para el punto de la tarjeta, que no lleva texto a la vista. Lo lee un lector de pantalla.
   'filters.openNowLabel': 'Abierto ahora: {name}',
+  'filters.closedNowLabel': 'Cerrado ahora: {name}',
+  'filters.unknownHoursLabel': 'Sin horario publicado: {name}',
   'favorites.saved': 'Guardado en favoritos',
 
   'brand.by': 'Un proyecto de',
