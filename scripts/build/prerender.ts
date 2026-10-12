@@ -36,6 +36,19 @@ interface Page {
   image?: string
   /** Datos estructurados de esta página, ya con URLs absolutas. Las de información no llevan. */
   jsonLd?: Record<string, unknown>
+  /**
+   * Cuándo cambió de verdad el contenido de esta página, para el `lastmod` del sitemap.
+   *
+   * Sin esto, todas las URL llevaban la fecha del build, así que cada publicación le decía a Google
+   * que las 234 páginas habían cambiado ese día. Google usa `lastmod` para decidir qué vale la pena
+   * volver a rastrear, y cuando lo comprueba y no ha cambiado nada, deja de creerlo. Una fecha falsa
+   * en todas las páginas es peor que ninguna fecha.
+   *
+   * Las fichas usan la última verificación de sus datos y las zonas la más reciente de sus locales.
+   * Las de información y la portada no llevan: cambian con el código, no con el catálogo, y el
+   * `lastmod` es opcional.
+   */
+  lastmod?: string
 }
 
 const text = (value: unknown, locale: Locale): string => {
@@ -106,10 +119,20 @@ function pagesFor(
     },
   ]
 
+  /** La verificación más reciente de un grupo de locales, o nada si ninguno la tiene. */
+  const masReciente = (lugares: typeof data.places): string | undefined => {
+    const fechas = lugares
+      .map((lugar) => lugar.verification?.lastVerifiedAt)
+      .filter((fecha): fecha is string => typeof fecha === 'string')
+    return fechas.length > 0 ? fechas.reduce((a, b) => (a > b ? a : b)) : undefined
+  }
+
   for (const plaza of activePlazas) {
     const name = text(plaza.name, locale)
+    const deLaPlaza = data.places.filter((place) => place.plazaId === plaza.id)
     pages.push({
       href: route({ plazaSlug: plaza.slug }),
+      lastmod: masReciente(deLaPlaza),
       title: fill(copy['seo.title'], { name }),
       description: trim(
         text(plaza.description, locale) || fill(copy['seo.plaza.fallback'], { name }),
@@ -129,6 +152,7 @@ function pagesFor(
     const image = `${ogDir}${place.slug}.jpg`
     pages.push({
       href: route({ placeSlug: place.slug }),
+      lastmod: place.verification?.lastVerifiedAt,
       title: fill(copy['seo.title'], { name: place.name }),
       description: trim(
         text(place.description, locale) ||
@@ -236,7 +260,7 @@ export function prerender(options: { base: string; siteUrl?: string }): Plugin {
         LOCALES.map((l) => [l, pagesFor(l, data, base, ogDir, absolute)] as const),
       )
 
-      const written: string[] = []
+      const written: { href: string; lastmod?: string }[] = []
       for (const locale of LOCALES) {
         const pages = byLocale.get(locale) ?? []
         pages.forEach((page, index) => {
@@ -309,16 +333,17 @@ export function prerender(options: { base: string; siteUrl?: string }): Plugin {
           const file = join(dist, relative === '' ? 'index.html' : `${relative}.html`)
           mkdirSync(dirname(file), { recursive: true })
           writeFileSync(file, html)
-          written.push(page.href)
+          written.push({ href: page.href, lastmod: page.lastmod })
         })
       }
 
-      const now = new Date().toISOString().slice(0, 10)
       const urls = written
-        .map(
-          (href) =>
-            `  <url><loc>${escapeHtml(absolute(href))}</loc><lastmod>${now}</lastmod></url>`,
-        )
+        .map((pagina) => {
+          const loc = `<loc>${escapeHtml(absolute(pagina.href))}</loc>`
+          // Sin `lastmod` cuando no se sabe. Es opcional en el formato, y omitirlo dice la verdad.
+          const fecha = pagina.lastmod ? `<lastmod>${pagina.lastmod}</lastmod>` : ''
+          return `  <url>${loc}${fecha}</url>`
+        })
         .join('\n')
       writeFileSync(
         join(dist, 'sitemap.xml'),

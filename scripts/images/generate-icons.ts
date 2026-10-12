@@ -73,6 +73,17 @@ writeFileSync(
 console.log('✓ public/favicon.svg')
 
 const SALIDAS = [
+  /*
+   * Las dos del favicon en PNG. El SVG se queda como primera opción, pero quien no lo use tiene que
+   * rasterizarlo él, y lo hace al tamaño que le da la gana: Search Console lo convierte a 32 px y
+   * luego su interfaz lo amplia, con lo que el aro se escalona y la Z se emborrona. Con un PNG
+   * declarado no hay nada que convertir.
+   *
+   * 48 y 96 porque Google pide que el favicon sea múltiplo de 48, y porque 96 es lo que acaba
+   * usándose en las pantallas de densidad doble.
+   */
+  { file: 'public/favicon-48.png', size: 48, svg: lienzo(0.78, 56, simboloChico) },
+  { file: 'public/favicon-96.png', size: 96, svg: lienzo(0.78, 56, simboloChico) },
   { file: 'public/icons/icon-192.png', size: 192, svg: lienzo(0.84, 48) },
   { file: 'public/icons/icon-512.png', size: 512, svg: lienzo(0.84, 48) },
   { file: 'public/icons/icon-maskable-192.png', size: 192, svg: lienzo(0.72, 0) },

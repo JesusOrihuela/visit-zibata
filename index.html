@@ -11,6 +11,13 @@
     <meta name="theme-color" content="#f4efe6" />
     <meta name="color-scheme" content="light" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!--
+      Los PNG van detrás del SVG y existen para quien no lo use. Sin ellos, cada consumidor
+      rasteriza el vector al tamaño que elige: Search Console lo hace a 32 px y luego amplia, y el
+      aro se escalona. 48 y 96 porque Google pide múltiplos de 48.
+    -->
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
 

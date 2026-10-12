@@ -74,7 +74,10 @@ mide cerca del 15 % de su grosor.
 | `public/simbolo.svg` | menos de 40 px | Trazo, aro y puntas más gordos, hueco 8 |
 
 `public/favicon.svg` no es un tercer corte: es el corte chico ya montado sobre su baldosa, y lo
-genera `npm run images:icons`. No se edita a mano.
+genera `npm run images:icons`. No se edita a mano. Junto a él salen `favicon-48.png` y
+`favicon-96.png`, que son el mismo dibujo en mapa de bits: el SVG va primero, pero quien no lo use
+tiene que rasterizarlo él y lo hace al tamaño que le da la gana. Search Console lo convertía a
+32 px y luego ampliaba, con lo que el aro se escalonaba. 48 y 96 porque Google pide múltiplos de 48.
 
 Es la misma relación que hay entre el corte de titular y el de texto de una tipografía: con el corte
 grande, a 16 px el hueco se come la diagonal y la Z se parte en dos piezas sueltas. Aun con el corte

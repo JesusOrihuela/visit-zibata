@@ -2,6 +2,23 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado semántico.
 
+## [4.15.1]: 2026-10-11
+
+### Corregido
+
+- **El favicon se veia de baja calidad fuera del navegador.** Es un vector, asi que no pierde calidad
+  solo: lo que pasaba es que quien no usa el SVG tiene que rasterizarlo el, y lo hace al tamano que
+  elige. Search Console lo convertia a 32 px y luego su interfaz lo ampliaba, con lo que el aro se
+  escalonaba y la Z se emborronaba. Ahora se generan `favicon-48.png` y `favicon-96.png` desde la
+  misma fuente y se declaran detras del SVG, asi que no hay nada que convertir. 48 y 96 porque
+  Google pide multiplos de 48.
+- **El sitemap decia que las 234 paginas habian cambiado hoy, en cada publicacion.** Todas llevaban
+  la fecha del build. Google usa `lastmod` para decidir que vale la pena volver a rastrear, y cuando
+  lo comprueba y no ha cambiado nada, deja de creerlo: una fecha falsa en todas las paginas es peor
+  que ninguna fecha. Ahora las fichas llevan la ultima verificacion de sus datos
+  (`verification.lastVerifiedAt`), las zonas la mas reciente de sus locales, y la portada y las
+  paginas de informacion no llevan ninguna, porque cambian con el codigo y no con el catalogo.
+
 ## [4.15.0]: 2026-10-11
 
 ### Anadido
