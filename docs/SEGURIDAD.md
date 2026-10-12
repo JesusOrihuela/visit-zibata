@@ -54,6 +54,15 @@ font-src 'self'; connect-src 'self' https://api.web3forms.com; worker-src 'self'
 manifest-src 'self'; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'self'
 ```
 
+- **`style-src` admite una huella**, `'sha256-…'`, y es la del bloque de estilo en línea de la
+  página 404. No es `'unsafe-inline'`: permite ese bloque exacto y ningún otro, y la calcula el
+  build desde el mismo módulo que escribe la página, así que no se pueden separar.
+
+  Tiene que estar en la política del sitio aunque la 404 lleve la suya: **cuando hay dos políticas,
+  el navegador aplica las dos**. Hasta la v4.16.1 la cabecera decía `style-src 'self'` y la página
+  decía `'unsafe-inline'`, así que la intersección las prohíbe y la 404 salió publicada sin una sola
+  regla aplicada. No lo vio nadie porque `vite preview` no sirve `_headers`: en local solo existía
+  el `<meta>` permisivo. Lo fija ahora `scripts/build/pagina-404.test.ts`.
 - **Ni un script de terceros.** En la v4.11 hubo aquí un hueco para `challenges.cloudflare.com`, el
   desafío de Turnstile que se pedía al crear una cuenta, y `frame-src` dejó de ser `'none'`. En la
   v4.12 esa pieza se sustituyó por una prueba de trabajo que se calcula en el propio navegador con
