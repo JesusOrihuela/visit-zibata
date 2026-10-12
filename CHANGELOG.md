@@ -2,6 +2,50 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado semántico.
 
+## [4.20.0]: 2026-10-12
+
+### Añadido
+
+- **Cerrado temporalmente.** Un local en obra, de vacaciones o en traspaso lleva ahora un campo
+  `cierre` con el motivo y la fecha en que empezó, y la guía lo dice en vez de callarlo. El primero
+  es Agave Grill, en remodelación desde el 9 de octubre.
+
+  Hasta ahora la guía solo sabía dos cosas de un local: su horario, o nada. "Cerrado por obra" no es
+  ninguna de las dos, y las dos salidas que había eran malas. Dejarle el horario normal manda gente
+  a una puerta tapiada, que es el peor fallo que puede cometer una guía. Vaciárselo lo deja igual
+  que los once de los que no sabemos nada, perdiendo además un dato verificado que volverá a valer
+  cuando reabra.
+
+  Lo que hace el campo, en cuatro sitios:
+
+  - El punto de la tarjeta se vuelve **ámbar**, el único de los cuatro estados que avisa de algo.
+  - La ficha abre con un aviso **antes del botón de "Cómo llegar"**, no después: un aviso debajo del
+    botón que te manda allí llega tarde. El horario sigue abajo tal cual, porque volverá a valer.
+  - Queda fuera del filtro "Abierto ahora" aunque su horario diga que a esta hora abre, y **baja en
+    el orden**: es el único valor negativo de la tabla de apertura. No desaparece, porque quien lo
+    busque por su nombre tiene que encontrarlo y leer por qué está cerrado.
+  - El aviso va también en el HTML prerenderizado, antes que nada, para quien lea sin JavaScript.
+
+  Sin fecha de reapertura mientras el negocio no la dé: inventarla sería inventar un dato. El motivo
+  sale de una lista cerrada de tres, porque el aviso se escribe en los dos idiomas y un texto libre
+  no se podría traducir.
+
+  La pregunta de "en qué estado está este lugar" vive ahora en un solo sitio (`src/lib/estado.ts`).
+  Si cada pantalla siguiera preguntándoselo al horario por su cuenta, el filtro de abiertos acabaría
+  colando un local en obra porque su horario dice que a esta hora abre.
+
+- **Las tres páginas de texto viajan en su propio trozo.** Lo que empujó a esto fue el presupuesto:
+  con los términos y el aviso de cierre, el paquete inicial llegó a 122,1 KB contra un límite de 122.
+  `InfoDialog` se importaba de forma estática, 7 KB de fuente más toda su prosa, para un diálogo que
+  la mayoría de las visitas no abre. Lo que toca cuando se choca con el techo es partir, no subir el
+  número, y está escrito así en `scripts/perf/check-bundle.ts` desde la v4.2.0. Queda en 121,2 KB, y
+  el CSS inicial baja de 10,2 a 9,9.
+
+### Corregido
+
+- El guion largo que se colaba entre la plaza y la dirección en el HTML prerenderizado, que
+  `AGENTS.md` prohíbe en todo el proyecto.
+
 ## [4.19.0]: 2026-10-12
 
 ### Corregido

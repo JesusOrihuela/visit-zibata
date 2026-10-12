@@ -118,6 +118,10 @@ describe('abierto ahora', () => {
     conHorario('abre-temprano', ['06:00-22:00']),
     conHorario('abre-tarde', ['14:00-22:00']),
     makePlace({ id: 'sin-horario', plazaId: 'plaza-norte', giros: ['pizza'] }),
+    {
+      ...conHorario('en-obra', ['06:00-22:00']),
+      cierre: { motivo: 'remodelacion', desde: '2026-10-09' },
+    },
   ])
   const indicePropio = createSearchIndex(propio)
 
@@ -143,9 +147,24 @@ describe('abierto ahora', () => {
     expect(ids(r)).not.toContain('sin-horario')
   })
 
-  it('sin el filtro puesto, el horario no quita a nadie', () => {
+  it('deja fuera un local en obra aunque su horario diga que abre', () => {
+    // Es la razón de que el filtro pregunte por el estado del lugar y no por su horario a secas.
+    const r = applyFilters(
+      propio,
+      indicePropio,
+      { ...EMPTY_FILTERS, openNowOnly: true },
+      new Set(),
+      LUNES_6,
+    )
+    expect(ids(r)).not.toContain('en-obra')
+  })
+
+  it('sin el filtro puesto, el horario no quita a nadie, ni siquiera al que está en obra', () => {
+    // Cerrado temporalmente no es estar dado de baja: quien lo busque por su nombre lo encuentra, y
+    // al abrir la ficha lee por qué está cerrado.
     const r = applyFilters(propio, indicePropio, EMPTY_FILTERS, new Set(), LUNES_6)
-    expect(ids(r)).toHaveLength(3)
+    expect(ids(r)).toHaveLength(4)
+    expect(ids(r)).toContain('en-obra')
   })
 
   it('sin saber la hora no se afirma que algo esté abierto', () => {

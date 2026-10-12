@@ -25,7 +25,6 @@ import { DesktopSidePanel } from '../components/panel/DesktopSidePanel.tsx'
 import { EmptyState } from '../components/ui/EmptyState.tsx'
 import { useCatalogState } from '../data/CatalogContext.tsx'
 import { GuideBar } from '../features/about/GuideBar.tsx'
-import { InfoDialog } from '../features/about/InfoDialog.tsx'
 import { LocaleSwitch } from '../features/about/LocaleSwitch.tsx'
 import { FilterBar } from '../features/filters/FilterBar.tsx'
 import { MapErrorBoundary } from '../features/map/MapErrorBoundary.tsx'
@@ -60,6 +59,15 @@ const MapDebugPanel = DEBUG_ENABLED
   ? lazy(() => import('../features/map/debug/MapDebugPanel.tsx'))
   : null
 /** El tutorial solo se ve en la primera visita: no tiene por qué pesar en el arranque. */
+/*
+ * Las tres páginas de texto pesan 7 KB de fuente más toda su prosa, y la mayoría de las visitas no
+ * abren ninguna. Viajan en su propio trozo: el paquete inicial estaba a 0,1 KB de su límite y lo
+ * que toca cuando eso pasa es partir, no subir el número (ver scripts/perf/check-bundle.ts).
+ */
+const InfoDialog = lazy(() =>
+  import('../features/about/InfoDialog.tsx').then((module) => ({ default: module.InfoDialog })),
+)
+
 const OnboardingModal = lazy(() =>
   import('../features/onboarding/OnboardingModal.tsx').then((module) => ({
     default: module.OnboardingModal,
@@ -544,11 +552,13 @@ function ReadyExperience({ catalog }: { catalog: Catalog }) {
       )}
 
       {state.infoTopic && state.infoTopic !== 'tutorial' && (
-        <InfoDialog
-          topic={state.infoTopic}
-          onClose={() => dispatch({ type: 'closeInfo' })}
-          onGoTo={openInfo}
-        />
+        <Suspense fallback={null}>
+          <InfoDialog
+            topic={state.infoTopic}
+            onClose={() => dispatch({ type: 'closeInfo' })}
+            onGoTo={openInfo}
+          />
+        </Suspense>
       )}
 
       {/*

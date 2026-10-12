@@ -22,7 +22,8 @@
  *    ellos. Así lo nuevo tiene sitio y lo que descartó hace tiempo puede volver a aparecer.
  * 5. Sin ninguna señal se respeta el orden curado de la guía: el orden personal se gana, no se inventa.
  */
-import { getOpenStatus, getZonedMoment } from '../../lib/hours.ts'
+import { estadoDe } from '../../lib/estado.ts'
+import { getZonedMoment } from '../../lib/hours.ts'
 import type { Place } from '../../types/domain.ts'
 import { allGiroIds } from '../places/placeIcon.ts'
 
@@ -95,12 +96,17 @@ const WEIGHT = {
 }
 
 /**
- * Cuánto suma el estado del horario, de 0 a 1.
+ * Cuánto suma el estado del lugar.
  *
  * Los once locales sin horario publicado quedan en medio y no en el suelo: no sabemos si están
  * abiertos, y hundirlos sería castigar al negocio por un hueco de la guía, no por estar cerrado.
+ *
+ * El cierre temporal es el único valor negativo de toda la tabla, y por eso baja de verdad en vez
+ * de solo no subir. Un local cerrado a esta hora abre mañana; uno en obra no abre en semanas, y
+ * enseñarlo arriba es gastarle a alguien un viaje. Sigue en la lista, porque quien lo busque por su
+ * nombre tiene que encontrarlo y leer por qué está cerrado.
  */
-const APERTURA = { open: 1, unknown: 0.35, closed: 0 } as const
+const APERTURA = { open: 1, unknown: 0.35, closed: 0, temporal: -1 } as const
 
 /*
  * Antes la aritmética de la comunidad vivía aquí, con tres constantes escritas a mano: dividir los
@@ -189,7 +195,7 @@ export function rankPlaces(
   // Un solo cálculo de la hora local para toda la lista: `getZonedMoment` monta un Intl.DateTimeFormat
   // y hacerlo por lugar cuesta más que todo lo demás junto.
   const momento = getZonedMoment(new Date(now))
-  const apertura = (place: Place) => APERTURA[getOpenStatus(place.hours ?? null, momento).state]
+  const apertura = (place: Place) => APERTURA[estadoDe(place, momento)]
 
   /*
    * Sin nada que esta persona haya marcado, el orden sigue siendo el curado de la guía y lo único

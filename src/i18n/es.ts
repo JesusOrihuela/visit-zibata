@@ -123,6 +123,20 @@ export const es = {
   'filters.openNowLabel': 'Abierto ahora: {name}',
   'filters.closedNowLabel': 'Cerrado ahora: {name}',
   'filters.unknownHoursLabel': 'Sin horario publicado: {name}',
+  'filters.temporarilyClosedLabel': 'Cerrado temporalmente: {name}',
+
+  /*
+   * El aviso de cierre temporal. Va en la ficha, antes del horario, porque es lo único que hay que
+   * leer antes de salir de casa. El motivo sale de una lista cerrada (ver `cierre` en
+   * src/data/schemas.ts): texto libre no se podría decir en inglés.
+   */
+  'closure.title': 'Cerrado temporalmente',
+  'closure.remodelacion': 'Por remodelación.',
+  'closure.vacaciones': 'Por vacaciones.',
+  'closure.traspaso': 'Por cambio de dueño.',
+  'closure.since': 'Así desde el {date}.',
+  // Mientras el negocio no dé fecha, la guía no la inventa, y lo dice en vez de callarlo.
+  'closure.noReturn': 'Todavía no hay fecha de reapertura.',
   'favorites.saved': 'Guardado en favoritos',
 
   'brand.by': 'Un proyecto de',

@@ -169,6 +169,28 @@ export const PlaceSchema = z
     photos: z.array(PhotoSchema),
     links: LinksSchema,
     active: z.boolean(),
+    /**
+     * Cerrado temporalmente: por obra, vacaciones o cambio de dueño.
+     *
+     * No es lo mismo que `active: false`, que es la baja definitiva y saca al local del catálogo.
+     * Aquí el local sigue existiendo, se busca y se encuentra; lo que cambia es que la guía avisa
+     * de que ir hoy es perder el viaje, y deja de contarlo como abierto.
+     *
+     * Tampoco es lo mismo que vaciarle el horario. Un local sin horario es uno del que la guía no
+     * sabe nada; este es uno del que sabe bastante, y callarlo mandaría gente a una puerta cerrada.
+     *
+     * El motivo sale de una lista cerrada para poder decirlo en los dos idiomas sin traducir texto
+     * libre. `desde` es la fecha en que empezó, y no hay fecha de reapertura: mientras el negocio no
+     * la dé, inventarla sería inventar un dato. La revisión por temporada es la que tiene que
+     * preguntar por los que llevan meses así, porque "cerrado temporalmente" desde hace dos años es
+     * un dato falso con otro nombre.
+     */
+    cierre: z
+      .strictObject({
+        motivo: z.enum(['remodelacion', 'vacaciones', 'traspaso']),
+        desde: z.iso.date(),
+      })
+      .optional(),
     verification: VerificationSchema.optional(),
   })
   .superRefine((place, ctx) => {

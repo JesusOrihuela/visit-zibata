@@ -1,12 +1,21 @@
 /**
  * Ficha del lugar. Solo muestra los campos que existen: nunca botones vacíos ni textos de relleno.
  */
-import { ArrowUpRight, ChevronLeft, Globe, MapPin, Navigation, Phone, X } from 'lucide-react'
+import {
+  ArrowUpRight,
+  ChevronLeft,
+  Globe,
+  MapPin,
+  Navigation,
+  Phone,
+  TriangleAlert,
+  X,
+} from 'lucide-react'
 import { type ReactNode, useEffect, useRef, useState } from 'react'
 import { BrandIcon, type BrandName } from '../../components/icons/BrandIcons.tsx'
 import { CategoryIcon } from '../../components/icons/CategoryIcon.tsx'
 import { useCatalog } from '../../data/CatalogContext.tsx'
-import { localized, t } from '../../i18n/index.ts'
+import { locale, localized, t } from '../../i18n/index.ts'
 import { assetUrl } from '../../lib/assets.ts'
 import { focusPanelHeading } from '../../lib/focus.ts'
 import { placeDirections, telUrl, whatsappUrl } from '../../lib/maps-url.ts'
@@ -20,6 +29,40 @@ import styles from './PlaceDetail.module.css'
 import { PlacePicture } from './PlacePicture.tsx'
 import { girosOf, girosSecundariosOf } from './placeIcon.ts'
 import { ShareButton } from './ShareButton.tsx'
+
+/**
+ * El aviso de cierre temporal, antes del horario porque es lo único que hay que leer antes de salir
+ * de casa.
+ *
+ * El horario no se esconde ni se tacha: sigue debajo tal cual. Tacharlo daría a entender que se
+ * perdió el dato, y no se perdió; volverá a valer cuando reabra.
+ */
+function AvisoDeCierre({ cierre }: { cierre: NonNullable<Place['cierre']> }) {
+  return (
+    <section className={styles.cierre} aria-labelledby="closure-title">
+      <TriangleAlert aria-hidden="true" />
+      <div>
+        <h3 id="closure-title" className={styles.cierreTitulo}>
+          {t('closure.title')}
+        </h3>
+        <p>
+          {t(`closure.${cierre.motivo}`)} {t('closure.since', { date: fechaLarga(cierre.desde) })}{' '}
+          {t('closure.noReturn')}
+        </p>
+      </div>
+    </section>
+  )
+}
+
+/** "9 de octubre de 2026" en español, "9 October 2026" en inglés. Se parte a mano porque la fecha
+ * es un día sin hora y `new Date('2026-10-09')` lo leería en UTC, que en Querétaro es el día 8. */
+function fechaLarga(fecha: string): string {
+  const [year, month, day] = fecha.split('-').map(Number)
+  if (!year || !month || !day) return fecha
+  return new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long', year: 'numeric' }).format(
+    new Date(year, month - 1, day),
+  )
+}
 
 interface PlaceDetailProps {
   place: Place
@@ -267,6 +310,12 @@ export function PlaceDetail({ place, plaza, backLabel, onBack, onClose }: PlaceD
           </span>
         </p>
       </header>
+
+      {/*
+       * Antes del botón de "Cómo llegar", no después. Es lo único que hay que leer antes de salir
+       * de casa, y un aviso que aparece debajo del botón que te manda allí llega tarde.
+       */}
+      {place.cierre && <AvisoDeCierre cierre={place.cierre} />}
 
       <a
         className={styles.directions}

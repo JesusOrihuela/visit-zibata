@@ -1,7 +1,7 @@
 import { CategoryIcon } from '../../components/icons/CategoryIcon.tsx'
 import { useCatalog } from '../../data/CatalogContext.tsx'
 import { localized, t } from '../../i18n/index.ts'
-import { getOpenStatus } from '../../lib/hours.ts'
+import { estadoDe } from '../../lib/estado.ts'
 import type { Place } from '../../types/domain.ts'
 import { FavoriteButton } from '../favorites/FavoriteButton.tsx'
 import { useZonedNow } from './OpenStatus.tsx'
@@ -14,6 +14,7 @@ const ETIQUETA = {
   open: 'filters.openNowLabel',
   closed: 'filters.closedNowLabel',
   unknown: 'filters.unknownHoursLabel',
+  temporal: 'filters.temporarilyClosedLabel',
 } as const
 
 interface PlaceCardProps {
@@ -34,14 +35,17 @@ export function PlaceCard({ place, onOpen, showPlaza = false }: PlaceCardProps) 
    * Un punto y no la palabra: la ficha ya dice "Abierto" con todas sus letras, y repetirla cien
    * veces en una lista la convierte en ruido.
    *
-   * **Tres estados, no dos.** Verde abierto, gris cerrado, y hueco los once sin horario publicado.
-   * El tercero no es un adorno: de esos la guía no sabe si están abiertos, y pintarlos grises sería
+   * **Cuatro estados.** Verde abierto, gris cerrado, hueco los once sin horario publicado, y ámbar
+   * cerrado temporalmente.
+   *
+   * El hueco no es un adorno: de esos la guía no sabe si están abiertos, y pintarlos grises sería
    * afirmar que están cerrados. Un punto hueco dice "no se sabe", que es la verdad.
    *
    * Gris y no rojo para cerrado. Rojo dice "algo va mal", y que una panadería esté cerrada a las
-   * once de la noche no tiene nada de malo. El rojo se queda para el aviso de la ficha.
+   * once de la noche no tiene nada de malo. El ámbar sí avisa de algo, porque ir hoy a un local en
+   * obra es perder el viaje, y por eso es el único de los cuatro que se sale del gris y el verde.
    */
-  const estado = getOpenStatus(place.hours ?? null, useZonedNow()).state
+  const estado = estadoDe(place, useZonedNow())
   // En la lista, el icono es de los principales; los secundarios solo se leen.
   const giros = girosOf(place, catalog)
   const secundarios = girosSecundariosOf(place, catalog)

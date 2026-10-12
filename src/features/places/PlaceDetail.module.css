@@ -382,3 +382,32 @@
 .translationToggle:hover {
   text-decoration-thickness: 2px;
 }
+
+/*
+ * El aviso de cierre temporal. Ámbar y no rojo: no es un error de la guía ni algo que la persona
+ * haya hecho mal, es una advertencia de que ir hoy sería perder el viaje.
+ */
+.cierre {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--amber-50);
+  color: var(--amber-700);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
+.cierre svg {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin-top: 0.1rem;
+}
+
+.cierreTitulo {
+  margin: 0 0 0.15rem;
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
