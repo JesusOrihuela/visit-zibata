@@ -119,6 +119,8 @@ export const es = {
   'favorites.remove': 'Quitar de favoritos',
   'favorites.filter': 'Favoritos',
   'filters.openNow': 'Abierto ahora',
+  // Nombre del grupo de interruptores para quien lo escucha; a la vista no lleva título.
+  'filters.switches': 'Filtros rápidos',
   // Para el punto de la tarjeta, que no lleva texto a la vista. Lo lee un lector de pantalla.
   'filters.openNowLabel': 'Abierto ahora: {name}',
   'filters.closedNowLabel': 'Cerrado ahora: {name}',

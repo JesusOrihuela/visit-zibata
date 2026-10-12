@@ -39,7 +39,7 @@
   /* El 7 % va en el color y no en una opacidad aparte: el fondo es una capa, no un elemento. */
   background:
     radial-gradient(color-mix(in srgb, var(--olive-600) 7%, transparent) 1px, transparent 1px) 0 0 /
-      26px 26px,
+    26px 26px,
     #e2d9c9;
   color: var(--color-text-muted);
   font-size: var(--text-sm);

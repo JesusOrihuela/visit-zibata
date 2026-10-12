@@ -80,8 +80,21 @@
   pointer-events: none;
 }
 
+/*
+ * Con una zona elegida, el selector se pinta del color de esa zona, el mismo con el que se ve en el
+ * mapa. No del olivo de marca.
+ *
+ * Es una revisión de una decisión que tomé al revés hace dos versiones: entonces lo dejé olivo
+ * razonando que los controles son olivo. El costo apareció a la vista: la fila quedaba sin ninguna
+ * diferenciación, cuatro objetos idénticos para cuatro funciones. Y la regla de los dos canales, bien
+ * leída, apunta a esto: el olivo marca acción y el acento marca lugar, y este control **nombra un
+ * lugar**. Ahora, además, basta mirar la barra para saber en qué zona estás.
+ *
+ * El color entra por `--plaza-accent`, que pone Experience con el tono de la plaza seleccionada; sin
+ * zona elegida el selector no está activo y la variable no hace falta.
+ */
 .select[data-active="true"] {
-  background: var(--olive-600);
+  background: var(--plaza-accent, var(--olive-600));
   box-shadow: var(--shadow-sm);
   color: white;
 }
@@ -94,6 +107,34 @@
   color: var(--ink-900);
 }
 
+/*
+ * El grupo de interruptores: una sola superficie con los dos dentro, separados por un filete.
+ *
+ * La superficie, el desenfoque y la sombra viven aquí y no en cada botón. Así el grupo es un objeto
+ * y no dos, que es justo lo que lo distingue del selector de zona (que despliega) y de las pastillas
+ * de categoría (que son muchas y se desplazan).
+ */
+.switches {
+  /* `fieldset` y no `div` con `role="group"`: es el elemento que ya significa eso. Trae su propio
+     borde, margen y relleno del navegador, y los tres se quitan aquí. */
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: inline-flex;
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  backdrop-filter: var(--blur-surface);
+  box-shadow:
+    0 0 0 1px var(--color-border),
+    var(--shadow-sm);
+}
+
+/* El filete entre llaves. Solo entre ellas: con una sola, no hay nada que separar. */
+.switches > * + * {
+  box-shadow: inset 1px 0 0 var(--color-border);
+}
+
 .toggle {
   display: inline-flex;
   align-items: center;
@@ -101,12 +142,7 @@
   height: 2.125rem;
   padding: 0 0.8rem;
   border: 0;
-  border-radius: var(--radius-pill);
-  background: var(--color-surface);
-  backdrop-filter: var(--blur-surface);
-  box-shadow:
-    0 0 0 1px var(--color-border),
-    var(--shadow-sm);
+  background: transparent;
   font-size: var(--text-sm);
   font-weight: 600;
 }
@@ -117,9 +153,9 @@
   color: var(--heart-600);
 }
 
+/* Encendido: se rellena. Es lo único que cambia, y basta porque la forma ya la da el grupo. */
 .toggle[aria-pressed="true"] {
   background: var(--heart-50);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--heart-600) 35%, transparent);
 }
 
 /*
@@ -133,34 +169,43 @@
 
 .toggle[data-abierto="si"][aria-pressed="true"] {
   background: var(--lime-50);
-  box-shadow: inset 0 0 0 1px rgb(83 108 42 / 0.35);
 }
 
+/*
+ * La cifra. `line-height: 1` porque hereda 1,45 del cuerpo y a 11 px eso deja la caja más alta que
+ * el glifo: el número quedaba pegado arriba dentro de una fila centrada por caja, no por texto.
+ */
 .badge {
   font-size: var(--text-2xs);
   font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
   color: var(--ink-600);
 }
 
+/*
+ * El resumen no es un filtro: es una cifra y una salida. Por eso ya no tiene superficie.
+ *
+ * La llevaba, y con ella la fila entera se leía como cuatro cápsulas iguales siendo cuatro cosas
+ * distintas. Darle otro radio no arreglaba nada, solo desparejaba la fila. Ahora el peso visual dice
+ * de qué tipo es cada cosa: superficie llena para lo que filtra, texto pelado para lo que informa.
+ *
+ * La legibilidad sobre el mapa la da la sombra del texto, no una caja: dos píxeles del color del
+ * papel alrededor de cada letra bastan sobre un mapa claro, y no añaden un objeto más.
+ */
 .summary {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
   height: 2.125rem;
-  /* Simétrico: con o sin la cifra de resultados, "Limpiar filtros" queda centrado en su pastilla. */
-  padding: 0 0.4rem;
-  /* Contenedor: lleva una cifra y un botón dentro. La píldora es del botón, no de su caja. */
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  backdrop-filter: var(--blur-surface);
-  box-shadow:
-    0 0 0 1px var(--color-border),
-    var(--shadow-sm);
   font-size: var(--text-sm);
+  color: var(--ink-700);
+  text-shadow:
+    0 0 2px var(--sand-50),
+    0 0 6px var(--sand-50);
 }
 
 .results {
-  padding-left: 0.4rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }

@@ -38,6 +38,11 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
   archivo culpable por su nombre. Una convención que se rompe tres veces no se sostiene con un
   comentario.
 
+- **En "Tu Zibatá", diez de las once zonas se pintaban con el verde de la primera.** `plazaTones`
+  reparte los colores **por posición en la lista** que recibe, y la lista de lugares pedía el tono
+  pasando una lista de un solo elemento: siempre el índice 0. El mismo lugar salía verde ahí y de su
+  color en el mapa. No venía de los cambios de esta tanda; apareció al revisar el sistema de color.
+
 - **Los dos estados de espera del mapa no se parecían.** El que se ve mientras baja el trozo de
   código era beige plano y el de las teselas ya tenía la trama de puntos, así que a mitad de carga
   cambiaba el fondo, como si algo hubiera fallado y vuelto a empezar. Ahora comparten la misma
@@ -45,11 +50,28 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ### Cambiado
 
-- **Cuatro superficies dejan de tener forma de control sin serlo.** `DESIGN.md` dice que lo redondo
-  se pulsa, y había cápsulas que no se pulsan: la barra de búsqueda (una cápsula conteniendo dos
-  cápsulas), el resumen de filtros (una cápsula conteniendo un botón), la franja del pie y el aviso
-  de carga. Pasan a radio de contenedor. Los filtros, los toggles y los botones siguen siendo
-  píldoras, porque esos sí se pulsan.
+- **La fila de filtros deja de ser una hilera de cápsulas iguales.** Eran cuatro cosas distintas con
+  la misma forma: dónde estás, qué filtras, qué llaves están puestas y cuántos resultados hay. Ahora
+  el peso visual dice de qué tipo es cada una.
+
+  **El selector de zona se pinta del color de esa zona**, el mismo del mapa, en vez del olivo de
+  marca. Es una revisión de una decisión tomada al revés dos versiones antes: entonces se dejó olivo
+  razonando que los controles son olivo, y el costo fue que la fila quedó sin diferenciación. La
+  regla de los dos canales, bien leída, apunta a esto: el olivo marca acción y el acento marca lugar,
+  y este control nombra un lugar. De paso, basta mirar la barra para saber en qué zona estás.
+
+  **Los dos interruptores viven en una sola superficie**, separados por un filete, como un grupo de
+  llaves. Se leen como lo que son y la fila pasa de cuatro objetos a tres.
+
+  **El resumen pierde su superficie.** No es un filtro: es una cifra y una salida. Ahora es texto, con
+  una sombra del color del papel para que se lea sobre el mapa sin añadir una caja.
+
+  La barra de búsqueda, la franja del pie y el aviso de carga pasan a radio de contenedor, porque
+  tampoco se pulsan. Las pastillas de categoría no cambian: esas sí son filtros y sí se pulsan.
+
+- **La cifra de los interruptores estaba alta.** Heredaba `line-height: 1.45` del cuerpo, y a 11 px
+  eso deja la caja más alta que el glifo dentro de una fila centrada por caja. Con `line-height: 1`
+  el desfase medido es 0,00.
 
 - **La espera del mapa ya no es una pastilla flotando en una pantalla vacía.** El aviso pierde su
   caja y el hueco lo ocupa la trama de puntos de la marca, la misma de la página 404, respirando muy

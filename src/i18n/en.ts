@@ -114,6 +114,7 @@ export const en = {
   'favorites.remove': 'Remove from favourites',
   'favorites.filter': 'Favourites',
   'filters.openNow': 'Open now',
+  'filters.switches': 'Quick filters',
   'filters.openNowLabel': 'Open now: {name}',
   'filters.closedNowLabel': 'Closed now: {name}',
   'filters.unknownHoursLabel': 'No opening hours published: {name}',

@@ -204,7 +204,17 @@ function PodiumStep({
 }) {
   const catalog = useCatalog()
   const { place } = entry
-  const tone = plazaTones([place.plazaId]).get(place.plazaId) ?? DEFAULT_PLAZA_TONE
+  /*
+   * La lista completa de plazas activas, no solo la de este lugar.
+   *
+   * `plazaTones` reparte los tonos **por posición** en la lista que recibe, así que pedirle una sola
+   * devolvía siempre el índice 0: diez de las once zonas se pintaban con el verde de la primera. El
+   * mismo lugar salía verde aquí y de su color en el mapa.
+   */
+  const tone =
+    plazaTones(catalog.plazas.filter((item) => item.active).map((item) => item.id)).get(
+      place.plazaId,
+    ) ?? DEFAULT_PLAZA_TONE
   const giro = girosOf(place, catalog)
     .map((entry) => localized(entry.label))
     .join(' · ')
