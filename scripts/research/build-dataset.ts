@@ -70,6 +70,8 @@ interface PlaceDecision {
   description?: LocalizedText | null
   phone?: string
   hours?: Hours
+  /** Cerrado temporalmente (obra, vacaciones, traspaso). Ver `cierre` en src/data/schemas.ts. */
+  cierre?: Place['cierre']
   links?: Partial<
     Record<
       | 'website'
@@ -246,6 +248,12 @@ const places: Place[] = audit
       secundarios: decision.secundarios ?? [],
       description: decision.description ?? null,
       hours: decision.hours ?? null,
+      /*
+       * Viaja desde la decisión y no se pone a `null` aquí a propósito: si alguna vez se vuelve a
+       * correr este guión, un cierre temporal anotado a mano en places.json se perdería sin que
+       * nadie lo notara, y la guía volvería a mandar gente a una puerta cerrada.
+       */
+      cierre: decision.cierre,
       // Sin coordenadas propias verificadas, la app usa las de la plaza.
       location: decision.location ?? null,
       googleMapsUri: decision.googleMapsUri ?? null,

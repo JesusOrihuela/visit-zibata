@@ -101,6 +101,11 @@
   background: var(--lime-500);
 }
 
+/* Cerrado temporalmente. El único de los cuatro que avisa, porque ir hoy es perder el viaje. */
+.punto[data-estado="temporal"] {
+  background: var(--amber-500);
+}
+
 /*
  * Sin horario publicado: hueco. El relleno es el del aro, así que lo único que se ve es el filo.
  * Dice "no se sabe" sin decir "cerrado", que es lo que la guía puede afirmar de estos once.

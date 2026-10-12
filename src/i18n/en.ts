@@ -117,6 +117,14 @@ export const en = {
   'filters.openNowLabel': 'Open now: {name}',
   'filters.closedNowLabel': 'Closed now: {name}',
   'filters.unknownHoursLabel': 'No opening hours published: {name}',
+  'filters.temporarilyClosedLabel': 'Temporarily closed: {name}',
+
+  'closure.title': 'Temporarily closed',
+  'closure.remodelacion': 'For refurbishment.',
+  'closure.vacaciones': 'On holiday.',
+  'closure.traspaso': 'Under new ownership.',
+  'closure.since': 'Since {date}.',
+  'closure.noReturn': 'No reopening date yet.',
   'favorites.saved': 'Saved to favourites',
 
   'brand.by': 'A project by',

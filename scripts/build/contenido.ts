@@ -76,6 +76,8 @@ const horario = (dias: Horario[]): string =>
 
 export interface ContenidoDeLugar {
   nombre: string
+  /** El aviso de cierre temporal, si lo hay. Va arriba del todo, antes incluso de los giros. */
+  aviso?: string
   giros: string[]
   plaza?: Enlace
   direccion?: string
@@ -93,9 +95,15 @@ export function contenidoDeLugar(datos: ContenidoDeLugar): string {
   return [
     '<article class="estatico">',
     `<h1>${escaparHtml(datos.nombre)}</h1>`,
+    /*
+     * Antes que nada, incluso antes de qué se vende ahí: quien lee esta página sin JavaScript, o un
+     * rastreador que la archiva, tiene que encontrarse con que el local está cerrado antes que con
+     * su horario de siempre.
+     */
+    datos.aviso ? `<p><strong>${escaparHtml(datos.aviso)}</strong></p>` : '',
     parrafo(datos.giros.join(' · ')),
     datos.plaza
-      ? `<p><a href="${escaparHtml(datos.plaza.href)}">${escaparHtml(datos.plaza.texto)}</a>${datos.direccion ? ` — ${escaparHtml(datos.direccion)}` : ''}</p>`
+      ? `<p><a href="${escaparHtml(datos.plaza.href)}">${escaparHtml(datos.plaza.texto)}</a>${datos.direccion ? ` · ${escaparHtml(datos.direccion)}` : ''}</p>`
       : parrafo(datos.direccion),
     parrafo(datos.descripcion),
     datos.dias.length > 0 ? titulo(datos.tituloHorario) + horario(datos.dias) : '',

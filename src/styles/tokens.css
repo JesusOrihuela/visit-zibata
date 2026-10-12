@@ -38,6 +38,18 @@
    */
   --gold-700: #8a5a10;
 
+  /*
+   * El ámbar del cierre temporal. Tres tonos y cada uno tiene su medida:
+   *
+   *  - 500 es el punto de la tarjeta. Da 3,4:1 contra el aro arena, que es lo que pide un objeto
+   *    gráfico. Un ámbar más vivo se queda en 2,9 y uno más oscuro deja de leerse como ámbar.
+   *  - 700 es el texto del aviso: 4,8:1 sobre el fondo de abajo y 4,5 sobre la superficie apagada.
+   *  - 50 es ese fondo.
+   */
+  --amber-500: #bd7a18;
+  --amber-700: #9a5c14;
+  --amber-50: #fbf0dc;
+
   --danger-600: #a3402b;
   --danger-50: #fbede9;
 

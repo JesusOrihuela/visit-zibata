@@ -141,6 +141,19 @@ describe('la marca de abierto', () => {
     expect(screen.queryByText(/Abierto ahora/)).not.toBeInTheDocument()
   })
 
+  it('un local en obra lo dice, aunque su horario diga que a esta hora abre', async () => {
+    const place = makePlace({
+      id: 'obra',
+      plazaId: 'plaza-sur',
+      name: 'En obra',
+      hours: allDay,
+      cierre: { motivo: 'remodelacion', desde: '2026-10-09' },
+    })
+    await renderWithCatalog(<PlaceCard place={place} onOpen={vi.fn()} />)
+    expect(screen.getByText('Cerrado temporalmente: En obra')).toBeInTheDocument()
+    expect(screen.queryByText(/Abierto ahora/)).not.toBeInTheDocument()
+  })
+
   it('un local sin horario no se da por cerrado: dice que no se sabe', async () => {
     // Es la distinción que justifica el tercer estado. Pintar de gris a los once sin horario sería
     // afirmar que están cerrados, y la guía no lo sabe.

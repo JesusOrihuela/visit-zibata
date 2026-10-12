@@ -331,11 +331,50 @@ Reglas:
 ```
 
 - Solo se muestran los campos con valor: nunca aparecen botones vacíos.
-- `active: false` oculta el local sin borrarlo (útil para cierres temporales).
+- `active: false` oculta el local sin borrarlo. Para un cierre temporal **no es lo que se quiere**:
+  ver abajo.
 - `verification`: estado de la investigación (`active` o `likely_active` para publicarse), confianza
   (`high`/`medium`/`low`), fecha de la última verificación y URLs de las fuentes. Un local activo sin
   `verification` produce un aviso; con un estado no publicable (`closed`, `uncertain`…), un error.
 - Tras añadir o quitar locales: `npm run data:validate -- --fix` para sincronizar la plaza.
+
+### Cerrado temporalmente
+
+Un local en obra, de vacaciones o en traspaso lleva `cierre`:
+
+```json
+"cierre": { "motivo": "remodelacion", "desde": "2026-10-09" }
+```
+
+`motivo` solo admite `remodelacion`, `vacaciones` o `traspaso`: es una lista cerrada porque el aviso
+se escribe en los dos idiomas, y un texto libre no se podría traducir. `desde` es la fecha en que
+empezó. **No hay fecha de reapertura**, y es a propósito: mientras el negocio no la dé, ponerla sería
+inventar un dato.
+
+Qué cambia con el campo puesto:
+
+- El punto de la tarjeta se vuelve **ámbar**, el único de los cuatro estados que avisa de algo.
+- La ficha abre con un aviso, **antes del botón de "Cómo llegar"**, con el motivo y la fecha. El
+  horario sigue debajo tal cual: volverá a valer cuando reabra, y borrarlo perdería un dato
+  verificado.
+- Queda **fuera del filtro "Abierto ahora"** aunque su horario diga que a esta hora abre, y **baja en
+  el orden**: es el único valor negativo de la tabla de apertura.
+- El texto del aviso va también en el HTML prerenderizado, antes que nada, para quien lea la página
+  sin JavaScript.
+
+Tres cosas que **no** se hacen y conviene no confundir:
+
+| | Qué significa | Qué hacer |
+|---|---|---|
+| `cierre` | Cerrado por ahora, va a volver | Poner el campo |
+| `active: false` | Fuera de la guía sin borrar el registro | Bajar la bandera |
+| Sin `hours` | La guía no sabe el horario | No tocar nada |
+
+Vaciarle el horario a un local en obra sería lo peor de las tres: perdería un dato verificado y lo
+dejaría igual que los once de los que no sabemos nada.
+
+**"Temporal" caduca.** La revisión por temporada tiene que preguntar por los que llevan meses así,
+porque un "cerrado temporalmente" de hace dos años es un dato falso con otro nombre.
 
 ### Horarios
 

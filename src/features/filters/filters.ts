@@ -1,4 +1,5 @@
-import { getOpenStatus, type ZonedMoment } from '../../lib/hours.ts'
+import { estaAbierto } from '../../lib/estado.ts'
+import type { ZonedMoment } from '../../lib/hours.ts'
 import { searchTerms } from '../../lib/text.ts'
 import type { Catalog, Place } from '../../types/domain.ts'
 import { allGiroIds } from '../places/placeIcon.ts'
@@ -17,6 +18,9 @@ export interface Filters {
    * ahora", y de esos no se sabe. Colarlos sería afirmar algo que la guía no tiene, y esconderlos
    * del resto de la guía por no tener el dato sería castigar al negocio por un hueco nuestro, así
    * que solo desaparecen mientras el filtro está puesto.
+   *
+   * También deja fuera los cerrados temporalmente, aunque su horario diga que a esta hora abren.
+   * Esa es la razón de que pregunte por `estaAbierto` y no por el horario a secas.
    */
   openNowOnly: boolean
 }
@@ -83,8 +87,7 @@ export function applyFilters(
       (filters.categoryId === null || categoriesOf(place, catalog).includes(filters.categoryId)) &&
       (filters.plazaId === null || place.plazaId === filters.plazaId) &&
       (!filters.favoritesOnly || favoriteIds.has(place.id)) &&
-      (!filters.openNowOnly ||
-        (now !== undefined && getOpenStatus(place.hours ?? null, now).state === 'open')),
+      (!filters.openNowOnly || (now !== undefined && estaAbierto(place, now))),
   )
 }
 

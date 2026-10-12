@@ -107,6 +107,20 @@ function contactoDe(place: Place): { texto: string; href: string }[] {
   return enlaces
 }
 
+/**
+ * "9 de octubre de 2026" / "9 October 2026".
+ *
+ * Se parte a mano en lugar de `new Date(fecha)`: una fecha sin hora se lee en UTC, y en Querétaro
+ * eso es el día anterior. El mismo cuidado que en la ficha.
+ */
+const fechaLarga = (fecha: string, locale: Locale): string => {
+  const [year, month, day] = fecha.split('-').map(Number)
+  if (!year || !month || !day) return fecha
+  return new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long', year: 'numeric' }).format(
+    new Date(year, month - 1, day),
+  )
+}
+
 const escapeHtml = (value: string): string =>
   value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
@@ -232,6 +246,14 @@ function pagesFor(
       }),
       contenido: contenidoDeLugar({
         nombre: place.name,
+        aviso: place.cierre
+          ? [
+              `${copy['closure.title']}.`,
+              copy[`closure.${place.cierre.motivo}`],
+              fill(copy['closure.since'], { date: fechaLarga(place.cierre.desde, locale) }),
+              copy['closure.noReturn'],
+            ].join(' ')
+          : undefined,
         giros: [...place.giros, ...(place.secundarios ?? [])].map((id) => giroLabel.get(id) ?? id),
         plaza: plaza?.active
           ? { texto: text(plaza.name, locale), href: route({ plazaSlug: plaza.slug }) }
