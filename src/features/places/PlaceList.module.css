@@ -4,13 +4,7 @@
   gap: 0.125rem;
 }
 
-.item {
-  animation: enter var(--duration-base) var(--ease-out) both;
-}
-
-@keyframes enter {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-}
+/*
+ * `.item` ya no existe: la fila no lleva estilo propio. Aquí vivía la animación de entrada
+ * escalonada, retirada porque la lista se redibuja en cada filtro (ver PlaceList.tsx).
+ */

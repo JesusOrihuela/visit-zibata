@@ -1,6 +1,8 @@
 /** Resultados de búsqueda / filtros agrupados por plaza, con estado vacío claro. */
 import { SearchX, X } from 'lucide-react'
+import type { CSSProperties } from 'react'
 import { EmptyState } from '../../components/ui/EmptyState.tsx'
+import { DEFAULT_PLAZA_TONE, plazaTones } from '../../config/palette.ts'
 import { useCatalog } from '../../data/CatalogContext.tsx'
 import { t } from '../../i18n/index.ts'
 import type { Place } from '../../types/domain.ts'
@@ -22,6 +24,7 @@ export function ResultsPanel({
   onClearFilters,
 }: ResultsPanelProps) {
   const catalog = useCatalog()
+  const tones = plazaTones(catalog.plazas.filter((plaza) => plaza.active).map((plaza) => plaza.id))
   const groups = groupByPlaza(places)
 
   return (
@@ -63,7 +66,20 @@ export function ResultsPanel({
           const plaza = catalog.plazaById.get(plazaId)
           if (!plaza) return null
           return (
-            <div key={plazaId} className={styles.group}>
+            /*
+             * El color de la plaza se pone aquí, en el grupo, y lo heredan por CSS el encabezado y
+             * las fotos de sus tarjetas. Una búsqueda que mezcla zonas se lee de un vistazo: cada
+             * grupo trae el color con el que esa plaza se ve en el mapa.
+             */
+            <div
+              key={plazaId}
+              className={styles.group}
+              style={
+                {
+                  '--plaza-accent': (tones.get(plazaId) ?? DEFAULT_PLAZA_TONE).accent,
+                } as CSSProperties
+              }
+            >
               <button
                 type="button"
                 className={styles.groupHeader}

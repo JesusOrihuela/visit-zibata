@@ -2,6 +2,51 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado semántico.
 
+## [4.22.0]: 2026-10-12
+
+### Añadido
+
+- **El color de cada plaza llega hasta el final del recorrido.** El sistema de dos familias
+  cromáticas de `src/config/palette.ts` estaba bien construido y se cortaba en la cabecera del
+  panel: el mapa pintaba cada zona de su color y la lista las devolvía a todas al mismo gris. Esa
+  discontinuidad era lo que se sentía como falta de personalidad.
+
+  Ahora el acento viaja a cuatro sitios más, y siempre como aro o como texto, nunca como fondo: el
+  aro de la foto del lugar (en la tarjeta y en la ficha), el nombre de la zona en los grupos de
+  resultados, y el alfiler de la dirección. Comprobado en el navegador: el marcador de Paseo Zibatá
+  y el aro de las fotos de sus lugares pintan el mismo `rgb(103, 60, 30)`.
+
+  Las once plazas activas dan entre 5,01:1 y 13,53:1 contra las tres superficies, así que el nombre
+  coloreado pasa incluso el 4,5 de texto normal.
+
+- **`docs/IDENTIDAD.md`**, con el plan, lo que se hizo, lo que se descartó y por qué. Tres de las
+  seis fases planeadas se quedaron casi sin contenido al medirlas, y eso está escrito ahí.
+
+### Corregido
+
+- **Un campo de formulario con error se marcaba con el rojo de los favoritos.** El borde decía
+  `var(--color-danger, #c0453c)` y ese token **nunca existió**, así que lo que se pintaba era el
+  valor de reserva. Dos semánticas opuestas (esto te gusta / algo va mal) con el mismo color, por un
+  nombre mal escrito que no se ve a ojo.
+
+  Lo encontró `impeccable detect` sobre el código, y solo después de escribir `DESIGN.md`: sin una
+  paleta declarada, el detector no tenía contra qué comparar.
+
+- **Cuatro rojos haciendo el trabajo de dos.** `#b4432c` en el botón de favorito y en el filtro,
+  `#c0453c` en la ilustración del tutorial, `#a33a32` en el error del formulario. Ahora son dos
+  tokens con nombre, `--heart-600` y `--danger-600`, y una regla en `DESIGN.md` que dice que no se
+  mezclan.
+
+- **El azul de "estás aquí" estaba escrito a mano**, fuera de la paleta. El color es correcto (es la
+  convención de todos los mapas, y en olivo se leería como un lugar más de la guía), pero no estaba
+  registrado en ningún sitio. Ahora es `--blue-ubicacion`, con el porqué escrito.
+
+### Cambiado
+
+- **La lista de lugares ya no entra escalonada.** Eran 22 ms por fila hasta doce. Se ve bien una vez
+  y mal las siguientes cincuenta, porque la lista se redibuja en cada tecla del buscador y en cada
+  filtro. Lo que se ve decenas de veces al día no se anima.
+
 ## [4.21.0]: 2026-10-12
 
 ### Añadido

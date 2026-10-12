@@ -49,7 +49,18 @@
   overflow: hidden;
   /* Redondo como un avatar: es el logo del negocio, y así se ven en sus redes. */
   border-radius: 50%;
-  box-shadow: inset 0 0 0 1px var(--color-border);
+  /*
+   * El aro lleva el color de la plaza del lugar, heredado del panel o del grupo de resultados. Era
+   * un filete neutro, y era el sitio donde el hilo de identidad se cortaba: el mapa pinta cada
+   * plaza de su color y la lista las devolvía a todas al mismo gris.
+   *
+   * Va en el aro y no en un fondo ni en una banda lateral: el acento de plaza aparece en una sola
+   * propiedad por superficie (ver DESIGN.md), y una banda gruesa de color a un lado de la tarjeta
+   * es además uno de los tells más reconocibles de interfaz generada.
+   *
+   * Sin plaza alrededor (una tarjeta suelta en una prueba) cae al filete de siempre.
+   */
+  box-shadow: inset 0 0 0 1.5px var(--plaza-accent, var(--color-border));
 }
 
 .body {

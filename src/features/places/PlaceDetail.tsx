@@ -11,9 +11,10 @@ import {
   TriangleAlert,
   X,
 } from 'lucide-react'
-import { type ReactNode, useEffect, useRef, useState } from 'react'
+import { type CSSProperties, type ReactNode, useEffect, useRef, useState } from 'react'
 import { BrandIcon, type BrandName } from '../../components/icons/BrandIcons.tsx'
 import { CategoryIcon } from '../../components/icons/CategoryIcon.tsx'
+import { DEFAULT_PLAZA_TONE, plazaTones } from '../../config/palette.ts'
 import { useCatalog } from '../../data/CatalogContext.tsx'
 import { locale, localized, t } from '../../i18n/index.ts'
 import { assetUrl } from '../../lib/assets.ts'
@@ -238,8 +239,20 @@ export function PlaceDetail({ place, plaza, backLabel, onBack, onClose }: PlaceD
     place.description || place.hours || links.length > 0 || place.photos.length > 0,
   )
 
+  /*
+   * El color de su plaza, el mismo con el que se ve en el mapa. Lo heredan el aro del logo y el
+   * alfiler de la dirección, que es lo único de la ficha que habla de dónde está y no de qué hacer.
+   */
+  const tono =
+    plazaTones(catalog.plazas.filter((item) => item.active).map((item) => item.id)).get(plaza.id) ??
+    DEFAULT_PLAZA_TONE
+
   return (
-    <article className={styles.detail} aria-labelledby="place-detail-title">
+    <article
+      className={styles.detail}
+      style={{ '--plaza-accent': tono.accent } as CSSProperties}
+      aria-labelledby="place-detail-title"
+    >
       <div className={styles.toolbar}>
         <button type="button" className={styles.back} onClick={onBack}>
           <ChevronLeft aria-hidden="true" />

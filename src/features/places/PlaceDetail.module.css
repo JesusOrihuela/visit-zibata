@@ -130,12 +130,16 @@
   color: var(--ink-700);
 }
 
+/*
+ * El alfiler va del color de la plaza y no del olivo de marca. Es la regla de los dos canales: el
+ * olivo marca acción y el acento de plaza marca lugar, y esta línea no se pulsa, dice dónde está.
+ */
 .location svg {
   flex-shrink: 0;
   width: 1rem;
   height: 1rem;
   margin-top: 0.1rem;
-  color: var(--olive-600);
+  color: var(--plaza-accent, var(--olive-600));
 }
 
 .address {
@@ -308,7 +312,8 @@
   height: 4rem;
   overflow: hidden;
   border-radius: 50%;
-  box-shadow: inset 0 0 0 1px var(--color-border);
+  /* El mismo aro de plaza que la foto de la tarjeta: la identidad del lugar vive en su foto. */
+  box-shadow: inset 0 0 0 1.5px var(--plaza-accent, var(--color-border));
 }
 
 /*
