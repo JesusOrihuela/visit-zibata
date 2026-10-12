@@ -89,6 +89,25 @@ function grafica(porDia, dias, desde) {
   </svg>`
 }
 
+/**
+ * Las sugerencias, en bloques y no en tabla: lo que importa es el mensaje, que es un párrafo, y
+ * meterlo en una celda lo obligaría a competir por el ancho con la fecha y el lugar.
+ */
+function sugerencias(filas) {
+  if (filas.length === 0) return '<p class="vacio">Todavía no ha escrito nadie.</p>'
+  return `<div class="recados">${filas
+    .map((fila) => {
+      const quien =
+        { vecino: 'Vecino', negocio: 'El negocio', otro: 'Otro' }[fila.quien] ?? fila.quien
+      const cabecera = [texto(fila.creada).slice(0, 10), texto(quien), texto(fila.lugar)]
+        .filter(Boolean)
+        .join(' · ')
+      const contacto = fila.contacto ? `<p class="contacto">${texto(fila.contacto)}</p>` : ''
+      return `<article class="recado"><p class="meta">${cabecera}</p><p>${texto(fila.mensaje)}</p>${contacto}</article>`
+    })
+    .join('')}</div>`
+}
+
 function pintar(datos) {
   const r = datos.resumen ?? {}
   const tarjetas = [
@@ -99,6 +118,7 @@ function pintar(datos) {
     ['Corazones', r.corazones],
     ['Calificaciones', r.notas],
     ['Visitas marcadas', r.visitasMarcadas],
+    ['Sugerencias sin leer', datos.sinAtender],
   ]
     .map(
       ([nombre, valor]) => `<div class="tarjeta"><dt>${nombre}</dt><dd>${numero(valor)}</dd></div>`,
@@ -156,6 +176,11 @@ function pintar(datos) {
         })),
         (fila) => fila.corazones,
       )}
+    </section>
+
+    <section>
+      <h2>Sugerencias <span class="nota">lo último que ha escrito la gente</span></h2>
+      ${sugerencias(datos.sugerencias ?? [])}
     </section>
 
     <section>

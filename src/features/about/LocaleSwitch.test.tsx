@@ -23,7 +23,7 @@ describe('LocaleSwitch', () => {
     await userEvent.click(screen.getByRole('button', { name: 'View the guide in English' }))
     // `find` y no `get`: el catálogo inglés llega en su propia petición, así que la interfaz cambia
     // un instante después del clic. Es el precio de que cada visita baje un solo idioma.
-    expect(await screen.findByRole('heading', { name: 'Privacy' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Privacy and terms' })).toBeInTheDocument()
     expect(window.localStorage.getItem('zibata:idioma')).toBe('en')
     expect(screen.getByRole('button', { name: 'Ver la guía en Español' })).toBeInTheDocument()
   })

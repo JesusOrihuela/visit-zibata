@@ -4,11 +4,13 @@ Guía para agentes y colaboradores. Contexto del producto y comandos en [README.
 
 ## Reglas del proyecto
 
-- Sitio estático: nada de API keys ni dependencias de servicios de pago en runtime. Lo único que
-  corre en el servidor es `worker/`, que sirve los archivos, cuenta visitas y comparticiones por
-  página y día (sin cookies, sin IP, sin nada por persona) y guarda lo que marca cada quien bajo una
-  cuenta anónima sin correo ni nombre. Si se cae, el sitio sigue: nada de eso puede romper la
-  página, y hay pruebas que fijan lo que NO se guarda.
+- Sitio estático: nada de API keys ni dependencias de servicios externos en runtime, y la CSP lo
+  fija (`connect-src 'self'`, sin un solo destino fuera). Lo único que corre en el servidor es
+  `worker/`, que sirve los archivos, cuenta visitas y comparticiones por página y día (sin cookies,
+  sin IP, sin nada por persona), guarda lo que marca cada quien bajo una cuenta anónima sin correo ni
+  nombre, y recibe las sugerencias de "Sugiere un cambio" (lo que la persona escribió, sin colgar de
+  ninguna cuenta). Si se cae, el sitio sigue: nada de eso puede romper la página, y hay pruebas que
+  fijan lo que NO se guarda.
 - El mapa es MapLibre con datos propios (`public/map`). Google Maps solo como enlace externo; nunca Google
   Places, scraping ni descarga de fotos de terceros.
 - No inventar datos de negocios reales (horarios, teléfonos, descripciones, fotos). Sin publicidad,

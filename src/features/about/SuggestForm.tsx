@@ -1,20 +1,21 @@
 /**
- * Formulario de "Sugiere un cambio". Es nuestro: mismos campos, mismo idioma y mismo diseño que el
- * resto de la guía. Lo único que sale fuera es el envío, cuando la persona pulsa el botón, a la API de
- * Web3Forms, que lo entrega por correo. Navegar por la guía sigue sin hacer una sola petición externa.
+ * Formulario de "Sugiere un cambio". Es nuestro de punta a punta: desde la v4.18 el envío va a
+ * nuestro propio servidor y no a un tercero, así que usar la guía entera no hace ni una petición
+ * fuera del origen.
  *
  * Escribe quien sea, y la primera fila lo pregunta: vecino, el propio negocio u otro. Saberlo cambia
  * cómo se trata el dato (lo que dice el negocio de su horario vale más que un rumor), y no obliga a
- * nada más: ni correo, ni lugar, ni cuenta.
+ * nada más: ni correo, ni lugar, ni cuenta. Mandar un recado no crea identidad.
  *
  * Cabe sin desplazar la hoja: los campos cortos comparten fila en cuanto hay ancho.
  *
- * El correo de destino no está aquí: vive en Web3Forms, atado a la clave pública. Sin clave no se
- * dibuja el formulario, así que nunca hay un botón que no lleve a ningún sitio.
+ * Lo que frena el spam son tres cosas que no se ven: el campo trampa, la prueba de trabajo que
+ * cuesta mandar el formulario, y que esa prueba valga una sola vez (ver worker/sugerencias.ts).
  */
 import { useId, useState } from 'react'
-import { canSuggest, SUGGEST_FORM_ENDPOINT, SUGGEST_FORM_KEY } from '../../config/site.ts'
+import { SUGGEST_FORM_ENDPOINT } from '../../config/site.ts'
 import { t } from '../../i18n/index.ts'
+import { secretoConPrueba } from '../../lib/prueba-de-trabajo.ts'
 import styles from './SuggestForm.module.css'
 
 type Status = 'idle' | 'sending' | 'sent' | 'error'
@@ -41,8 +42,6 @@ export function SuggestForm() {
    */
   const [trap, setTrap] = useState('')
 
-  if (!canSuggest()) return null
-
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (message.trim().length === 0) {
@@ -58,19 +57,22 @@ export function SuggestForm() {
     }
     setStatus('sending')
     try {
+      /*
+       * El sello: un valor cuya huella empieza por ceros. Buscarlo cuesta uno o dos segundos de
+       * CPU, que es lo que hace cara una ráfaga de envíos y no le cuesta nada a quien escribe una
+       * vez. El servidor lo guarda como clave única, así que reenviar el mismo no escribe nada.
+       */
+      const sello = await secretoConPrueba()
+      if (!sello) throw new Error('sin sello')
       const response = await fetch(SUGGEST_FORM_ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({
-          access_key: SUGGEST_FORM_KEY,
-          subject: place.trim() ? `Zibatá · ${place.trim()}` : 'Zibatá · sugerencia',
-          from_name: 'Visit Zibatá',
           quien: who,
           lugar: place.trim(),
           mensaje: message.trim(),
           contacto: contact.trim(),
-          // Web3Forms descarta el envío si este campo viene relleno, sin necesidad de captcha.
-          botcheck: trap,
+          sello,
         }),
       })
       if (!response.ok) throw new Error(String(response.status))

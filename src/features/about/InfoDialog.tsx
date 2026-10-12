@@ -1,13 +1,18 @@
 /**
- * Páginas de información: "Acerca de esta guía", "Privacidad" y "Sugiere un cambio". Cada una tiene su
- * propia ruta (#/info/…), así que se puede enlazar y compartir por separado; al cerrarlas se vuelve a
- * lo que había debajo. Desde cada una se salta a las otras dos, sin volver a buscarlas en la interfaz.
+ * Páginas de información: "Acerca de esta guía", "Privacidad y términos" y "Sugiere un cambio". Cada
+ * una tiene su propia ruta (#/info/…), así que se puede enlazar y compartir por separado; al cerrarlas
+ * se vuelve a lo que había debajo. Desde cada una se salta a las otras dos, sin volver a buscarlas en
+ * la interfaz.
+ *
+ * Son tres y no cuatro porque privacidad y términos van juntas desde la v4.18. La dirección no
+ * cambió (/info/privacidad): ya estaba indexada, y partirla en dos habría dejado dos páginas cortas
+ * que se repiten.
  */
 import { X } from 'lucide-react'
 import { lazy, Suspense, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { Signature } from '../../components/brand/Signature.tsx'
-import { APP_VERSION, canSuggest } from '../../config/site.ts'
+import { APP_VERSION } from '../../config/site.ts'
 import { t, useLocale } from '../../i18n/index.ts'
 import { INFO_TOPICS, type InfoPagina, type InfoTopic } from '../../lib/url-state.ts'
 import styles from './InfoDialog.module.css'
@@ -28,7 +33,7 @@ const TOPIC: Record<InfoPagina, TopicKey> = {
 /** El nombre de cada tema en la fila de enlaces. El tutorial no es página de texto, pero sí enlace. */
 const ENLACE = {
   acerca: 'about.open',
-  privacidad: 'about.privacy',
+  privacidad: 'about.privacyTitle',
   sugerir: 'about.fix',
   tutorial: 'about.tutorial',
 } as const satisfies Record<InfoTopic, string>
@@ -47,7 +52,7 @@ const PAGE = {
     link: 'about.open',
   },
   privacy: {
-    title: 'about.privacy',
+    title: 'about.privacyTitle',
     lead: 'about.privacyLead',
     body: 'about.privacyBody',
     detail: 'about.privacyLocation',
@@ -138,8 +143,12 @@ export function InfoDialog({ topic, onClose, onGoTo }: InfoDialogProps) {
 
         <p className={styles.lead}>{t(page.lead)}</p>
         <p className={styles.body}>{t(page.body)}</p>
-        {/* Con canal abierto, el formulario sustituye a la explicación de que todavía no lo hay. */}
-        {key === 'contribute' && canSuggest() ? (
+        {/*
+         * En "Sugiere un cambio" el formulario ocupa el sitio del detalle. Desde la v4.18 siempre
+         * está: ya no depende de una clave de terceros que podía faltar, así que no hay caso en el
+         * que la página tenga que explicar que el canal no existe.
+         */}
+        {key === 'contribute' ? (
           <Suspense fallback={null}>
             <SuggestForm />
           </Suspense>
@@ -147,6 +156,21 @@ export function InfoDialog({ topic, onClose, onGoTo }: InfoDialogProps) {
           <p className={styles.body}>{t(page.detail)}</p>
         )}
         {page.extra && <p className={styles.body}>{t(page.extra)}</p>}
+
+        {/*
+         * Los términos, en la misma página y debajo de la privacidad. Se leen en el mismo orden en
+         * que importan: qué es esta guía, qué tan fiable es el dato, cómo pedir que se corrija o se
+         * quite, y de quién es cada cosa.
+         */}
+        {key === 'privacy' && (
+          <>
+            <h3 className={styles.blockTitle}>{t('about.termsTitle')}</h3>
+            <p className={styles.body}>{t('about.termsWhat')}</p>
+            <p className={styles.body}>{t('about.termsData')}</p>
+            <p className={styles.body}>{t('about.termsFix')}</p>
+            <p className={styles.body}>{t('about.termsContent')}</p>
+          </>
+        )}
 
         {key === 'about' && (
           <>

@@ -50,7 +50,7 @@ cabeceras propias), solo en producción: el servidor de desarrollo necesita esti
 
 ```
 default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:;
-font-src 'self'; connect-src 'self' https://api.web3forms.com; worker-src 'self' blob:; child-src 'self' blob:;
+font-src 'self'; connect-src 'self'; worker-src 'self' blob:; child-src 'self' blob:;
 manifest-src 'self'; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'self'
 ```
 
@@ -59,7 +59,7 @@ manifest-src 'self'; object-src 'none'; frame-src 'none'; base-uri 'self'; form-
   build desde el mismo módulo que escribe la página, así que no se pueden separar.
 
   Tiene que estar en la política del sitio aunque la 404 lleve la suya: **cuando hay dos políticas,
-  el navegador aplica las dos**. Hasta la v4.16.1 la cabecera decía `style-src 'self'` y la página
+  el navegador aplica las dos**. Hasta la v4.15.2 la cabecera decía `style-src 'self'` y la página
   decía `'unsafe-inline'`, así que la intersección las prohíbe y la 404 salió publicada sin una sola
   regla aplicada. No lo vio nadie porque `vite preview` no sirve `_headers`: en local solo existía
   el `<meta>` permisivo. Lo fija ahora `scripts/build/pagina-404.test.ts`.
@@ -70,13 +70,17 @@ manifest-src 'self'; object-src 'none'; frame-src 'none'; base-uri 'self'; form-
   política volvió a cerrarse. El motivo del cambio no fue la política sino que Turnstile dejaba fuera
   en silencio a quien usa Tor o un bloqueador duro; cerrar la CSP fue el premio.
 
-- `connect-src` abre un único destino externo, **api.web3forms.com**, y solo se usa al pulsar "Enviar"
-  en "Sugiere un cambio". Navegar por la guía no hace ninguna petición fuera del propio origen. El
-  correo de destino no viaja en el código: vive en Web3Forms, atado a la clave pública del formulario.
-  La clave se pasa en `VITE_WEB3FORMS_KEY` (ver `.env.example`), no está en el repositorio y, como
-  cualquier variable `VITE_*`, Vite la incrusta en el JavaScript publicado: es una clave de cliente,
-  pública por diseño, y lo que la protege es la lista de dominios permitidos en el panel de Web3Forms
-  más el campo trampa del formulario. Sin clave, el formulario no se dibuja.
+- **`connect-src` no tiene ningún destino externo.** Desde la v4.18 es `'self'` a secas, así que no
+  solo navegar: usar la guía entera, incluido escribir en "Sugiere un cambio", no hace una sola
+  petición fuera del propio origen.
+
+  Hasta la v4.17 aquí estaba abierto **api.web3forms.com**, el servicio que iba a entregar las
+  sugerencias por correo. Nunca llegó a usarse en producción (faltaba la clave, así que el formulario
+  no se dibujaba) y para cuando tocaba ponerla ya había servidor propio, de modo que abrir un destino
+  externo para algo que podemos guardar nosotros dejó de tener sentido. Ahora el formulario envía a
+  `POST /api/sugerencia` y lo que llega se guarda en D1 (ver `worker/sugerencias.ts`); se lee en el
+  panel privado, no por correo. Con eso se fueron también la clave de cliente incrustada en el
+  JavaScript publicado y la lista de dominios permitidos en un panel de terceros.
 - `blob:` en imágenes y workers lo usa MapLibre internamente; `data:` lo usan iconos embebidos.
 - `frame-ancestors` **no** puede declararse en `<meta>`: si el hosting admite cabeceras, añade
   `Frame-Ancestors: 'none'` o `X-Frame-Options: DENY` (ver [DESPLIEGUE.md](DESPLIEGUE.md)).
@@ -113,6 +117,38 @@ números se consultan con `wrangler` desde la máquina del propietario.
 
 Lo que se guarda es un contador por día y ruta. Aunque alguien se hiciera con la base entera, no
 encontraría a nadie: no hay identificadores, ni IP, ni user agent, ni referente.
+
+## Las sugerencias
+
+Desde la v4.18, "Sugiere un cambio" escribe en nuestra propia base: `POST /api/sugerencia`, en
+`worker/sugerencias.ts`. Antes salía a Web3Forms y nunca llegó a usarse en producción, así que no
+hubo nada que migrar.
+
+Lo que se guarda es lo que la persona escribió y nada más: quién dice ser (vecino, negocio u otro),
+el lugar si lo nombró, el mensaje, y el contacto solo si decidió dejarlo. No cuelga de ninguna
+cuenta, y no se guarda IP, user agent ni referente, así que dos recados de la misma persona no se
+pueden juntar. Mandar un recado no crea identidad, y pedir una cuenta para avisar de un horario mal
+puesto sería pedir más de lo que hace falta.
+
+Tres cosas frenan el spam, y ninguna pide nada a quien escribe:
+
+1. **El campo trampa** del formulario, que una persona no ve ni rellena.
+2. **La prueba de trabajo.** El envío lleva un valor cuya huella SHA-256 empieza por 16 ceros, que
+   cuesta uno o dos segundos de CPU encontrar en el propio navegador. Es el mismo código que el alta
+   de cuenta (`src/lib/prueba-de-trabajo.ts`): escribir una vez no se nota, mandar mil se paga mil
+   veces.
+3. **Que esa prueba vale una sola vez.** Lo que se guarda en la fila no es el valor, es su huella,
+   y esa columna es UNIQUE: reenviar el mismo choca contra el índice, responde 409 y no escribe
+   nada. No hace falta ni una tabla aparte ni caducidades que mantener.
+
+Los textos se recortan a sus topes (1200, 120 y 160 caracteres) en vez de rechazarse: quien escribió
+de más no pierde lo que escribió. Lo que llega se lee en el panel privado, detrás de Cloudflare
+Access; no hay ningún endpoint público que devuelva sugerencias, y nada de lo que se escribe ahí se
+publica en la guía.
+
+Conviene añadirle, como al alta de cuenta, una regla de **Rate limiting** en el borde (ver
+[DESPLIEGUE.md](DESPLIEGUE.md)): la prueba de trabajo encarece una ráfaga, el límite de ritmo la
+corta antes de que llegue al Worker.
 
 ## Geolocalización
 

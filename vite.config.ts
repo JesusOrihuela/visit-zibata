@@ -42,9 +42,9 @@ function socialMeta(): Plugin {
 
 /**
  * Content Security Policy en `<meta>` (GitHub Pages no permite cabeceras propias). Solo en build: el
- * servidor de desarrollo inyecta estilos en línea para HMR. Todo es del propio origen salvo el envío
- * del formulario de sugerencias (api.web3forms.com, solo al pulsar enviar): sin CDN, sin analítica y
- * sin APIs externas al navegar; Google Maps solo se abre como enlace (navegación, no petición).
+ * servidor de desarrollo inyecta estilos en línea para HMR. **Todo es del propio origen**: sin CDN,
+ * sin analítica y sin APIs externas, ni navegando ni escribiendo. Google Maps solo se abre como
+ * enlace (navegación, no petición).
  * En la v4.11 hubo aquí un hueco para el desafío de Turnstile; al sustituirlo por una prueba de
  * trabajo, que no necesita a nadie de fuera, la política volvió a cerrarse (ver docs/SEGURIDAD.md).
  * `blob:`/`data:` en imágenes y workers los usa MapLibre internamente. `frame-ancestors` no se puede
@@ -64,8 +64,12 @@ export const CONTENT_SECURITY_POLICY = [
   `style-src 'self' ${HUELLA_ESTILO_404}`,
   "img-src 'self' data: blob:",
   "font-src 'self'",
-  // Único destino de connect-src: "Sugiere un cambio", y solo cuando la persona pulsa enviar.
-  "connect-src 'self' https://api.web3forms.com",
+  /*
+   * Solo el propio origen. Desde la v4.18 no queda ningún destino externo: "Sugiere un cambio" iba
+   * a Web3Forms y ahora va a nuestro servidor, así que usar la guía entera, incluido escribir, no
+   * hace ni una petición fuera.
+   */
+  "connect-src 'self'",
   "worker-src 'self' blob:",
   "child-src 'self' blob:",
   "manifest-src 'self'",

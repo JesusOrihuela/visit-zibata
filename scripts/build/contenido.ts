@@ -108,7 +108,11 @@ export function contenidoDeLugar(datos: ContenidoDeLugar): string {
 
 export interface ContenidoDeLista {
   nombre: string
-  descripcion?: string
+  /**
+   * Una entradilla, o varios párrafos. Lo segundo lo piden las páginas de información, que no
+   * tienen una lista debajo a la que resumir: su texto es la página.
+   */
+  descripcion?: string | string[]
   tituloLista: string
   enlaces: Enlace[]
   volver?: Enlace
@@ -119,7 +123,9 @@ export function contenidoDeLista(datos: ContenidoDeLista): string {
   return [
     '<article class="estatico">',
     `<h1>${escaparHtml(datos.nombre)}</h1>`,
-    parrafo(datos.descripcion),
+    (Array.isArray(datos.descripcion) ? datos.descripcion : [datos.descripcion])
+      .map(parrafo)
+      .join(''),
     titulo(datos.tituloLista),
     lista(datos.enlaces),
     datos.volver

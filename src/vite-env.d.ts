@@ -9,8 +9,6 @@ declare const __SITE_URL__: string
 interface ImportMetaEnv {
   /** "true" para incluir el modo depuración del mapa en un build de producción. */
   readonly VITE_ENABLE_MAP_DEBUG?: string
-  /** Clave pública de Web3Forms para "Sugiere un cambio" (ver src/config/site.ts). */
-  readonly VITE_WEB3FORMS_KEY?: string
 }
 
 interface ImportMeta {

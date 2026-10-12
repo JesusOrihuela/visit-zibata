@@ -260,14 +260,29 @@ function pagesFor(
 
   const INFO: Record<
     InfoTopic,
-    { title: keyof typeof es; lead: keyof typeof es; body?: keyof typeof es }
+    { title: keyof typeof es; lead: keyof typeof es; body?: (keyof typeof es)[] }
   > = {
-    acerca: { title: 'about.title', lead: 'about.aboutLead', body: 'about.aboutBody' },
-    privacidad: { title: 'about.privacy', lead: 'about.privacyLead', body: 'about.privacyBody' },
+    acerca: { title: 'about.title', lead: 'about.aboutLead', body: ['about.aboutBody'] },
+    /*
+     * Privacidad lleva varios párrafos porque desde la v4.18 también son los términos de uso, y el
+     * argumento de la página vale igual para ellos: unos términos que solo existen si se ejecuta
+     * JavaScript no se pueden citar ni archivar.
+     */
+    privacidad: {
+      title: 'about.privacyTitle',
+      lead: 'about.privacyLead',
+      body: [
+        'about.privacyBody',
+        'about.termsWhat',
+        'about.termsData',
+        'about.termsFix',
+        'about.termsContent',
+      ],
+    },
     sugerir: {
       title: 'about.contribute',
       lead: 'about.contributeLead',
-      body: 'about.contributeBody',
+      body: ['about.contributeBody'],
     },
     // El tutorial es una ventana de cuatro pasos sobre gestos del mapa: no tiene cuerpo que servir.
     tutorial: { title: 'about.tutorialTitle', lead: 'about.tutorialLead' },
@@ -284,9 +299,10 @@ function pagesFor(
        */
       contenido: contenidoDeLista({
         nombre: String(copy[keys.title]),
-        descripcion: [String(copy[keys.lead]), keys.body ? String(copy[keys.body]) : '']
-          .filter(Boolean)
-          .join(' '),
+        descripcion: [
+          String(copy[keys.lead]),
+          ...(keys.body ?? []).map((clave) => String(copy[clave])),
+        ].filter(Boolean),
         tituloLista: copy['about.moreLabel'],
         enlaces: INFO_TOPICS.filter((otro) => otro !== topic).map((otro) => ({
           texto: String(copy[INFO[otro].title]),

@@ -2,36 +2,24 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { SuggestForm } from './SuggestForm.tsx'
 
-/** El formulario lee la clave al importarse: cada prueba lo importa con el entorno ya preparado. */
-async function load(key: string | undefined) {
-  vi.resetModules()
-  if (key === undefined) vi.stubEnv('VITE_WEB3FORMS_KEY', '')
-  else vi.stubEnv('VITE_WEB3FORMS_KEY', key)
-  return import('./SuggestForm.tsx')
-}
+/*
+ * La prueba de trabajo se simula: con el módulo de verdad, cada envío buscaría un sello a base de
+ * hashes y la suite tardaría minutos. Que el sello sea válido y valga una sola vez se comprueba en
+ * worker/sugerencias.test.ts y en src/lib/prueba-de-trabajo.test.ts.
+ */
+const SELLO = 'sello-de-prueba-que-no-vale-nada-aaaaaaaaaa'
+vi.mock('../../lib/prueba-de-trabajo.ts', () => ({ secretoConPrueba: async () => SELLO }))
 
 describe('SuggestForm', () => {
-  beforeEach(() => {
-    vi.restoreAllMocks()
-  })
-  afterEach(() => {
-    vi.unstubAllEnvs()
-    vi.unstubAllGlobals()
-  })
+  beforeEach(() => vi.restoreAllMocks())
+  afterEach(() => vi.unstubAllGlobals())
 
-  it('sin clave no se dibuja ningún formulario', async () => {
-    const { SuggestForm } = await load(undefined)
-    const { canSuggest } = await import('../../config/site.ts')
-    expect(canSuggest()).toBe(false)
-    const { container } = render(<SuggestForm />)
-    expect(container).toBeEmptyDOMElement()
-  })
-
-  it('envía a Web3Forms con la clave y sin exponer ningún correo de destino', async () => {
+  it('envía a nuestro propio servidor, sin salir del origen', async () => {
+    // Desde la v4.18 no hay tercero: usar la guía entera no hace ni una petición fuera.
     const fetchMock = vi.fn().mockResolvedValue({ ok: true })
     vi.stubGlobal('fetch', fetchMock)
-    const { SuggestForm } = await load('clave-de-prueba')
     render(<SuggestForm />)
 
     // Escribe quien sea: aquí, el propio negocio, y eso viaja con el mensaje.
@@ -42,22 +30,31 @@ describe('SuggestForm', () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1)
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit]
-    expect(url).toBe('https://api.web3forms.com/submit')
+    expect(url).toBe('/api/sugerencia')
+    expect(url).not.toMatch(/^https?:/)
     const body = JSON.parse(String(init.body))
     expect(body).toMatchObject({
-      access_key: 'clave-de-prueba',
       quien: 'negocio',
       lugar: 'Tomassa',
       mensaje: 'Cambió el horario',
+      sello: SELLO,
     })
-    expect(JSON.stringify(body)).not.toMatch(/@/)
     expect(await screen.findByRole('status')).toHaveTextContent(/Gracias/)
+  })
+
+  it('no manda ninguna clave de terceros', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true })
+    vi.stubGlobal('fetch', fetchMock)
+    render(<SuggestForm />)
+    await userEvent.type(screen.getByLabelText(/Tu mensaje/), 'Hola')
+    await userEvent.click(screen.getByRole('button', { name: 'Enviar' }))
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit]
+    expect(String(init.body)).not.toContain('access_key')
   })
 
   it('el campo trampa existe, no lo alcanza ninguna persona y descarta el envío', async () => {
     const fetchMock = vi.fn().mockResolvedValue({ ok: true })
     vi.stubGlobal('fetch', fetchMock)
-    const { SuggestForm } = await load('clave-de-prueba')
     const { container } = render(<SuggestForm />)
 
     const trampa = container.querySelector<HTMLInputElement>('input[name="botcheck"]')
@@ -79,11 +76,18 @@ describe('SuggestForm', () => {
   it('no envía nada sin decir qué cambia', async () => {
     const fetchMock = vi.fn()
     vi.stubGlobal('fetch', fetchMock)
-    const { SuggestForm } = await load('clave-de-prueba')
     render(<SuggestForm />)
 
     await userEvent.click(screen.getByRole('button', { name: 'Enviar' }))
     expect(fetchMock).not.toHaveBeenCalled()
     expect(screen.getByText('Escribe tu mensaje.')).toBeInTheDocument()
+  })
+
+  it('si el servidor falla, lo dice y no finge que se envió', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 503 }))
+    render(<SuggestForm />)
+    await userEvent.type(screen.getByLabelText(/Tu mensaje/), 'Hola')
+    await userEvent.click(screen.getByRole('button', { name: 'Enviar' }))
+    expect(await screen.findByRole('alert')).toBeInTheDocument()
   })
 })

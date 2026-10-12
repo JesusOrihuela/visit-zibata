@@ -48,6 +48,7 @@ import {
   type FilaNotas,
   senalesDe,
 } from './senales.ts'
+import { GUARDAR, SIN_ATENDER, sugerenciaDe, ULTIMAS } from './sugerencias.ts'
 
 export interface EntornoApi extends EntornoAcceso {
   ANALITICA?: Base
@@ -145,6 +146,36 @@ export async function atenderApi(peticion: Request, entorno: EntornoApi): Promis
   }
 
   /*
+   * Las sugerencias. No piden cuenta: mandar un recado no es guardar algo tuyo, y pedir identidad
+   * para avisar de un horario mal puesto seria pedir mas de lo que hace falta. Lo que las frena es
+   * la prueba de trabajo del sello, y que el sello sea unico hace que cada una valga una vez.
+   */
+  if (ruta === '/api/sugerencia' && peticion.method === 'POST') {
+    const sugerencia = sugerenciaDe(await cuerpoDe(peticion))
+    if (!sugerencia) return json({ error: 'sugerencia no valida' }, 400)
+    if (!cumpleLaPrueba(await digestDe(sugerencia.sello))) {
+      return json({ error: 'prueba de trabajo no valida' }, 403)
+    }
+    try {
+      await entorno.ANALITICA.prepare(GUARDAR)
+        .bind(
+          nuevaCuenta(),
+          new Date().toISOString(),
+          sugerencia.quien,
+          sugerencia.lugar,
+          sugerencia.mensaje,
+          sugerencia.contacto,
+          base64url(await digestDe(sugerencia.sello)),
+        )
+        .run()
+    } catch {
+      // Casi siempre es el sello repetido. No se distingue: decirlo solo le sirve a quien insiste.
+      return json({ error: 'no se pudo guardar' }, 409)
+    }
+    return json({ ok: true }, 201)
+  }
+
+  /*
    * El panel privado. Va antes de la identidad porque no la usa: quien entra aquí ya pasó por
    * Cloudflare Access, que es otra puerta y no la de las cuentas anónimas (ver worker/panel.ts).
    */
@@ -166,6 +197,8 @@ export async function atenderApi(peticion: Request, entorno: EntornoApi): Promis
         entorno.ANALITICA.prepare(MAS_GUARDADOS).all<{ lugar: string; corazones: number }>(),
         entorno.ANALITICA.prepare(MAS_CALIFICADOS).all<{ lugar: string; notas: number }>(),
       ])
+    const sugerencias = await entorno.ANALITICA.prepare(ULTIMAS).all<Record<string, unknown>>()
+    const pendientes = await entorno.ANALITICA.prepare(SIN_ATENDER).first<{ total: number }>()
 
     return json({
       dias,
@@ -177,6 +210,8 @@ export async function atenderApi(peticion: Request, entorno: EntornoApi): Promis
       compartidas: compartidas.results ?? [],
       guardados: guardados.results ?? [],
       calificados: calificados.results ?? [],
+      sugerencias: sugerencias.results ?? [],
+      sinAtender: pendientes?.total ?? 0,
     })
   }
 

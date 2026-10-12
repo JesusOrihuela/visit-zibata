@@ -220,9 +220,17 @@ export const es = {
   'about.aboutSources':
     'Es una guía independiente, de la comunidad para la comunidad, hecha con información pública y actualizada cuando algo cambia.',
 
+  /*
+   * Dos nombres para la misma página, y es a propósito. "Privacidad" es la etiqueta corta de la
+   * franja del mapa y del pasaporte, donde el ancho es escaso. El título largo es el que se lee
+   * dentro y el que se indexa, porque desde la v4.18 esta página también son los términos de uso:
+   * eran dos avisos cortos que se repetían, y leerlos juntos es más claro que buscarlos por
+   * separado (ver docs/CUENTAS.md para lo que sí se guarda).
+   */
   'about.privacy': 'Privacidad',
+  'about.privacyTitle': 'Privacidad y términos',
   'about.privacyLead':
-    'Esta guía no usa cuentas ni cookies de rastreo, y no comparte tus datos con nadie.',
+    'Esta guía no usa cuentas ni cookies de rastreo, y no comparte tus datos con nadie. Esta página también reúne los términos de uso.',
   /*
    * Desde la v4.8.0 la guía sí cuenta visitas, así que el aviso lo dice. El texto es deliberadamente
    * concreto: una promesa vaga ("respetamos tu privacidad") no se puede comprobar, y esta sí, porque
@@ -231,16 +239,26 @@ export const es = {
   'about.privacyCounts':
     'Para saber qué lugares interesan, nuestro propio servidor suma una visita por página y por día. Eso es todo lo que se guarda: "esta página se abrió 12 veces hoy". No queda registro de quién, ni desde dónde, ni con qué, así que no hay manera de seguir a nadie entre dos visitas. El dato es nuestro: no se vende ni se comparte.',
   'about.privacyBody':
-    'Los lugares que abres y el idioma se guardan únicamente en este navegador. Tus favoritos, tus calificaciones y las visitas que marcas se guardan aquí y además se envían para que no se pierdan y para que el número de personas que guardaron cada lugar sea cierto: viajan atados a un identificador al azar, sin correo, sin nombre y sin nada que diga quién eres. Tus calificaciones no se publican nunca, ni siquiera como promedio; sirven para ordenar la guía y no salen del servidor. Ese identificador vive solo en este navegador, así que si borras los datos del sitio se pierde y empiezas de cero.',
+    'Los lugares que abres y el idioma se guardan únicamente en este navegador. Tus favoritos, tus calificaciones y las visitas que marcas se guardan aquí y además se envían para que no se pierdan y para que el número de personas que guardaron cada lugar sea cierto: viajan atados a un identificador al azar, sin correo, sin nombre y sin nada que diga quién eres. Tus calificaciones no se publican nunca, ni siquiera como promedio; sirven para ordenar la guía y no salen del servidor. Ese identificador vive solo en este navegador, así que si borras los datos del sitio se pierde y empiezas de cero. Si escribes en "Sugiere un cambio", lo que escribas se guarda para poder atenderlo, junto con el contacto que dejes si decides dejarlo; eso no va atado a ningún identificador.',
   'about.privacyLocation':
     'Tu ubicación se utiliza solo al pulsar el botón para centrar el mapa y no se guarda ni se transmite. El mapa y las tipografías se sirven desde este mismo sitio, y guardar un lugar tampoco llama a nadie de fuera, de modo que usar la guía no genera ni una petición a terceros. Los enlaces a Google Maps, redes sociales o reparto abren sitios externos, cada uno con su propia política.',
+
+  'about.termsTitle': 'Términos de uso',
+  'about.termsWhat':
+    'Esta guía es un proyecto independiente. No tiene relación comercial con ninguno de los lugares que aparecen: nadie paga por estar, por salir más arriba ni por aparecer destacado, y no hay publicidad. Que un lugar esté aquí no es una recomendación ni un respaldo, solo que existe en la zona y hay datos suficientes para describirlo.',
+  'about.termsData':
+    'La información se reúne de fuentes públicas y de lo que corrige cada negocio, y se revisa por temporada. Aun así puede estar desactualizada: los horarios cambian, un teléfono deja de servir y un local cierra sin avisar. La guía se ofrece tal como está, sin garantía de que cada dato sea exacto hoy. Para algo que importe (el horario antes de salir, un precio, una reserva), confírmalo directo con el lugar.',
+  'about.termsFix':
+    'Si un dato de tu negocio está mal, o prefieres no aparecer, escribe por "Sugiere un cambio" y se corrige o se quita en la siguiente actualización. No hace falta explicar por qué: basta con pedirlo.',
+  'about.termsContent':
+    'Los textos, el mapa y el código de la guía son de quien la mantiene. El nombre, el logotipo y la marca de cada negocio son de ese negocio, y aquí se usan solo para identificarlo. Los enlaces a Google Maps, redes sociales o reparto llevan a sitios de terceros, y lo que ocurra ahí se rige por sus propias reglas.',
 
   'about.contribute': 'Sugiere un cambio',
   'about.contributeLead': '¿Falta un lugar o hay un dato que ya no es correcto?',
   'about.contributeBody':
     'Escribe quien sea, vecino, cliente o el propio negocio: toda corrección suma, sea un horario, un teléfono, las redes o la descripción.',
   'about.contributeMeanwhile':
-    'El canal para enviarlas está en definición y se publicará aquí en cuanto exista. Mientras tanto, la guía se revisa por temporada y cualquier dato que un negocio pida corregir entra en la siguiente actualización.',
+    'Lo que escribas llega directo a quien mantiene la guía, sin pasar por ningún servicio de terceros. No hace falta cuenta ni correo: el contacto es opcional y solo sirve para responderte. La guía se revisa por temporada, y lo que pida corregir un negocio entra en la siguiente actualización.',
 
   'suggest.title': 'Cuéntame qué cambia',
   'suggest.who': '¿Quién escribe?',
@@ -260,7 +278,7 @@ export const es = {
   /* Etiqueta del campo trampa: solo la oyen los lectores de pantalla, y les dice que lo dejen. */
   'suggest.trap': 'No rellenes este campo',
   'suggest.note':
-    'Al enviar, tu mensaje se envía por Web3Forms y se recibe por correo. La guía no guarda ninguna información.',
+    'Al enviar, tu mensaje se guarda en el servidor de la guía para poder atenderlo, sin pasar por ningún servicio de terceros. No se guarda nada más de ti: ni cuenta, ni dirección, ni de qué navegador escribes.',
 
   'about.credits': 'Datos y créditos',
   'about.creditsBody':
