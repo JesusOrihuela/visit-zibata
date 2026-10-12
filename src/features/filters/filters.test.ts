@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { catalogFixture, makePlace } from '../../test/fixtures.ts'
+import { buildCatalog } from '../../data/catalog.ts'
+import { catalogFixture, categoriesFixture, makePlace, plazasFixture } from '../../test/fixtures.ts'
 import { createSearchIndex } from '../search/searchIndex.ts'
 import {
   applyFilters,
@@ -101,5 +102,60 @@ describe('utilidades de filtros', () => {
       ['plaza-sur', 1],
     ])
     expect(countByCategory(all, catalog).get('desayunos-y-cafe')).toBe(2)
+  })
+})
+
+describe('abierto ahora', () => {
+  const LUNES_6 = { day: 'mon', minutes: 6 * 60 } as const
+  const conHorario = (id: string, franjas: string[]) =>
+    makePlace({
+      id,
+      plazaId: 'plaza-norte',
+      giros: ['pizza'],
+      hours: { mon: franjas, tue: [], wed: [], thu: [], fri: [], sat: [], sun: [] },
+    })
+  const propio = buildCatalog(categoriesFixture, plazasFixture, [
+    conHorario('abre-temprano', ['06:00-22:00']),
+    conHorario('abre-tarde', ['14:00-22:00']),
+    makePlace({ id: 'sin-horario', plazaId: 'plaza-norte', giros: ['pizza'] }),
+  ])
+  const indicePropio = createSearchIndex(propio)
+
+  it('deja solo lo que está abierto en ese momento', () => {
+    const r = applyFilters(
+      propio,
+      indicePropio,
+      { ...EMPTY_FILTERS, openNowOnly: true },
+      new Set(),
+      LUNES_6,
+    )
+    expect(ids(r)).toEqual(['abre-temprano'])
+  })
+
+  it('deja fuera los que no publican horario, porque de esos no se sabe', () => {
+    const r = applyFilters(
+      propio,
+      indicePropio,
+      { ...EMPTY_FILTERS, openNowOnly: true },
+      new Set(),
+      LUNES_6,
+    )
+    expect(ids(r)).not.toContain('sin-horario')
+  })
+
+  it('sin el filtro puesto, el horario no quita a nadie', () => {
+    const r = applyFilters(propio, indicePropio, EMPTY_FILTERS, new Set(), LUNES_6)
+    expect(ids(r)).toHaveLength(3)
+  })
+
+  it('sin saber la hora no se afirma que algo esté abierto', () => {
+    // Si quien llama no pasa el momento, el filtro no puede decidir y no deja pasar a nadie. Es
+    // preferible una lista vacía a una lista que afirma algo que no se comprobó.
+    const r = applyFilters(propio, indicePropio, { ...EMPTY_FILTERS, openNowOnly: true })
+    expect(ids(r)).toEqual([])
+  })
+
+  it('cuenta como filtro activo, así que aparece el resumen y el botón de limpiar', () => {
+    expect(hasActiveFilters({ ...EMPTY_FILTERS, openNowOnly: true })).toBe(true)
   })
 })

@@ -118,6 +118,9 @@ export const es = {
   'favorites.add': 'Guardar en favoritos',
   'favorites.remove': 'Quitar de favoritos',
   'favorites.filter': 'Favoritos',
+  'filters.openNow': 'Abierto ahora',
+  // Para el punto de la tarjeta, que no lleva texto a la vista. Lo lee un lector de pantalla.
+  'filters.openNowLabel': 'Abierto ahora: {name}',
   'favorites.saved': 'Guardado en favoritos',
 
   'brand.by': 'Un proyecto de',

@@ -500,6 +500,9 @@ function ReadyExperience({ catalog }: { catalog: Catalog }) {
             favoritesCount={favoritesCount}
             favoritesOnly={state.favoritesOnly}
             onToggleFavorites={() => dispatch({ type: 'toggleFavoritesOnly' })}
+            openNowCount={experience.openNowCount}
+            openNowOnly={state.openNowOnly}
+            onToggleOpenNow={() => dispatch({ type: 'toggleOpenNow' })}
             filtersActive={filtersActive}
             resultCount={resultCount}
             onClear={(event?: { detail?: number }) => {

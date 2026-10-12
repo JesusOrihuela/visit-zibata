@@ -13,6 +13,8 @@ export interface AppState {
   activeCategoryId: string | null
   searchQuery: string
   favoritesOnly: boolean
+  /** Solo lo abierto en este momento. */
+  openNowOnly: boolean
   tutorialVisible: boolean
   mapStatus: MapStatus
   /** Lista de plazas abierta sin selección (escritorio) / hoja expandida (móvil). */
@@ -32,6 +34,7 @@ export const initialAppState: AppState = {
   activeCategoryId: null,
   searchQuery: '',
   favoritesOnly: false,
+  openNowOnly: false,
   tutorialVisible: false,
   mapStatus: { state: 'loading' },
   listOpen: false,
@@ -52,6 +55,7 @@ export type AppAction =
   | { type: 'clearFilters' }
   | { type: 'openList' }
   | { type: 'setSheetExpanded'; expanded: boolean }
+  | { type: 'toggleOpenNow' }
   | { type: 'showTutorial' }
   | { type: 'dismissTutorial' }
   | { type: 'mapStatusChanged'; status: MapStatus }
@@ -110,8 +114,16 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       }
     case 'toggleFavoritesOnly':
       return { ...state, favoritesOnly: !state.favoritesOnly, selectedPlaceId: null }
+    case 'toggleOpenNow':
+      return { ...state, openNowOnly: !state.openNowOnly, selectedPlaceId: null }
     case 'clearFilters':
-      return { ...state, activeCategoryId: null, searchQuery: '', favoritesOnly: false }
+      return {
+        ...state,
+        activeCategoryId: null,
+        searchQuery: '',
+        favoritesOnly: false,
+        openNowOnly: false,
+      }
     case 'openList':
       return { ...state, listOpen: true, sheetExpanded: true }
     case 'setSheetExpanded':

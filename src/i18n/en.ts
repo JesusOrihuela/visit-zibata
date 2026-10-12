@@ -113,6 +113,8 @@ export const en = {
   'favorites.add': 'Save to favourites',
   'favorites.remove': 'Remove from favourites',
   'favorites.filter': 'Favourites',
+  'filters.openNow': 'Open now',
+  'filters.openNowLabel': 'Open now: {name}',
   'favorites.saved': 'Saved to favourites',
 
   'brand.by': 'A project by',

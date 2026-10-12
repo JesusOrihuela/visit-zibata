@@ -143,12 +143,23 @@ Las listas de una plaza y de resultados (sin texto de búsqueda) se ordenan con 
   pesan 0,3 como mucho: orientan, nunca mandan sobre el gusto propio. En la interfaz solo se publican
   los **corazones**; la media de estrellas ordena pero no se enseña junto al negocio, porque un promedio
   público es un arma de doble filo para un local pequeño.
+- **Abierto ahora (0,5).** Un local cerrado no sirve para decidir dónde ir en este momento, así que
+  estar abierto sube. Pesa más que la comunidad y que el giro, pero no manda: un favorito aporta
+  0,76 por la vía directa, así que un lugar que esta persona guardó y está cerrado puede seguir por
+  delante de uno indiferente que está abierto. Los once locales sin horario publicado quedan en
+  medio (0,35) y no en el suelo: no se sabe si están abiertos, y hundirlos castigaría al negocio por
+  un hueco de la guía.
 - **Descubrimiento y segundas oportunidades.** Una de cada cuatro posiciones es para un lugar que no ha
   abierto nunca **o que no abre desde hace más de 60 días**, con una rotación diaria determinista: lo
   nuevo tiene sitio y lo que se descartó hace tiempo puede volver.
 - **Las pastillas de categoría** también se ordenan por afinidad (`categoryAffinity`), con el orden
   curado como desempate: quien siempre busca tacos los encuentra primero.
-- **Sin señales**, el orden curado de la guía, tal cual. Con texto de búsqueda manda la relevancia.
+- **Sin señales**, el orden curado de la guía, con una sola excepción: lo abierto ahora sube, y
+  dentro de cada grupo (abierto, sin horario, cerrado) se conserva el orden curado. Estar abierto no
+  es una señal personal, es una propiedad del mundo, así que no hace falta haber marcado nada para
+  que valga. El resto de la maquinaria (afinidades, descubrimiento, rotación diaria) sí espera a que
+  haya algo marcado: barajarle la guía cada día a quien llega por primera vez no le sirve de nada.
+  Con texto de búsqueda manda la relevancia.
 - Las señales se leen una vez por lista: marcar un favorito dentro de ella no la reordena bajo el dedo.
 
 Las señales vienen de una `PreferenceSource` (`preferences.ts`). Hoy es local (`zibata:favoritos`,

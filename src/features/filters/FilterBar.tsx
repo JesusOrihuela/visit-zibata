@@ -1,5 +1,5 @@
 /** FilterBar: categoría + plaza (combinables), favoritos, nº de resultados y limpiar filtros. */
-import { ChevronDown, Heart, MapPin } from 'lucide-react'
+import { ChevronDown, Clock, Heart, MapPin } from 'lucide-react'
 import { useId } from 'react'
 import { t } from '../../i18n/index.ts'
 import type { Category, Plaza } from '../../types/domain.ts'
@@ -18,6 +18,10 @@ interface FilterBarProps {
   favoritesCount: number
   favoritesOnly: boolean
   onToggleFavorites: () => void
+  /** Cuántos están abiertos en este momento, con los demás filtros ya aplicados. */
+  openNowCount: number
+  openNowOnly: boolean
+  onToggleOpenNow: () => void
   filtersActive: boolean
   resultCount: number
   onClear: () => void
@@ -35,6 +39,9 @@ export function FilterBar({
   favoritesCount,
   favoritesOnly,
   onToggleFavorites,
+  openNowCount,
+  openNowOnly,
+  onToggleOpenNow,
   filtersActive,
   resultCount,
   onClear,
@@ -73,6 +80,25 @@ export function FilterBar({
           </select>
           <ChevronDown aria-hidden="true" className={styles.chevron} />
         </div>
+
+        {/*
+         * La pastilla solo aparece si hay algo abierto, igual que la de favoritos solo aparece si
+         * hay favoritos: un filtro que no puede dar resultados estorba más de lo que ayuda. A las
+         * cuatro de la mañana desaparece sola.
+         */}
+        {(openNowCount > 0 || openNowOnly) && (
+          <button
+            type="button"
+            className={styles.toggle}
+            data-abierto="si"
+            aria-pressed={openNowOnly}
+            onClick={onToggleOpenNow}
+          >
+            <Clock aria-hidden="true" />
+            {t('filters.openNow')}
+            <span className={styles.badge}>{openNowCount}</span>
+          </button>
+        )}
 
         {(favoritesCount > 0 || favoritesOnly) && (
           <button
