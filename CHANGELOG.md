@@ -34,6 +34,13 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
   Si cada pantalla siguiera preguntándoselo al horario por su cuenta, el filtro de abiertos acabaría
   colando un local en obra porque su horario dice que a esta hora abre.
 
+- **Las tres páginas de texto viajan en su propio trozo.** Lo que empujó a esto fue el presupuesto:
+  con los términos y el aviso de cierre, el paquete inicial llegó a 122,1 KB contra un límite de 122.
+  `InfoDialog` se importaba de forma estática, 7 KB de fuente más toda su prosa, para un diálogo que
+  la mayoría de las visitas no abre. Lo que toca cuando se choca con el techo es partir, no subir el
+  número, y está escrito así en `scripts/perf/check-bundle.ts` desde la v4.2.0. Queda en 121,2 KB, y
+  el CSS inicial baja de 10,2 a 9,9.
+
 ### Corregido
 
 - El guion largo que se colaba entre la plaza y la dirección en el HTML prerenderizado, que
