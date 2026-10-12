@@ -1,0 +1,6 @@
+{
+  "detector": {
+    "designSystem": { "enabled": true },
+    "ignoreRules": ["cream-palette", "monotonous-spacing"]
+  }
+}

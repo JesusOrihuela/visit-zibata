@@ -2,6 +2,38 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado semántico.
 
+## [4.21.0]: 2026-10-12
+
+### Añadido
+
+- **`DESIGN.md`: el sistema de diseño escrito.** Sale de lo que está publicado, no de intenciones:
+  los tokens con su porqué, las reglas con nombre (el acento que cuesta, el rojo que avisa de verdad,
+  la capa única, la píldora que se pulsa) y, al final, lo que el build carga como defecto sin que sea
+  regla. Lo leen las dos herramientas de diseño del proyecto, así que es una sola fuente y no dos.
+
+- **`.impeccable/config.json`.** Apaga dos de las 59 reglas del detector, las dos con una medición
+  delante. `cream-palette` no aplica porque el beige deriva de un hexadecimal de marca fijado antes
+  del código. `monotonous-spacing` midió "4 px el 69 % de las veces" en una muestra de la portada,
+  pero el reparto real en las 36 hojas es 8 px 53 veces, 12 px 48 y 16 px 44. La tercera,
+  `overused-font`, se deja sonando: esa premisa sí se cumple.
+
+### Corregido
+
+- **La descripción de la ficha ya no va justificada.** En una columna de 38 caracteres y sin partir
+  palabras, justificar abre ríos: "En␣␣␣TOMASSA␣␣|␣␣Almacén␣␣de␣␣Pastas" es lo que se publicaba. El
+  comentario del código describía ese fallo exacto y la línea siguiente lo provocaba.
+
+- **Dos animaciones dejan de recalcular la disposición en cada fotograma**, las dos encima del mapa,
+  que es el peor sitio posible para hacerlo.
+
+  Los controles del mapa movían `right` y `bottom` durante 420 ms al abrirse el panel; ahora la caja
+  se queda quieta y lo que se mueve es `translate`.
+
+  El tallo de los marcadores crecía con `height` cuando una etiqueta se eleva para no chocar con
+  otra, y son hasta quince a la vez mientras el mapa se mueve; ahora crece con `scale` y
+  `transform-origin: bottom`, así que el pie sigue clavado en la plaza. Medido en el navegador: con
+  elevación 2 pinta 110 px, los mismos de antes, con la caja en 14.
+
 ## [4.20.0]: 2026-10-12
 
 ### Añadido

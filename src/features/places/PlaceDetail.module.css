@@ -180,16 +180,20 @@
 
 /*
  * Se respetan los saltos de línea con los que el negocio escribió su descripción (máximo tres).
- * Justificada con partición de palabras: en una columna estrecha, sin guiones, el texto justificado
- * abre huecos entre palabras.
+ *
+ * Alineada a la izquierda, no justificada. Estuvo justificada y el comentario de entonces describía
+ * exactamente el fallo que provocaba: "en una columna estrecha, sin guiones, el texto justificado
+ * abre huecos entre palabras". Y debajo ponía `hyphens: none`. La columna mide 306 px a 15 px, o sea
+ * unos 38 caracteres, y justificar por debajo de 45 sin partir palabras garantiza ríos: "En␣␣␣
+ * TOMASSA␣␣|␣␣Almacén␣␣de␣␣Pastas" salía así en la ficha publicada.
+ *
+ * Partir con guiones tampoco era la salida: el texto lo escribe el negocio, a veces con nombres
+ * propios y marcas, y partirlos se lee peor que un margen derecho irregular.
  */
 .description {
   font-size: var(--text-base);
   line-height: 1.6;
   white-space: pre-line;
-  text-align: justify;
-  /* Justificado pero sin partir palabras con guion: es el punto medio que se lee mejor. */
-  hyphens: none;
   text-wrap: pretty;
   color: var(--ink-800);
 }

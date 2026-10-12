@@ -37,6 +37,24 @@ Guía para agentes y colaboradores. Contexto del producto y comandos en [README.
   proyecto lo firma una persona. Si tu configuración añade esa línea por omisión, quítala antes de
   commitear.
 
+## Diseño
+
+El sistema vive en [DESIGN.md](DESIGN.md): los tokens con su porqué, las reglas con nombre y lo que
+el build carga como defecto sin que sea regla. La fuente de verdad de los valores sigue siendo
+`src/styles/tokens.css`.
+
+Cuatro herramientas y un hueco cada una, para que no se pisen:
+
+| Capa | Herramienta | Cuándo |
+|---|---|---|
+| Conformidad, automática | `impeccable` (hook en cada edición, y `detect <url>`) | sola |
+| Estructura y tipografía | `/hallmark audit` | antes de un cambio grande de UI |
+| Movimiento | `review-animations` | si tocas una transición |
+| Datos del peor caso | `break-ui` | al cerrar un componente |
+
+El hook solo salta con Edit y Write: si editas por script, corre el detector a mano. Las reglas
+apagadas y su evidencia están en DESIGN.md; no se apaga una regla para que el contador baje.
+
 ## Antes de terminar un cambio
 
 ```bash
