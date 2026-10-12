@@ -200,21 +200,32 @@ export const en = {
     'It is an independent guide, by the community and for the community, built from public information and updated whenever something changes.',
 
   'about.privacy': 'Privacy',
+  'about.privacyTitle': 'Privacy and terms',
   'about.privacyLead':
-    'This guide uses no accounts and no tracking cookies, and shares your data with no one.',
+    'This guide uses no accounts and no tracking cookies, and shares your data with no one. This page also covers the terms of use.',
   'about.privacyCounts':
     'To know which places people care about, our own server adds one visit per page per day. That is all that is stored: "this page was opened 12 times today". Nothing records who, from where, or with what, so there is no way to follow anyone between two visits. The data is ours: it is neither sold nor shared.',
   'about.privacyBody':
-    'The places you open and the language are stored only in this browser. Your favourites, your ratings and the visits you log are stored here and also sent, so they are not lost and so the count of people who saved each place is true: they travel attached to a random identifier, with no email, no name and nothing that says who you are. Your ratings are never published, not even as an average; they help order the guide and never leave the server. That identifier lives only in this browser, so clearing the site data loses it and you start over.',
+    'The places you open and the language are stored only in this browser. Your favourites, your ratings and the visits you log are stored here and also sent, so they are not lost and so the count of people who saved each place is true: they travel attached to a random identifier, with no email, no name and nothing that says who you are. Your ratings are never published, not even as an average; they help order the guide and never leave the server. That identifier lives only in this browser, so clearing the site data loses it and you start over. If you write in "Suggest a change", what you write is stored so it can be acted on, along with the contact you leave if you choose to; that is not tied to any identifier.',
   'about.privacyLocation':
     'Your location is used only when you press the locate button, to centre the map, and it is never stored or transmitted. The map and the fonts are served from this same site, and saving a place calls no one either, so using the guide makes no third-party requests at all. Links to Google Maps, social accounts or delivery apps open external sites, each with its own policy.',
+
+  'about.termsTitle': 'Terms of use',
+  'about.termsWhat':
+    'This guide is an independent project. It has no commercial relationship with any of the places listed: nobody pays to be here, to rank higher or to be featured, and there is no advertising. A place being listed is not a recommendation or an endorsement, only that it exists in the area and there is enough information to describe it.',
+  'about.termsData':
+    'The information comes from public sources and from what each business corrects, and it is reviewed each season. Even so it can be out of date: opening hours change, a phone number stops working, a place closes without notice. The guide is offered as it is, with no guarantee that every detail is accurate today. For anything that matters (the hours before heading out, a price, a booking), confirm it directly with the place.',
+  'about.termsFix':
+    'If something about your business is wrong, or you would rather not be listed, write through "Suggest a change" and it is corrected or removed in the next update. No explanation needed: asking is enough.',
+  'about.termsContent':
+    'The text, the map and the code of this guide belong to whoever maintains it. Each business name, logo and trademark belongs to that business, and is used here only to identify it. Links to Google Maps, social accounts or delivery apps lead to third-party sites, and what happens there follows their own rules.',
 
   'about.contribute': 'Suggest a change',
   'about.contributeLead': 'Is a place missing or is something no longer right?',
   'about.contributeBody':
     'Anyone can write, a neighbour, a customer or the business itself: every correction helps, be it opening hours, a phone number, social accounts or the description.',
   'about.contributeMeanwhile':
-    'The channel for sending them is being defined and will be published here as soon as it exists. Until then, the guide is reviewed each season and anything a business asks to correct enters the next update.',
+    'What you write goes straight to whoever maintains the guide, with no third-party service in between. No account and no email needed: the contact field is optional and only serves to reply to you. The guide is reviewed each season, and anything a business asks to correct enters the next update.',
 
   'suggest.title': 'Tell me what changes',
   'suggest.who': 'Who is writing?',
@@ -233,7 +244,7 @@ export const en = {
   'suggest.required': 'Write your message.',
   'suggest.trap': 'Leave this field empty',
   'suggest.note':
-    'On sending, your message goes out through Web3Forms and arrives by email. The guide stores no information.',
+    'On sending, your message is stored on the guide’s own server so it can be acted on, with no third-party service in between. Nothing else about you is stored: no account, no address, no browser details.',
 
   'about.credits': 'Data and credits',
   'about.creditsBody':

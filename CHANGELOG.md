@@ -2,6 +2,40 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado semántico.
 
+## [4.16.0]: 2026-10-12
+
+### Añadido
+
+- **Formulario de sugerencias propio.** "Sugiere un cambio" ya no sale a Web3Forms: envía a
+  `POST /api/sugerencia` y lo que llega se guarda en D1 (`worker/sugerencias.ts`). El servicio de
+  terceros nunca llegó a usarse en producción, porque faltaba la clave y el formulario no se
+  dibujaba; para cuando tocaba ponerla ya había servidor propio, así que abrir un destino externo
+  para algo que podemos guardar nosotros dejó de tener sentido.
+
+  Con eso **`connect-src` vuelve a ser `'self'` a secas**: no solo navegar, usar la guía entera,
+  incluido escribir, no hace una sola petición fuera del propio origen. Se fueron también la clave
+  de cliente incrustada en el JavaScript publicado y la lista de dominios permitidos en un panel
+  ajeno. Lo que se pierde es el aviso por correo: hay que entrar al panel privado a mirar, y por eso
+  el panel cuenta las que faltan por atender.
+
+  Frenan el spam las tres cosas que ya frenaban el alta de cuenta, y ninguna pide nada a quien
+  escribe: el campo trampa, una prueba de trabajo de uno o dos segundos de CPU en el propio
+  navegador, y que esa prueba valga una sola vez (es la clave única de la fila, así que reenviarla
+  responde 409 y no escribe nada). Lo que se guarda es lo que la persona escribió, sin colgar de
+  ninguna cuenta y sin IP, user agent ni referente.
+
+- **Privacidad y términos, en una sola página.** Eran dos avisos cortos que se iban a repetir, así
+  que `/info/privacidad` ahora los lleva juntos: el aviso de privacidad arriba y los términos de uso
+  debajo, con lo que hay que poder leer antes de usar la guía. Qué es esta guía (independiente, sin
+  relación comercial con ningún lugar, nadie paga por estar ni por salir más arriba), qué tan fiable
+  es el dato (se revisa por temporada y aun así puede estar desactualizado, así que lo que importe se
+  confirma con el lugar), cómo pedir que se corrija o se quite (por "Sugiere un cambio", sin explicar
+  por qué), y de quién es cada cosa.
+
+  La dirección no cambió, porque ya estaba indexada. El título de la página dice las dos cosas y es
+  el que se indexa; en la franja del mapa y en el pasaporte la etiqueta sigue siendo "Privacidad",
+  que es lo que cabe.
+
 ## [4.15.2]: 2026-10-12
 
 ### Corregido

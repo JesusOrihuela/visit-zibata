@@ -60,11 +60,17 @@ que es el **único** sitio que la escribe.
 
 ### Información de la guía
 
-"Acerca de esta guía", "Privacidad" y "Corregir un dato" son **tres rutas propias** (`/info/acerca`,
-`/info/privacidad`, `/info/sugerir`, y `/en/info/about`, `/en/info/privacy`, `/en/info/suggest`): se enlazan y comparten por separado, y al cerrarlas se vuelve a
-la plaza o ficha que seguía en el estado. En escritorio se llega desde la franja inferior del mapa
-(`GuideBar`); en móvil, donde esa franja se pelearía con la hoja y con la atribución, desde el botón de
-información de la barra superior. Cada página es su propia hoja (`InfoDialog`) y lleva a las otras dos.
+"Acerca de esta guía", "Privacidad y términos", "Sugiere un cambio" y el tutorial son **cuatro rutas
+propias** (`/info/acerca`, `/info/privacidad`, `/info/sugerir`, `/info/tutorial`, y su árbol en
+inglés bajo `/en/info/`): se enlazan y comparten por separado, y al cerrarlas se vuelve a la plaza o
+ficha que seguía en el estado. En escritorio se llega desde la franja inferior del mapa (`GuideBar`);
+en móvil, donde esa franja se pelearía con la hoja y con la atribución, desde el botón de información
+de la barra superior. Cada página es su propia hoja (`InfoDialog`) y lleva a las otras.
+
+Privacidad y términos van en una sola página desde la v4.16. La dirección no cambió, porque ya
+estaba indexada: lo que cambió es que el título dice las dos cosas y los términos se leen debajo del
+aviso de privacidad. En la franja y en el pasaporte la etiqueta sigue siendo "Privacidad", que es lo
+que cabe.
 
 ### Tu Zibatá (perfil local)
 
@@ -214,7 +220,7 @@ El estado compartible vive en la **ruta** (`src/lib/url-state.ts`), con un árbo
 | `/` | `/en` |
 | `/zona/<slug>` | `/en/area/<slug>` |
 | `/lugar/<slug>` | `/en/place/<slug>` |
-| `/info/{acerca,privacidad,sugerir}` | `/en/info/{about,privacy,suggest}` |
+| `/info/{acerca,privacidad,sugerir,tutorial}` | `/en/info/{about,privacy,suggest,tutorial}` |
 | `?categoria=desayunos-y-cafe` | `?category=breakfast-and-coffee` |
 
 El parámetro de categoría se traduce entero, nombre y valor: una URL mitad en un idioma y mitad en
@@ -302,7 +308,7 @@ Ahí llegan los errores de tecleo y el enlace guardado de un local que ya no se 
 responde un 404 vacío, así que un plugin lo hace servir este archivo y la suite E2E puede comprobar lo
 que se ve de verdad.
 
-## Visitas (lo único que corre en el servidor)
+## Visitas
 
 `worker/` es el primer código de servidor del proyecto. Sirve los mismos archivos de `dist/` que
 antes y, de paso, suma una visita. Lo que guarda es una fila por **día, ruta e idioma** con un
@@ -336,6 +342,22 @@ es una página) y lo que no debe llegar a la base.
 
 El Worker corre solo en las ocho rutas de página. Las teselas, las imágenes y los assets se sirven
 sin pasar por él, que es lo que mantiene el costo en cero y evita contar un archivo como una visita.
+
+## Las sugerencias
+
+"Sugiere un cambio" es el único formulario de la guía, y desde la v4.16 su envío va a `POST
+/api/sugerencia` (`worker/sugerencias.ts`), no a un servicio de terceros. El módulo es puro: lee el
+cuerpo, recorta los textos a sus topes y devuelve `null` si no hay mensaje o si el sello no tiene
+forma de sello. Las tres consultas (guardar, últimas cincuenta, cuántas sin atender) son constantes
+del mismo archivo, parametrizadas, y se prueban sin levantar un Worker.
+
+Guardar una sugerencia sí puede fallar a la vista, al contrario que contar una visita: la persona
+necesita saber si su recado llegó. El endpoint responde 201 al guardar, 400 si no hay mensaje, 403
+si falta la prueba de trabajo y 409 si el sello ya se usó, y el formulario dice lo que toca en cada
+caso.
+
+Se leen en el panel privado, que las enseña con su fecha y lleva la cuenta de las que faltan por
+atender. No hay aviso por correo, y esa es la razón de que el panel las cuente.
 
 ## Los corazones (lo único que se publica)
 

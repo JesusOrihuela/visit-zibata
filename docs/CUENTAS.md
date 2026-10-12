@@ -260,10 +260,14 @@ memoria en silencio, y es aceptable porque el dato nunca salió del dispositivo.
 
 ### 4. La CSP y la prueba que la respalda
 
-`connect-src 'self' https://api.web3forms.com` tendría que admitir el origen de la API, y
-`tests/e2e/security.spec.ts` afirma **cero peticiones externas** en todo el recorrido. Las dos cosas
-son fáciles de cambiar; lo que importa es que son una decisión consciente, no un descuido que
-corregir.
+Esto dejó de ser un obstáculo, y conviene anotar por qué. La API vive en el mismo origen que la
+guía, así que `connect-src 'self'` ya la admite sin abrir nada: desde la v4.16 no queda ningún
+destino externo en la política (antes estaba `https://api.web3forms.com`, para las sugerencias, y se
+fue al pasarlas a nuestro propio servidor). `tests/e2e/security.spec.ts` sigue afirmando **cero
+peticiones externas** en todo el recorrido, y eso ahora se cumple sin excepciones que explicar.
+
+Un inicio de sesión con un tercero (el paso 5 del plan) sí volvería a abrir la política, y entonces
+toca decidirlo a conciencia, no de pasada.
 
 ### 5. El alojamiento (el bloqueo real)
 

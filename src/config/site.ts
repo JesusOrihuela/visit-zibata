@@ -12,18 +12,11 @@ export const APP_VERSION = __APP_VERSION__
 export const SITE_URL = __SITE_URL__
 
 /**
- * Clave pública de Web3Forms, el servicio que entrega por correo lo que se envía desde "Sugiere un
- * cambio". Es una clave de cliente, no un secreto: identifica el formulario y el correo de destino
- * vive en Web3Forms, no en el código, así que la dirección nunca se publica.
+ * Adónde se envía "Sugiere un cambio": a nuestro propio servidor.
  *
- * Sin clave, la guía no dibuja el formulario y explica que el canal todavía no está abierto. Para
- * abrirlo, pide la clave en https://web3forms.com con el correo de destino y pégala aquí (o pásala al
- * compilar con VITE_WEB3FORMS_KEY, que es lo que hace el flujo de publicación).
+ * Antes de la v4.16 salía a Web3Forms, que lo entregaba por correo. Nunca llegó a funcionar en
+ * producción (faltaba la clave, así que el formulario no se dibujaba), y para cuando iba a ponerse
+ * ya había servidor propio. Abrir un destino externo en la política de seguridad para algo que
+ * podemos guardar nosotros no se sostenía (ver worker/sugerencias.ts).
  */
-export const SUGGEST_FORM_KEY = import.meta.env.VITE_WEB3FORMS_KEY?.trim() ?? ''
-
-/** Adónde se envía el formulario. Solo este origen se abre en la CSP (ver vite.config.ts). */
-export const SUGGEST_FORM_ENDPOINT = 'https://api.web3forms.com/submit'
-
-/** ¿Hay canal abierto? Sin clave, "Sugiere un cambio" explica que todavía no lo hay. */
-export const canSuggest = (): boolean => SUGGEST_FORM_KEY.length > 0
+export const SUGGEST_FORM_ENDPOINT = '/api/sugerencia'

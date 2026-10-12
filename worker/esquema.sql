@@ -31,3 +31,29 @@ CREATE TABLE IF NOT EXISTS comparticiones (
   cuenta INTEGER NOT NULL DEFAULT 0,
   PRIMARY KEY (fecha, ruta)
 );
+
+-- Las sugerencias de "Sugiere un cambio".
+--
+-- No cuelgan de ninguna cuenta a proposito: mandar un recado no es guardar algo tuyo, y obligar a
+-- crear identidad para avisar de un horario mal puesto seria pedir mas de lo que hace falta. Lo
+-- unico que se guarda de quien escribe es lo que escribio y, si quiso, un contacto para responderle.
+--
+-- `sello` es la huella de la prueba de trabajo que costo mandarla (la huella, no el secreto), y es
+-- UNIQUE: esa sola columna hace que cada prueba valga una vez, sin tabla aparte ni caducidades (el
+-- mismo arreglo que ya usa `credencial`).
+--
+-- `atendida` no la mueve ningun endpoint: el panel solo lee, asi que el contador de "sin leer" se
+-- pone a cero con `wrangler d1 execute` (ver docs/DESPLIEGUE.md). Es a proposito: una casilla en el
+-- panel seria la primera escritura que aceptara, y por ahora no la vale.
+CREATE TABLE IF NOT EXISTS sugerencia (
+  id       TEXT PRIMARY KEY,
+  creada   TEXT NOT NULL,
+  quien    TEXT NOT NULL,   -- 'vecino' | 'negocio' | 'otro'
+  lugar    TEXT NOT NULL,   -- lo que escribio, no un identificador del catalogo
+  mensaje  TEXT NOT NULL,
+  contacto TEXT NOT NULL,   -- vacio si no quiso dejarlo
+  atendida INTEGER NOT NULL DEFAULT 0,
+  sello    TEXT NOT NULL UNIQUE
+);
+
+CREATE INDEX IF NOT EXISTS sugerencia_por_fecha ON sugerencia (creada DESC);

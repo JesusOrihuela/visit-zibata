@@ -103,7 +103,7 @@ la base, no da acceso a ella, y por eso va versionado. Después, crea la tabla:
 npm run analitica:esquema
 ```
 
-Ese comando aplica `worker/esquema.sql` (visitas y comparticiones). Desde la v4.10.0 hay un segundo
+Ese comando aplica `worker/esquema.sql` (visitas, comparticiones y sugerencias). Desde la v4.10.0 hay un segundo
 archivo con las tablas de identidad y de lo que marca cada quien, que se aplica igual. Los dos usan
 `CREATE TABLE IF NOT EXISTS`, así que volver a aplicarlos tras una actualización añade lo que falte
 sin tocar lo que ya hay:
@@ -125,6 +125,24 @@ de **Rate limiting** sobre el alta:
 2. **Security** -> **WAF** -> **Rate limiting rules** -> **Create rule**.
 3. Condicion: **URI Path** equals `/api/cuenta`, y **Request Method** equals `POST`.
 4. Contar por **IP**, 5 peticiones cada 10 segundos. Accion **Block**, 10 segundos.
+
+Desde la v4.16 conviene una segunda regla igual para `/api/sugerencia`, el formulario de "Sugiere un
+cambio", que tambien cuesta una prueba de trabajo. Ahi el limite puede ser mas estrecho, porque
+nadie manda dos recados en diez segundos: contar por **IP**, 3 peticiones cada 60 segundos, accion
+**Block** 60 segundos.
+
+### Poner a cero las sugerencias sin leer
+
+El panel solo lee, asi que el contador baja desde la linea de comandos. Se abre el panel, se leen
+las nuevas, y despues:
+
+```bash
+npx wrangler d1 execute visit-zibata-analitica --remote   --command="UPDATE sugerencia SET atendida = 1 WHERE atendida = 0"
+```
+
+Las sugerencias siguen ahi: lo unico que cambia es el contador de "sin leer". Es deliberado que no
+haya una casilla en el panel: seria la primera escritura que acepta, y leer recados no es algo que
+pase diez veces al dia.
 
 La IP la usa Cloudflare para contar y no llega nunca a este codigo ni a la base.
 

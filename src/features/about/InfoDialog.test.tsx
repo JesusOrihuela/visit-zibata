@@ -9,7 +9,7 @@ describe('InfoDialog', () => {
     const onGoTo = vi.fn()
     render(<InfoDialog topic="privacidad" onClose={vi.fn()} onGoTo={onGoTo} />)
 
-    expect(screen.getByRole('dialog', { name: 'Privacidad' })).toBeInTheDocument()
+    expect(screen.getByRole('dialog', { name: 'Privacidad y términos' })).toBeInTheDocument()
     expect(screen.getByText(/no usa cuentas ni cookies de rastreo/)).toBeInTheDocument()
     expect(screen.getByText(/únicamente en este navegador/)).toBeInTheDocument()
     // Que los favoritos salgan del dispositivo se dice, no se calla.
@@ -20,6 +20,12 @@ describe('InfoDialog', () => {
     // El conteo de visitas se declara aquí: callarlo sería mentir por omisión.
     expect(screen.getByText(/una visita por página y por día/)).toBeInTheDocument()
     expect(screen.getByText(/no se vende ni se comparte/)).toBeInTheDocument()
+    // Los términos viven en esta misma página desde la v4.16, y lo que fijan son cuatro cosas.
+    expect(screen.getByRole('heading', { name: 'Términos de uso' })).toBeInTheDocument()
+    expect(screen.getByText(/No tiene relación comercial/)).toBeInTheDocument()
+    expect(screen.getByText(/nadie paga por estar/)).toBeInTheDocument()
+    expect(screen.getByText(/sin garantía de que cada dato sea exacto hoy/)).toBeInTheDocument()
+    expect(screen.getByText(/prefieres no aparecer/)).toBeInTheDocument()
     // Las otras páginas no se amontonan aquí: son enlaces a su propia ruta.
     expect(screen.queryByText(/OpenStreetMap/)).not.toBeInTheDocument()
 

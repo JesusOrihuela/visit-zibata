@@ -228,3 +228,35 @@ td.barra span {
   margin: 0;
   max-width: 48rem;
 }
+
+/* Las sugerencias: bloques y no tabla. Lo que importa es el mensaje, que es un párrafo. */
+.recados {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.recado {
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--borde);
+  border-radius: 0.6rem;
+  background: var(--superficie);
+}
+
+.recado p {
+  margin: 0;
+  white-space: pre-line;
+}
+
+.recado .meta {
+  margin-bottom: 0.3rem;
+  color: var(--tenue);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.recado .contacto {
+  margin-top: 0.4rem;
+  color: var(--tenue);
+  font-size: 0.85rem;
+}

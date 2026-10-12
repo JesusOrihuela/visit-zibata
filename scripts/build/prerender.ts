@@ -177,7 +177,7 @@ function pagesFor(
 
   const INFO: Record<InfoTopic, { title: keyof typeof es; lead: keyof typeof es }> = {
     acerca: { title: 'about.title', lead: 'about.aboutLead' },
-    privacidad: { title: 'about.privacy', lead: 'about.privacyLead' },
+    privacidad: { title: 'about.privacyTitle', lead: 'about.privacyLead' },
     sugerir: { title: 'about.contribute', lead: 'about.contributeLead' },
     tutorial: { title: 'about.tutorialTitle', lead: 'about.tutorialLead' },
   }
