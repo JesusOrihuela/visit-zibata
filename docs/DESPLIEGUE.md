@@ -162,7 +162,9 @@ y ese es el punto: **la puerta la pone Cloudflare Access**, que es configuració
 Sin esa regla puesta, el Worker responde 403 y la página lo dice con esas palabras. Falla cerrado a
 propósito: si alguien borra la regla por error, el panel deja de funcionar en vez de quedar abierto.
 
-Para ponerla, una sola vez:
+**Ya está puesta** desde la v4.18.1: la aplicación se llama `Panel de Visit Zibatá`, cubre las dos
+rutas y la política es `Only Me`. Estos pasos quedan por si hay que rehacerla o montarla en otra
+cuenta.
 
 1. Panel de Cloudflare, **Zero Trust** (se activa gratis la primera vez), **Access** ->
    **Applications** -> **Add an application** -> **Self-hosted**.
@@ -179,6 +181,10 @@ Para ponerla, una sola vez:
   "ACCESS_AUD": "la-etiqueta-aud-de-la-aplicacion"
 }
 ```
+
+La trampa del paso 3 es la que de verdad importa: con una sola ruta, la página pide identificarse
+pero `visitzibata.com/api/panel` sigue devolviendo los números a quien los pida, porque Access no
+emite testigo para una ruta que no cubre y el Worker no tiene nada que verificar.
 
 No son secretos (el dominio del equipo sale en la URL de inicio de sesión y la etiqueta AUD
 identifica la aplicación, como un `client_id`), por eso van versionados. **Vacíos, el panel está
