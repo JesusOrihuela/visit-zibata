@@ -19,6 +19,28 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
   un aro del color de la tarjeta para separarlo de la imagen sin dibujarle un borde encima. El aro
   es una variable y no un valor fijo, porque el fondo cambia al pasar el ratón.
 
+- **Ahora lo llevan todos, con tres estados.** Verde abierto, gris cerrado y hueco los once sin
+  horario publicado. Antes solo se dibujaba el verde, y la ausencia tenía que significar las otras
+  dos cosas a la vez.
+
+  El tercer estado no es un adorno. De esos once la guía no sabe si están abiertos, y pintarlos
+  grises sería afirmar que están cerrados; un punto hueco dice "no se sabe", que es la verdad. El
+  cerrado es gris y no rojo porque el rojo dice "algo va mal", y que una panadería esté cerrada a
+  las once de la noche no tiene nada de malo.
+## [4.18.1]: 2026-10-12
+
+### Cambiado
+
+- **El panel privado queda abierto para su dueño.** `ACCESS_TEAM` y `ACCESS_AUD` estaban vacíos
+  desde que se escribió el panel, y con ellos vacíos el Worker responde 403 a todo el mundo. Ahora
+  llevan los identificadores de la aplicación de Cloudflare Access que ya está configurada, que
+  cubre `visitzibata.com/panel` y `visitzibata.com/api/panel` con una política de un solo correo.
+
+  No son secretos y por eso van versionados: el dominio del equipo sale en la URL de inicio de
+  sesión y la etiqueta AUD identifica la aplicación, como un `client_id`. Lo que decide quién entra
+  es la política de Access, no estos dos valores: si se borra la regla, el panel vuelve a 403 en vez
+  de quedar abierto.
+
 ## [4.18.0]: 2026-10-12
 
 ### Añadido

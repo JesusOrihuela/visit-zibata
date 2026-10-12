@@ -134,17 +134,20 @@ describe('la marca de abierto', () => {
     expect(screen.getByText('Abierto ahora: Abre')).toBeInTheDocument()
   })
 
-  it('un local cerrado no lleva nada', async () => {
-    // La ausencia significa "no necesariamente abierto", que es lo que la guía sabe. Un segundo
-    // punto para "cerrado" convertiría la lista en un semáforo de cien luces.
+  it('un local cerrado lleva el suyo, y no dice "abierto"', async () => {
     const place = makePlace({ id: 'cierra', plazaId: 'plaza-sur', name: 'Cierra', hours: nunca })
     await renderWithCatalog(<PlaceCard place={place} onOpen={vi.fn()} />)
+    expect(screen.getByText('Cerrado ahora: Cierra')).toBeInTheDocument()
     expect(screen.queryByText(/Abierto ahora/)).not.toBeInTheDocument()
   })
 
-  it('un local sin horario tampoco, porque no se sabe', async () => {
+  it('un local sin horario no se da por cerrado: dice que no se sabe', async () => {
+    // Es la distinción que justifica el tercer estado. Pintar de gris a los once sin horario sería
+    // afirmar que están cerrados, y la guía no lo sabe.
     const place = makePlace({ id: 'sin', plazaId: 'plaza-sur', name: 'Sin' })
     await renderWithCatalog(<PlaceCard place={place} onOpen={vi.fn()} />)
+    expect(screen.getByText('Sin horario publicado: Sin')).toBeInTheDocument()
     expect(screen.queryByText(/Abierto ahora/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Cerrado ahora/)).not.toBeInTheDocument()
   })
 })

@@ -115,6 +115,8 @@ export const en = {
   'favorites.filter': 'Favourites',
   'filters.openNow': 'Open now',
   'filters.openNowLabel': 'Open now: {name}',
+  'filters.closedNowLabel': 'Closed now: {name}',
+  'filters.unknownHoursLabel': 'No opening hours published: {name}',
   'favorites.saved': 'Saved to favourites',
 
   'brand.by': 'A project by',

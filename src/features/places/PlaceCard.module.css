@@ -72,8 +72,8 @@
 }
 
 /*
- * El punto de "abierto ahora", sobre la foto y abajo a la derecha, como el indicador de "en línea"
- * de una lista de contactos.
+ * El punto de estado, sobre la foto y abajo a la derecha, como el indicador de "en línea" de una
+ * lista de contactos.
  *
  * Los 3 px no son al azar: la foto es un círculo de 56 px, así que el centro del punto cae justo
  * sobre su borde en la diagonal (28 - 3 - 5,5 = 19,5 en cada eje, que da un radio de 27,6). Un poco
@@ -82,17 +82,34 @@
  * Hasta la v4.18 iba al lado del nombre. Se movió porque ahí su sitio dependía del largo del
  * texto: caía distinto en cada fila, y una columna de cien tarjetas no se podía recorrer de un
  * vistazo. Sobre la foto cae siempre igual.
+ *
+ * El color por omisión es el de cerrado, que es el caso más común a lo largo del día.
  */
-.abierto {
+.punto {
   position: absolute;
   right: 3px;
   bottom: 3px;
   width: 0.7rem;
   height: 0.7rem;
   border-radius: 50%;
-  background: var(--lime-500);
+  background: var(--sand-400);
   /* El aro imita el fondo de la tarjeta: separa el punto de la foto sin dibujarle un borde encima. */
   box-shadow: 0 0 0 2px var(--aro-abierto);
+}
+
+.punto[data-estado="open"] {
+  background: var(--lime-500);
+}
+
+/*
+ * Sin horario publicado: hueco. El relleno es el del aro, así que lo único que se ve es el filo.
+ * Dice "no se sabe" sin decir "cerrado", que es lo que la guía puede afirmar de estos once.
+ */
+.punto[data-estado="unknown"] {
+  background: var(--aro-abierto);
+  box-shadow:
+    0 0 0 2px var(--aro-abierto),
+    inset 0 0 0 1.5px var(--sand-400);
 }
 
 .category {
