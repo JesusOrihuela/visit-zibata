@@ -10,8 +10,10 @@
  * compilación, así que añadir un local, cambiarle el nombre o ponerle una foto se refleja solo en la
  * siguiente publicación.
  *
- * Para la persona no cambia nada: las 232 páginas cargan exactamente la misma aplicación. Lo único
- * distinto es lo que hay dentro del `<head>` antes de que arranque.
+ * Desde la v4.16 cada página trae además su **contenido escrito** dentro de `<div id="root">`: el
+ * nombre, los giros, la dirección, el horario, el contacto y enlaces de verdad a la zona y a los
+ * locales vecinos (ver contenido.ts). Antes el cuerpo eran 193 bytes iguales en las 234, así que un
+ * rastreador veía páginas vacías y sin enlaces entre ellas. React lo sustituye al montar.
  */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
@@ -20,6 +22,7 @@ import { en } from '../../src/i18n/en.ts'
 import { es } from '../../src/i18n/es.ts'
 import { buildPath, INFO_TOPICS, type InfoTopic } from '../../src/lib/url-state.ts'
 import type { Category, Place, Plaza } from '../../src/types/domain.ts'
+import { contenidoDeLista, contenidoDeLugar } from './contenido.ts'
 import { bloque, listado, negocio } from './structured-data.ts'
 
 type Locale = 'es' | 'en'
@@ -36,6 +39,11 @@ interface Page {
   image?: string
   /** Datos estructurados de esta página, ya con URLs absolutas. Las de información no llevan. */
   jsonLd?: Record<string, unknown>
+  /**
+   * El contenido escrito que va dentro de `<div id="root">`, antes de que arranque la aplicación.
+   * React lo sustituye al montar (ver scripts/build/contenido.ts).
+   */
+  contenido?: string
   /**
    * Cuándo cambió de verdad el contenido de esta página, para el `lastmod` del sitemap.
    *
@@ -67,6 +75,36 @@ const trim = (value: string, max = 160): string => {
   if (flat.length <= max) return flat
   const cut = flat.slice(0, max - 1)
   return `${cut.slice(0, cut.lastIndexOf(' '))}…`
+}
+
+/** Orden de la semana tal como se lee, no como lo guarda el JSON. */
+const DIAS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const
+
+/**
+ * Los enlaces de contacto de un local, en el orden en que sirven.
+ *
+ * Solo los que existen: un local sin Instagram no debe mostrar un renglón vacío, y un enlace muerto
+ * es peor que no tener enlace.
+ */
+function contactoDe(place: Place): { texto: string; href: string }[] {
+  const enlaces: { texto: string; href: string }[] = []
+  if (place.phone) enlaces.push({ texto: place.phone, href: `tel:${place.phone}` })
+  if (place.googleMapsUri) enlaces.push({ texto: 'Google Maps', href: place.googleMapsUri })
+  const redes: [keyof NonNullable<Place['links']>, string][] = [
+    ['website', 'Sitio web'],
+    ['instagram', 'Instagram'],
+    ['facebook', 'Facebook'],
+    ['tiktok', 'TikTok'],
+    ['whatsapp', 'WhatsApp'],
+    ['uberEats', 'Uber Eats'],
+    ['rappi', 'Rappi'],
+    ['didiFood', 'DiDi Food'],
+  ]
+  for (const [clave, nombre] of redes) {
+    const url = place.links?.[clave]
+    if (url) enlaces.push({ texto: nombre, href: url })
+  }
+  return enlaces
 }
 
 const escapeHtml = (value: string): string =>
@@ -116,6 +154,15 @@ function pagesFor(
           url: absolute(route({ plazaSlug: plaza.slug })),
         })),
       ),
+      contenido: contenidoDeLista({
+        nombre: `${copy['app.name']} · ${copy['app.tagline']}`,
+        descripcion: trim(copy['seo.home.description'], 400),
+        tituloLista: copy['seo.zones'],
+        enlaces: activePlazas.map((plaza) => ({
+          texto: text(plaza.name, locale),
+          href: route({ plazaSlug: plaza.slug }),
+        })),
+      }),
     },
   ]
 
@@ -139,10 +186,21 @@ function pagesFor(
       ),
       jsonLd: listado(
         name,
-        data.places
-          .filter((place) => place.plazaId === plaza.id)
-          .map((place) => ({ name: place.name, url: absolute(route({ placeSlug: place.slug })) })),
+        deLaPlaza.map((place) => ({
+          name: place.name,
+          url: absolute(route({ placeSlug: place.slug })),
+        })),
       ),
+      contenido: contenidoDeLista({
+        nombre: name,
+        descripcion: text(plaza.description, locale) || plaza.address || undefined,
+        tituloLista: copy['seo.whatsHere'],
+        enlaces: deLaPlaza.map((place) => ({
+          texto: place.name,
+          href: route({ placeSlug: place.slug }),
+        })),
+        volver: { texto: copy['seo.backHome'], href: route({}) },
+      }),
     })
   }
 
@@ -172,13 +230,46 @@ function pagesFor(
         image: absolute(image),
         locale,
       }),
+      contenido: contenidoDeLugar({
+        nombre: place.name,
+        giros: [...place.giros, ...(place.secundarios ?? [])].map((id) => giroLabel.get(id) ?? id),
+        plaza: plaza?.active
+          ? { texto: text(plaza.name, locale), href: route({ plazaSlug: plaza.slug }) }
+          : undefined,
+        direccion: plaza?.address ?? undefined,
+        descripcion: text(place.description, locale) || undefined,
+        dias: DIAS.map((dia) => ({
+          dia: copy[`day.${dia}`],
+          franjas: place.hours?.[dia] ?? [],
+          cerrado: copy['hours.closedAllDay'],
+        })).filter((dia) => dia.franjas.length > 0 || place.hours),
+        tituloHorario: copy['place.hours'],
+        contacto: contactoDe(place),
+        tituloContacto: copy['place.contact'],
+        vecinos: data.places
+          .filter((otro) => otro.plazaId === place.plazaId && otro.id !== place.id)
+          .slice(0, 8)
+          .map((otro) => ({ texto: otro.name, href: route({ placeSlug: otro.slug }) })),
+        tituloVecinos: fill(copy['seo.nearby'], {
+          plaza: plaza ? text(plaza.name, locale) : 'Zibatá',
+        }),
+        volver: { texto: copy['seo.backHome'], href: route({}) },
+      }),
     })
   }
 
-  const INFO: Record<InfoTopic, { title: keyof typeof es; lead: keyof typeof es }> = {
-    acerca: { title: 'about.title', lead: 'about.aboutLead' },
-    privacidad: { title: 'about.privacy', lead: 'about.privacyLead' },
-    sugerir: { title: 'about.contribute', lead: 'about.contributeLead' },
+  const INFO: Record<
+    InfoTopic,
+    { title: keyof typeof es; lead: keyof typeof es; body?: keyof typeof es }
+  > = {
+    acerca: { title: 'about.title', lead: 'about.aboutLead', body: 'about.aboutBody' },
+    privacidad: { title: 'about.privacy', lead: 'about.privacyLead', body: 'about.privacyBody' },
+    sugerir: {
+      title: 'about.contribute',
+      lead: 'about.contributeLead',
+      body: 'about.contributeBody',
+    },
+    // El tutorial es una ventana de cuatro pasos sobre gestos del mapa: no tiene cuerpo que servir.
     tutorial: { title: 'about.tutorialTitle', lead: 'about.tutorialLead' },
   }
   for (const topic of INFO_TOPICS) {
@@ -187,6 +278,22 @@ function pagesFor(
       href: route({ infoTopic: topic }),
       title: fill(copy['seo.title'], { name: String(copy[keys.title]) }),
       description: trim(String(copy[keys.lead])),
+      /*
+       * El texto de estas páginas también va escrito. Importa sobre todo en privacidad: una política
+       * que solo existe si se ejecuta JavaScript no se puede citar ni archivar.
+       */
+      contenido: contenidoDeLista({
+        nombre: String(copy[keys.title]),
+        descripcion: [String(copy[keys.lead]), keys.body ? String(copy[keys.body]) : '']
+          .filter(Boolean)
+          .join(' '),
+        tituloLista: copy['about.moreLabel'],
+        enlaces: INFO_TOPICS.filter((otro) => otro !== topic).map((otro) => ({
+          texto: String(copy[INFO[otro].title]),
+          href: route({ infoTopic: otro }),
+        })),
+        volver: { texto: copy['seo.backHome'], href: route({}) },
+      }),
     })
   }
   return pages
@@ -322,6 +429,9 @@ export function prerender(options: { base: string; siteUrl?: string }): Plugin {
           html = html.replace('</head>', `  ${alternates.filter(Boolean).join('\n  ')}\n  </head>`)
           if (page.jsonLd) {
             html = html.replace('</head>', `  ${bloque(page.jsonLd)}\n  </head>`)
+          }
+          if (page.contenido) {
+            html = html.replace('<div id="root"></div>', `<div id="root">${page.contenido}</div>`)
           }
           comprobarUnicas(html, page.href)
 
