@@ -2,6 +2,23 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado semántico.
 
+## [4.19.0]: 2026-10-12
+
+### Cambiado
+
+- **El punto de "abierto ahora" se mueve a la foto**, abajo a la derecha, como el indicador de "en
+  línea" de cualquier lista de contactos. Es un sitio que la gente ya sabe leer sin que se lo
+  expliquen.
+
+  También arregla lo que tenía mal donde estaba. Al lado del nombre, su posición dependía del largo
+  del texto: caía en un sitio distinto en cada fila, así que una columna de cien tarjetas no se
+  podía recorrer de un vistazo, que es justo para lo que sirve un punto. Sobre la foto cae siempre
+  igual.
+
+  Se ve un poco más (de 6 a 11 px) porque sobre una fotografía un punto de 6 px se pierde, y lleva
+  un aro del color de la tarjeta para separarlo de la imagen sin dibujarle un borde encima. El aro
+  es una variable y no un valor fijo, porque el fondo cambia al pasar el ratón.
+
 ## [4.18.0]: 2026-10-12
 
 ### Añadido

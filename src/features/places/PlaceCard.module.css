@@ -1,5 +1,10 @@
 .card {
   position: relative;
+  /*
+   * El color del aro del punto de "abierto". Es una variable y no un valor fijo porque el aro imita
+   * el fondo sobre el que se apoya la tarjeta, y ese fondo cambia al pasar el ratón.
+   */
+  --aro-abierto: var(--color-surface-solid);
   display: flex;
   align-items: center;
   gap: var(--space-1);
@@ -10,6 +15,7 @@
 
 .card:hover {
   background: var(--lime-50);
+  --aro-abierto: var(--lime-50);
 }
 
 .main {
@@ -27,6 +33,13 @@
 
 .main:focus-visible {
   outline-offset: -2px;
+}
+
+/* La foto y su punto. Existe solo para posicionarlo: recortar es cosa de `.thumb`. */
+.foto {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
 }
 
 .thumb {
@@ -47,13 +60,6 @@
 }
 
 /* La fila del nombre: el nombre se encoge y se recorta, el punto nunca. */
-.nameRow {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  min-width: 0;
-}
-
 .name {
   min-width: 0;
   overflow: hidden;
@@ -66,20 +72,27 @@
 }
 
 /*
- * El punto de "abierto ahora". Va dentro del renglón del nombre y después del texto, así que se
- * mueve con él y nunca se separa del local al que pertenece.
+ * El punto de "abierto ahora", sobre la foto y abajo a la derecha, como el indicador de "en línea"
+ * de una lista de contactos.
  *
- * Va en su propia fila flex junto al nombre, no dentro de él: el nombre se recorta con
- * `text-overflow`, y un hijo dentro de esa caja se recorta con él. Es el mismo motivo por el que
- * `.categoryText` existe aparte.
+ * Los 3 px no son al azar: la foto es un círculo de 56 px, así que el centro del punto cae justo
+ * sobre su borde en la diagonal (28 - 3 - 5,5 = 19,5 en cada eje, que da un radio de 27,6). Un poco
+ * más y flota en la esquina del cuadrado; un poco menos y se mete dentro de la foto.
+ *
+ * Hasta la v4.18 iba al lado del nombre. Se movió porque ahí su sitio dependía del largo del
+ * texto: caía distinto en cada fila, y una columna de cien tarjetas no se podía recorrer de un
+ * vistazo. Sobre la foto cae siempre igual.
  */
 .abierto {
-  flex-shrink: 0;
-  width: 0.4rem;
-  height: 0.4rem;
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  width: 0.7rem;
+  height: 0.7rem;
   border-radius: 50%;
   background: var(--lime-500);
-  box-shadow: 0 0 0 2.5px rgb(140 186 55 / 0.22);
+  /* El aro imita el fondo de la tarjeta: separa el punto de la foto sin dibujarle un borde encima. */
+  box-shadow: 0 0 0 2px var(--aro-abierto);
 }
 
 .category {

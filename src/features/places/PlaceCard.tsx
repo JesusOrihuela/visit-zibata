@@ -26,6 +26,12 @@ export function PlaceCard({ place, onOpen, showPlaza = false }: PlaceCardProps) 
    * una lista. Repetir la palabra cien veces la convierte en ruido; un punto se lee de reojo. No se
    * dibuja nada para cerrado ni para los once sin horario, así que la ausencia significa "no
    * necesariamente", que es exactamente lo que la guía sabe.
+   *
+   * Va sobre la foto, abajo a la derecha, como el punto de "en línea" de cualquier lista de
+   * contactos. Es un sitio que la gente ya sabe leer sin que nadie se lo explique, y además
+   * resuelve el problema que tenía al lado del nombre: ahí dependía del largo del texto, así que
+   * caía en un sitio distinto en cada fila y la columna no se podía recorrer de un vistazo. Sobre
+   * la foto cae siempre en el mismo punto.
    */
   const abierto = getOpenStatus(place.hours ?? null, useZonedNow()).state === 'open'
   // En la lista, el icono es de los principales; los secundarios solo se leen.
@@ -67,33 +73,27 @@ export function PlaceCard({ place, onOpen, showPlaza = false }: PlaceCardProps) 
         onClick={() => onOpen(place)}
         aria-label={t('place.openDetail', { name: place.name })}
       >
-        <span className={styles.thumb}>
-          <PlacePicture
-            photo={place.photos[0]}
-            category={catalog.categoryOfGiro.get(place.giros[0] ?? '')}
-            icons={iconos}
-            sizes="64px"
-            ratio="1 / 1"
-            illustrationSize="sm"
-          />
+        <span className={styles.foto}>
+          <span className={styles.thumb}>
+            <PlacePicture
+              photo={place.photos[0]}
+              category={catalog.categoryOfGiro.get(place.giros[0] ?? '')}
+              icons={iconos}
+              sizes="64px"
+              ratio="1 / 1"
+              illustrationSize="sm"
+            />
+          </span>
+          {abierto && (
+            <span className={styles.abierto}>
+              <span className="visually-hidden">
+                {t('filters.openNowLabel', { name: place.name })}
+              </span>
+            </span>
+          )}
         </span>
         <span className={styles.body}>
-          {/*
-           * El punto va fuera del nombre y no dentro, por el mismo motivo que `.categoryText`
-           * existe aparte: el nombre se recorta con `text-overflow`, y un hijo dentro de esa caja
-           * se recorta con él. Los nombres largos (que son muchos) perdían su marca justo cuando
-           * más falta hace distinguirlos.
-           */}
-          <span className={styles.nameRow}>
-            <span className={styles.name}>{place.name}</span>
-            {abierto && (
-              <span className={styles.abierto}>
-                <span className="visually-hidden">
-                  {t('filters.openNowLabel', { name: place.name })}
-                </span>
-              </span>
-            )}
-          </span>
+          <span className={styles.name}>{place.name}</span>
           <span className={styles.category} title={tituloCompleto}>
             {giros.map((giro) => (
               <CategoryIcon key={giro.id} name={giro.icon} size={14} strokeWidth={2} />
