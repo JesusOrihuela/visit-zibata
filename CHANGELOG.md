@@ -2,6 +2,25 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado semántico.
 
+## [4.15.2]: 2026-10-12
+
+### Corregido
+
+- **La pagina 404 se publicaba sin estilo.** Serif del sistema, enlace morado, nada de la marca. La
+  cabecera del sitio decia `style-src 'self'` y la pagina llevaba su propio `<meta>` con
+  `'unsafe-inline'`: cuando hay dos politicas el navegador aplica **las dos**, asi que la
+  interseccion prohibia el bloque entero.
+
+  Ahora las dos admiten la huella SHA-256 de ese bloque exacto, que calcula el build desde el mismo
+  modulo que escribe la pagina. Ninguna recurre a `'unsafe-inline'`.
+
+  No lo vio nadie porque `vite preview` no sirve `_headers`: en local solo existia el `<meta>`
+  permisivo y se veia bien, y el E2E del 404 comprueba el codigo de estado, no el aspecto. Lo fija
+  ahora `scripts/build/pagina-404.test.ts`, que compara la huella publicada con la del bloque de
+  verdad y exige que la politica del sitio la admita.
+- El HTML de la 404 sale de `scripts/build/pagina-404.ts` y no de dentro de `vite.config.ts`: la
+  pagina y su huella tienen que salir del mismo sitio o se separan, que es justo lo que paso.
+
 ## [4.15.1]: 2026-10-11
 
 ### Corregido

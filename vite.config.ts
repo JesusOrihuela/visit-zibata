@@ -5,6 +5,7 @@ import type { Plugin } from 'vite'
 import { defineConfig } from 'vitest/config'
 import pkg from './package.json' with { type: 'json' }
 import { mapTiles } from './scripts/build/map-tiles.ts'
+import { HUELLA_ESTILO_404, html404 } from './scripts/build/pagina-404.ts'
 import { prerender } from './scripts/build/prerender.ts'
 import { APP_ROUTE } from './src/lib/url-state.ts'
 
@@ -52,7 +53,15 @@ function socialMeta(): Plugin {
 export const CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
   "script-src 'self'",
-  "style-src 'self'",
+  /*
+   * La huella del estilo en línea de la página 404, y nada más. No es `'unsafe-inline'`: permite
+   * exactamente ese bloque y ningún otro.
+   *
+   * Tiene que estar aquí, en la política del sitio, aunque la página lleve la suya: cuando hay dos
+   * políticas el navegador aplica las dos, y con `style-src 'self'` a secas la 404 salía publicada
+   * sin una sola regla aplicada (ver scripts/build/pagina-404.ts).
+   */
+  `style-src 'self' ${HUELLA_ESTILO_404}`,
   "img-src 'self' data: blob:",
   "font-src 'self'",
   // Único destino de connect-src: "Sugiere un cambio", y solo cuando la persona pulsa enviar.
@@ -130,53 +139,7 @@ function notFoundPage(): Plugin {
       }
     },
     generateBundle() {
-      this.emitFile({
-        type: 'asset',
-        fileName: '404.html',
-        source: `<!doctype html>
-<html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="robots" content="noindex" />
-    <title>Página no encontrada · Visit Zibatá</title>
-    <link rel="icon" type="image/svg+xml" href="${base}favicon.svg" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'unsafe-inline'; img-src 'self'" />
-    <style>
-      :root { --olivo: #536c2a; --tinta: #1f2419; --apagado: #62655a; --papel: #f8f4ed; }
-      * { box-sizing: border-box; margin: 0; }
-      body { min-height: 100svh; display: grid; place-items: center; padding: 1.5rem;
-        background: var(--papel); color: var(--tinta); text-align: center;
-        font: 1rem/1.55 "Instrument Sans", ui-sans-serif, system-ui, sans-serif; }
-      /* La misma trama de puntos del resto de la marca, muy tenue. */
-      body::before { content: ""; position: fixed; inset: 0; pointer-events: none;
-        background-image: radial-gradient(var(--olivo) 1px, transparent 1px);
-        background-size: 26px 26px; opacity: .07; }
-      main { position: relative; max-width: 30rem; display: grid; justify-items: center; gap: .75rem; }
-      img { width: 72px; height: 72px; }
-      h1 { font-family: "Fraunces", "Iowan Old Style", Georgia, serif; font-weight: 600;
-        font-size: 1.75rem; line-height: 1.15; letter-spacing: -.01em; margin-top: .5rem; }
-      p { color: var(--apagado); }
-      .en { font-size: .875rem; }
-      a { margin-top: 1.25rem; padding: .75rem 1.5rem; border-radius: 999px;
-        background: var(--olivo); color: #fff; font-weight: 600; text-decoration: none; }
-      a:hover { background: #435a22; }
-      a:focus-visible { outline: 3px solid var(--tinta); outline-offset: 3px; }
-      @media (prefers-reduced-motion: no-preference) { a { transition: background-color .15s; } }
-    </style>
-  </head>
-  <body>
-    <main>
-      <img src="${base}logo.svg" alt="" width="72" height="72" />
-      <h1>Esta página no existe</h1>
-      <p>La dirección no corresponde a ningún lugar ni zona de la guía. Puede que esté mal escrita, o que ese lugar ya no esté publicado.</p>
-      <p class="en" lang="en">This address is not part of the guide.</p>
-      <a href="${base}">Ir a la guía</a>
-    </main>
-  </body>
-</html>
-`,
-      })
+      this.emitFile({ type: 'asset', fileName: '404.html', source: html404(base) })
     },
   }
 }
