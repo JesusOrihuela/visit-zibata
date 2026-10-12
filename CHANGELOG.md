@@ -2,6 +2,35 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado semántico.
 
+## [4.16.0]: 2026-10-11
+
+Las paginas dejan de estar vacias para quien no ejecuta JavaScript.
+
+### Anadido
+
+- **Cada pagina trae su contenido escrito** dentro de `<div id="root">`: el nombre como `<h1>`, los
+  giros, la zona con su direccion, la descripcion, el horario dia por dia, los enlaces de contacto y
+  enlaces a la zona y a los locales vecinos. Las zonas listan sus locales y la portada sus zonas.
+  React lo sustituye al montar, asi que no es contenido distinto del que ensena la aplicacion (eso
+  seria enganar a un buscador): es el mismo, servido antes.
+- Las paginas de informacion tambien. Importa sobre todo en privacidad: una politica que solo existe
+  si se ejecuta JavaScript no se puede citar ni archivar.
+- `tests/e2e/sin-javascript.spec.ts`, con JavaScript desactivado, comprueba que el texto y los
+  enlaces esten en el HTML en los dos arboles de idioma.
+
+### Por que
+
+El cuerpo de las 234 paginas eran 193 bytes identicos: un `<noscript>` y un `<div>` vacio. Eso tenia
+dos costos. Google las renderiza, pero lo hace en una cola aparte y la deja para el final en sitios
+sin autoridad, asi que un dominio nuevo con 234 paginas sin texto es el peor caso. Y como los
+enlaces de la guia los dibuja React, un rastreador veia 234 URL sueltas sin nada que las uniera:
+Search Console lo decia con todas sus letras, "Pagina de referencia: no se ha detectado ninguna".
+
+### Cambiado
+
+- El presupuesto de CSS inicial pasa de 10 a 11 KB. El estilo del contenido escrito dejo la medida
+  en 9,9 de 10, y cien bytes de margen hacen que el siguiente cambio honesto rompa la compilacion.
+
 ## [4.15.1]: 2026-10-11
 
 ### Corregido

@@ -132,6 +132,13 @@ export const es = {
   'seo.title': '{name} · Visit Zibatá',
   'seo.place.fallback': '{giros} en {plaza}, Zibatá. Horario, contacto y cómo llegar.',
   'seo.plaza.fallback': '{name}, Zibatá. Qué hay, horarios y cómo llegar.',
+  // Los cuatro siguientes solo salen en el HTML que se sirve antes de que arranque la aplicación
+  // (ver scripts/build/contenido.ts). Son texto de interfaz igual: los lee quien no tiene
+  // JavaScript, y los lee un buscador.
+  'seo.nearby': 'Más en {plaza}',
+  'seo.whatsHere': 'Qué hay aquí',
+  'seo.zones': 'Las zonas de Zibatá',
+  'seo.backHome': 'Ver el mapa de Zibatá',
 
   'share.action': 'Compartir',
   'share.place': 'Compartir {name}',

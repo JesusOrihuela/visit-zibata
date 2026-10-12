@@ -99,3 +99,57 @@ a {
   padding: 1.5rem;
   font-family: system-ui, sans-serif;
 }
+
+/*
+ * El contenido escrito que trae cada página antes de que arranque la aplicación
+ * (ver scripts/build/contenido.ts). React lo sustituye al montar, así que esto se ve durante un
+ * instante y, para quien no tiene JavaScript o es un rastreador, es la página entera.
+ *
+ * Deliberadamente sobrio: no intenta parecerse a la guía, porque imitarla a medias se vería peor
+ * que no intentarlo. Lo que tiene que ser es legible.
+ */
+.estatico {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+  color: var(--ink-800, #2e3326);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.estatico h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.6rem;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+.estatico h2 {
+  margin: 1.75rem 0 0.5rem;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted, #6b7260);
+}
+
+.estatico p {
+  margin: 0 0 0.75rem;
+  white-space: pre-line;
+}
+
+.estatico ul {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.estatico dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.15rem 1.5rem;
+  margin: 0;
+}
+
+.estatico dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}

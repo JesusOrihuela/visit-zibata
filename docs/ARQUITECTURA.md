@@ -250,7 +250,14 @@ portada, las 11 zonas activas, 101 locales y 3 páginas de información), más `
 esto se escribe a mano: sale de `data/commercial/*.json` en cada compilación, así que añadir un local
 o cambiarle el nombre se refleja solo en la siguiente publicación.
 
-Las 234 cargan exactamente la misma aplicación; lo único distinto es el `<head>`: `<html lang>`,
+Desde la v4.16 cada una trae también su contenido escrito dentro de `<div id="root">`: el nombre, los
+giros, la dirección, el horario, el contacto y enlaces a la zona y a los locales vecinos. Antes el
+cuerpo eran 193 bytes iguales en todas, así que un rastreador veía páginas vacías y sin enlaces entre
+ellas, y Search Console lo decía con esas palabras ("Página de referencia: no se ha detectado
+ninguna"). React lo sustituye al montar, así que no es contenido distinto del que enseña la
+aplicación: es el mismo, servido antes. Hay E2E que lo comprueban con JavaScript desactivado.
+
+Las 234 cargan la misma aplicación; lo demás distinto está en el `<head>`: `<html lang>`,
 `<title>`, `description`, `canonical` y las tres `hreflang` (`es`, `en` y `x-default` apuntando al
 español, que es el idioma por omisión del sitio). Las dos listas de páginas se generan con el mismo
 recorrido, así que la gemela en el otro idioma ocupa la misma posición y las `hreflang` salen sin
