@@ -22,12 +22,25 @@
   max-width: min(44rem, calc(100% - var(--controls-right, 5rem) - 3rem));
 }
 
+/*
+ * Lo que se ve mientras baja el trozo del mapa, antes de que MapView exista siquiera.
+ *
+ * Lleva la misma trama de puntos que la espera de MapView (ver MapView.module.css) porque son dos
+ * momentos seguidos de la misma espera: primero baja el código, luego las teselas. Con tratamientos
+ * distintos se veía un cambio de fondo a mitad de carga, como si algo hubiera fallado y vuelto a
+ * empezar. Aquí la trama no respira: este estado dura un instante y un parpadeo llamaría la atención
+ * sobre algo que ya terminó.
+ */
 .mapFallback {
   position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
-  background: #e2d9c9;
+  /* El 7 % va en el color y no en una opacidad aparte: el fondo es una capa, no un elemento. */
+  background:
+    radial-gradient(color-mix(in srgb, var(--olive-600) 7%, transparent) 1px, transparent 1px) 0 0 /
+      26px 26px,
+    #e2d9c9;
   color: var(--color-text-muted);
   font-size: var(--text-sm);
 }

@@ -212,8 +212,16 @@ segunda tarjeta.
 `--radius-sm` 8 px para cajas pequeñas, `md` 14 px para tarjetas, `lg` 20 px y `xl` 28 px para
 paneles y hojas, `pill` para todo lo que se pulsa.
 
-**La regla de la píldora.** Lo redondo se pulsa. Un rectángulo con esquinas de 8 px es contenido; una
+**La regla de la píldora.** Lo redondo se pulsa. Un rectángulo con esquinas blandas es contenido; una
 píldora es un control. Mezclarlos enseña al dedo a dudar.
+
+Se rompía en cuatro sitios hasta la v4.23, y los cuatro eran contenedores con forma de botón: la
+barra de búsqueda (una cápsula con dos cápsulas dentro), el resumen de filtros, la franja del pie y
+el aviso de carga. Si un contenedor y lo que contiene tienen la misma forma, la jerarquía desaparece.
+
+**La regla del aro.** El filete de las fotos circulares va con `outline` de 1 px, no con
+`box-shadow`. Una sombra sobre una curva se dibuja difuminada y escalona el borde; `outline` sigue el
+radio y lo dibuja como trazo. A 1,5 px se notaba en ambos sentidos.
 
 Las fotos de local son círculos, como el avatar de un contacto, porque es el logotipo del negocio y
 así se ve en sus redes.

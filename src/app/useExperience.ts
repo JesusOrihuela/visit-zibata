@@ -13,7 +13,7 @@ import { preferences } from '../features/ranking/preferences.ts'
 import { categoryAffinity } from '../features/ranking/rankPlaces.ts'
 import { usePersonalOrder } from '../features/ranking/usePersonalOrder.ts'
 import { createSearchIndex } from '../features/search/searchIndex.ts'
-import { getOpenStatus } from '../lib/hours.ts'
+import { estaAbierto } from '../lib/estado.ts'
 import { searchTerms } from '../lib/text.ts'
 import type { Catalog, Place, Plaza } from '../types/domain.ts'
 import { useAppState } from './AppStateContext.tsx'
@@ -117,10 +117,13 @@ export function useExperience(catalog: Catalog) {
    * abiertos. Es lo que la pastilla anuncia: los resultados que dará al pulsarla, no los que ya
    * está dando. Con el filtro puesto el número no cambia, que es lo que deja ver cuántos se
    * quedaron fuera.
+   *
+   * Pregunta por `estaAbierto` y no por el horario a secas, igual que el filtro. Si cada uno
+   * preguntara por su cuenta, la pastilla anunciaría un resultado más de los que da: un local en
+   * obra tiene su horario de siempre, así que el horario dice "abierto" y el filtro lo deja fuera.
    */
   const openNowCount = useMemo(
-    () =>
-      forChips.filter((place) => getOpenStatus(place.hours ?? null, ahora).state === 'open').length,
+    () => forChips.filter((place) => estaAbierto(place, ahora)).length,
     [forChips, ahora],
   )
   /**

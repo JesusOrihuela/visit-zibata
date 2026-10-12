@@ -29,6 +29,20 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
   curva se dibuja como sombra difuminada y escalona. Ahora es `outline` a 1 px: sigue el radio, lo
   dibuja el navegador como trazo, y vuelve a ser el filete fino de siempre con el color de su plaza.
 
+- **El contador de "Abierto ahora" anunciaba un resultado más de los que daba.** `useExperience`
+  seguía preguntándole al horario directamente, así que contaba como abierto un local en obra que el
+  filtro excluía. Es el tercer sitio del mismo cambio donde se escapó la misma pregunta.
+
+  Para que no haya un cuarto, `scripts/convenciones.test.ts` falla si cualquier archivo fuera de tres
+  permitidos importa `getOpenStatus`. Probada introduciendo la violación a propósito: señala el
+  archivo culpable por su nombre. Una convención que se rompe tres veces no se sostiene con un
+  comentario.
+
+- **Los dos estados de espera del mapa no se parecían.** El que se ve mientras baja el trozo de
+  código era beige plano y el de las teselas ya tenía la trama de puntos, así que a mitad de carga
+  cambiaba el fondo, como si algo hubiera fallado y vuelto a empezar. Ahora comparten la misma
+  rejilla de 26 px.
+
 ### Cambiado
 
 - **Cuatro superficies dejan de tener forma de control sin serlo.** `DESIGN.md` dice que lo redondo
