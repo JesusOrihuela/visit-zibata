@@ -105,7 +105,12 @@
 }
 
 .input[aria-invalid="true"] {
-  border-color: var(--color-danger, #c0453c);
+  /*
+   * Decía `var(--color-danger, #c0453c)` y ese token nunca existió, así que lo que se pintaba era
+   * el fallback: el rojo de los corazones marcando un campo inválido. Dos semánticas opuestas con
+   * el mismo color, por un nombre mal escrito que nadie veía.
+   */
+  border-color: var(--danger-600);
 }
 
 .actions {
@@ -138,7 +143,7 @@
 
 .error {
   font-size: var(--text-xs);
-  color: #a33a32;
+  color: var(--danger-600);
 }
 
 .sent {

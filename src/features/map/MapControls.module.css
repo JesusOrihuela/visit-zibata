@@ -109,9 +109,9 @@
   height: 0.85rem;
   border: 2.5px solid white;
   border-radius: 50%;
-  background: #2f6fde;
+  background: var(--blue-ubicacion);
   box-shadow:
-    0 0 0 4px rgb(47 111 222 / 0.18),
+    0 0 0 4px color-mix(in srgb, var(--blue-ubicacion) 18%, transparent),
     0 1px 4px rgb(31 36 25 / 0.35);
   pointer-events: none;
 }

@@ -29,7 +29,7 @@
 }
 
 .button[aria-pressed="true"] {
-  color: #b4432c;
+  color: var(--heart-600);
 }
 
 .button[data-size="md"] {

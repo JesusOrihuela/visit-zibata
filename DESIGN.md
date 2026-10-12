@@ -13,6 +13,17 @@ colors:
   foco: "#3d6b00"
   oro-firma: "#8a5a10"
   alerta: "#a3402b"
+  alerta-fondo: "#fbede9"
+  corazon: "#b4432c"
+  corazon-fondo: "#fbe9e4"
+  ubicacion: "#2f6fde"
+  arena-100: "#f1ebe0"
+  arena-200: "#e6ddcd"
+  arena-400: "#b9a88f"
+  tinta-700: "#454a3b"
+  olivo-700: "#435a22"
+  lima-100: "#e7f1d4"
+  lima-50: "#f3f8ea"
 typography:
   display:
     fontFamily: "Fraunces, Iowan Old Style, Palatino Linotype, Georgia, serif"
@@ -113,7 +124,14 @@ Cálida, de tierra, con un solo acento que manda.
 ### Tertiary
 - **Oro** (`#8a5a10`): exclusivo de la firma de autoría. La marca de aurariola usa `#b7791f`, que se
   queda en 3,3:1 sobre arena; este es el mismo oro oscurecido hasta 5:1.
-- **Alerta** (`#a3402b`): el aviso de cierre, el error de formulario. Dos usos en toda la guía.
+- **Alerta** (`#a3402b`): el aviso de cierre y el error de formulario. Solo eso.
+- **Corazón** (`#b4432c`): el favorito. **No es el de alerta**, y la diferencia importa: uno dice
+  "esto te gusta" y el otro dice "algo va mal". Estuvieron mezclados hasta la v4.22, cuando se
+  descubrió que el borde de campo inválido del formulario se pintaba con el rojo de los corazones
+  por culpa de un token mal escrito.
+- **Ubicación** (`#2f6fde`): el punto de "estás aquí", y el único color que no sale de la paleta de
+  marca. Es a propósito: el azul es la convención de todos los mapas que la gente ya usa, y copiarla
+  es lo que lo hace entendible sin leyenda. En olivo se leería como un lugar más de la guía.
 
 ### Named Rules
 
@@ -124,6 +142,9 @@ abierto, hay doce aquí), nunca una invitación.
 **La regla del rojo que avisa de verdad.** El rojo es para lo que hace perder el viaje, no para lo
 normal. Un local cerrado a las once de la noche se pinta gris; uno en obra, ámbar. El rojo queda
 libre para cuando haga falta.
+
+**La regla del rojo que no es el mismo rojo.** Alerta y corazón son dos semánticas opuestas. Un
+elemento lleva uno o el otro, nunca un tono intermedio, y ninguno se escribe a mano.
 
 **La regla del fondo que no se inventa.** El beige viene de los tres hexadecimales de marca fijados
 antes del código, documentados en la cabecera de `tokens.css`. No se cambia por gusto: se cambia

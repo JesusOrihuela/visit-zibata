@@ -50,6 +50,27 @@
   --amber-700: #9a5c14;
   --amber-50: #fbf0dc;
 
+  /*
+   * El azul de "estás aquí", y es el único color de la guía que no sale de la paleta de marca.
+   *
+   * Es deliberado y tiene que seguir siéndolo: el punto de ubicación es azul en todos los mapas que
+   * la gente ya usa, y copiar esa convención es lo que hace que se entienda sin leyenda. Si fuera
+   * olivo o lima se leería como un lugar más de la guía, que es justo lo que no es.
+   *
+   * Estaba escrito a mano en MapControls.module.css, fuera del sistema. Vive aquí para que la
+   * decisión quede registrada y no se pierda en la siguiente edición.
+   */
+  --blue-ubicacion: #2f6fde;
+
+  /*
+   * El rojo del corazón. No es el de alerta y no debe confundirse con él: uno dice "esto te gusta"
+   * y el otro dice "algo va mal". Vivían los dos escritos a mano y en tres tonos distintos (#b4432c
+   * en el botón y en el filtro, #c0453c en la ilustración del tutorial), que es como una decisión
+   * se convierte en deriva. Da 5,33:1 sobre la superficie y 4,73:1 sobre su propio fondo.
+   */
+  --heart-600: #b4432c;
+  --heart-50: #fbe9e4;
+
   --danger-600: #a3402b;
   --danger-50: #fbede9;
 

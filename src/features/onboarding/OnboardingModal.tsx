@@ -99,7 +99,7 @@ function StepArt({ kind }: { kind: (typeof STEPS)[number]['art'] }) {
           </g>
           <path
             d="M64 54c2.4-3.4 7.6-3 9 1 1.4-4 6.6-4.4 9-1 2.4 3.4-1 8.4-9 13-8-4.6-11.4-9.6-9-13z"
-            fill="#c0453c"
+            fill="var(--heart-600)"
           />
           {/* La tercera marca es la calificación, y desde esta ronda son estrellas. */}
           <path
