@@ -4,6 +4,17 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 
 ## [4.19.0]: 2026-10-12
 
+### Corregido
+
+- **El nombre de la plaza elegida era ilegible en Safari y en el iPhone.** Con una zona puesta, el
+  desplegable se pinta en olivo y su texto tenía que ser blanco; en WebKit salía en tinta oscura
+  sobre el olivo, 2,2:1, cuando el mínimo son 4,5:1.
+
+  La causa estaba a la vista desde hacía tiempo: la regla `color: inherit` del `<select>` vivía
+  dentro de un bloque `@supports (appearance: base-select)`, que Chromium cumple y WebKit no. En
+  Chromium se veía perfecto, así que ninguna revisión a ojo lo iba a encontrar. Lo encontró axe en
+  la CI, en el único proyecto que usa WebKit. Ahora son 5,9:1.
+
 ### Cambiado
 
 - **El punto de "abierto ahora" se mueve a la foto**, abajo a la derecha, como el indicador de "en
