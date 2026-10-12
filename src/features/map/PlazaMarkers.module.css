@@ -60,28 +60,37 @@
   font-variant-numeric: tabular-nums;
 }
 
+/*
+ * El tallo mide siempre lo mismo y crece con `scale`, no con `height`.
+ *
+ * Son hasta quince marcadores a la vez y se alargan mientras el mapa se mueve: animar `height`
+ * recalcula la disposición de cada uno en cada fotograma. `scale` solo compone. El degradado es una
+ * rampa de dos paradas, así que estirarlo se ve igual, y el `transform-origin` abajo mantiene el
+ * pie clavado en la plaza, que es lo único que el tallo tiene que hacer.
+ */
 .stem {
   width: 2px;
   height: 0.875rem;
   border-radius: 1px;
+  transform-origin: bottom;
   background: linear-gradient(
     to bottom,
     color-mix(in srgb, var(--plaza-accent, var(--olive-600)) 55%, transparent),
     transparent
   );
   transition:
-    height var(--duration-base) var(--ease-out),
+    scale var(--duration-base) var(--ease-out),
     opacity var(--duration-base) var(--ease-out);
 }
 
 /* Etiqueta elevada para no chocar con otra: el tallo se alarga 48 px por nivel (LIFT_STEP) y sigue
-   señalando la plaza. */
+   señalando la plaza. La escala es (14 px + 48 n) / 14 px, con 0,875rem = 14 px. */
 .stem[data-lift="1"] {
-  height: calc(0.875rem + 48px);
+  scale: 1 4.4286;
 }
 
 .stem[data-lift="2"] {
-  height: calc(0.875rem + 96px);
+  scale: 1 7.8571;
 }
 
 .stem:not([data-lift="0"]) {

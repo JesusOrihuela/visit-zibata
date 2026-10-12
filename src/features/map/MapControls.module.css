@@ -1,7 +1,24 @@
 .controls {
   position: absolute;
-  right: var(--controls-right, var(--space-4));
-  bottom: var(--controls-bottom, calc(var(--space-6) + var(--safe-bottom)));
+  /*
+   * La caja se queda quieta en su sitio de base y lo que se mueve es `translate`.
+   *
+   * Antes el desplazamiento iba en `right` y `bottom` con una transición de 420 ms, y mover una caja
+   * con propiedades de posición obliga al navegador a recalcular la disposición en cada fotograma.
+   * Aquí eso ocurre justo encima de un mapa 3D que está dibujando, que es el peor sitio posible.
+   * `translate` solo compone: ni disposición ni pintado.
+   *
+   * Las dos variables siguen expresando la posición final (y `--controls-right` la sigue leyendo el
+   * ancho máximo de la barra en Experience.module.css); aquí se convierten en la diferencia contra
+   * la base. Sale negativa porque `right` y `bottom` crecen hacia la izquierda y hacia arriba.
+   */
+  right: var(--space-4);
+  bottom: calc(var(--space-6) + var(--safe-bottom));
+  translate: calc(var(--space-4) - var(--controls-right, var(--space-4)))
+    calc(
+      (var(--space-6) + var(--safe-bottom)) -
+      var(--controls-bottom, calc(var(--space-6) + var(--safe-bottom)))
+    );
   z-index: var(--z-map-ui);
   display: flex;
   flex-direction: column;
@@ -10,9 +27,7 @@
   margin: 0;
   padding: 0;
   border: 0;
-  transition:
-    right var(--duration-slow) var(--ease-out),
-    bottom var(--duration-slow) var(--ease-out);
+  transition: translate var(--duration-slow) var(--ease-out);
 }
 
 .stack {

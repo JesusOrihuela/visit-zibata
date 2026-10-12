@@ -1,0 +1,281 @@
+---
+name: Visit Zibatá
+description: Guía 3D de Zibatá, Querétaro. Mapa propio, dos idiomas, cero terceros.
+colors:
+  arena: "#d1c3b0"
+  olivo: "#536c2a"
+  lima: "#8cba37"
+  papel: "#f8f4ed"
+  superficie: "#fcfaf6"
+  tinta: "#1f2419"
+  tinta-apagada: "#62655a"
+  borde: "rgb(69 74 59 / 0.12)"
+  foco: "#3d6b00"
+  oro-firma: "#8a5a10"
+  alerta: "#a3402b"
+typography:
+  display:
+    fontFamily: "Fraunces, Iowan Old Style, Palatino Linotype, Georgia, serif"
+    fontSize: "1.875rem"
+    fontWeight: 600
+    lineHeight: 1.15
+    letterSpacing: "-0.01em"
+  body:
+    fontFamily: "Instrument Sans, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "0.9375rem"
+    fontWeight: 400
+    lineHeight: 1.45
+    letterSpacing: "normal"
+  firma:
+    fontFamily: "Kode Mono, ui-monospace, Menlo, Consolas, monospace"
+    fontSize: "0.6875rem"
+    fontWeight: 400
+    lineHeight: 1.3
+    letterSpacing: "normal"
+rounded:
+  sm: "0.5rem"
+  md: "0.875rem"
+  lg: "1.25rem"
+  xl: "1.75rem"
+  pill: "999px"
+spacing:
+  xs: "4px"
+  sm: "8px"
+  md: "16px"
+  lg: "24px"
+  xl: "32px"
+components:
+  boton-primario:
+    backgroundColor: "{colors.olivo}"
+    textColor: "{colors.superficie}"
+    rounded: "{rounded.pill}"
+    padding: "12px 20px"
+  pastilla-filtro:
+    backgroundColor: "{colors.superficie}"
+    textColor: "{colors.tinta}"
+    rounded: "{rounded.pill}"
+    padding: "6px 14px"
+  pastilla-filtro-activa:
+    backgroundColor: "{colors.olivo}"
+    textColor: "{colors.superficie}"
+    rounded: "{rounded.pill}"
+    padding: "6px 14px"
+---
+
+# Sistema de diseño
+
+Extraído de lo que está publicado, no de intenciones. La fuente de verdad sigue siendo
+[src/styles/tokens.css](src/styles/tokens.css); este archivo explica **por qué** cada valor es el que
+es, que es lo que un token no puede decir.
+
+## Overview
+
+**Norte creativo: "un mapa de papel que alguien dobló y se llevó al centro comercial".**
+
+La guía no compite por atención: compite por que alguien de pie en Zibatá, con una mano ocupada,
+decida en diez segundos adónde entrar. Todo lo demás está subordinado a eso. El mapa ocupa la
+pantalla y la interfaz flota encima en superficies translúcidas, nunca a su lado: el contenido es el
+territorio, y los controles son objetos apoyados sobre él.
+
+La paleta sale de la zona, no de un generador. Tres colores de marca fijados antes de escribir una
+línea de código (arena `#d1c3b0`, olivo `#536c2a`, lima `#8cba37`) y de ahí se derivan los neutros
+cálidos y los verdes. El beige no es el off-white seguro al que se recurre por reflejo: es el papel
+de un mapa, y el olivo y la lima son el campo de golf y el monte que rodean la zona.
+
+La densidad es alta y deliberada. Cien locales en una lista, cada uno con foto, nombre, giros y
+estado, a quince píxeles de cuerpo. Una guía que respira demasiado obliga a desplazarse, y
+desplazarse de pie en la calle es el fallo.
+
+**Key Characteristics:**
+- Superficies que flotan sobre el mapa, con desenfoque de fondo, nunca paneles opacos pegados al borde
+- Una sola familia de iconos, trazo fino, siempre acompañada de texto
+- Verde solo donde hay acción o afirmación; el resto es arena y tinta
+- Cero peticiones a terceros, y eso condiciona el diseño: no hay fuente de CDN ni icono remoto
+
+## Colors
+
+Cálida, de tierra, con un solo acento que manda.
+
+### Primary
+- **Olivo** (`#536c2a`): la acción. Botón de "Cómo llegar", pastilla de filtro activa, enlaces.
+  Nunca decorativo.
+- **Lima** (`#8cba37`): la afirmación. El punto de "abierto ahora", la insignia de conteo, el acento
+  del marcador seleccionado. Es el único verde que puede aparecer sin que haya nada que pulsar.
+
+### Neutral
+- **Papel** (`#f8f4ed`): el fondo de la aplicación, visible solo donde no hay mapa.
+- **Superficie** (`rgb(252 250 246 / 0.94)`): toda tarjeta, panel y barra. Translúcida a propósito,
+  con `saturate(1.4) blur(14px)`: flota sobre el mapa en vez de taparlo.
+- **Arena 100-500** (`#f1ebe0` a `#978670`): separadores, fondos apagados, estados inactivos.
+- **Tinta 900-500** (`#1f2419` a `#62655a`): texto. El 500 es el mínimo que mantiene 4,5:1 sobre la
+  superficie arena más apagada, y por eso no hay un gris más claro en la escala.
+
+### Tertiary
+- **Oro** (`#8a5a10`): exclusivo de la firma de autoría. La marca de aurariola usa `#b7791f`, que se
+  queda en 3,3:1 sobre arena; este es el mismo oro oscurecido hasta 5:1.
+- **Alerta** (`#a3402b`): el aviso de cierre, el error de formulario. Dos usos en toda la guía.
+
+### Named Rules
+
+**La regla del acento que cuesta.** El olivo marca acción. Si un elemento es olivo y no se puede
+pulsar, está mal pintado. La única excepción es la lima, que afirma un hecho del mundo (está
+abierto, hay doce aquí), nunca una invitación.
+
+**La regla del rojo que avisa de verdad.** El rojo es para lo que hace perder el viaje, no para lo
+normal. Un local cerrado a las once de la noche se pinta gris; uno en obra, ámbar. El rojo queda
+libre para cuando haga falta.
+
+**La regla del fondo que no se inventa.** El beige viene de los tres hexadecimales de marca fijados
+antes del código, documentados en la cabecera de `tokens.css`. No se cambia por gusto: se cambia
+cambiando la marca.
+
+## Typography
+
+**Display:** Fraunces, con `Iowan Old Style` y Georgia de respaldo.
+**Cuerpo:** Instrument Sans, con la pila del sistema de respaldo.
+**Firma:** Kode Mono, y solo ahí.
+**Mapa:** Instrument Serif, y solo en las etiquetas del mapa.
+
+Las cuatro se sirven desde el propio origen con `@fontsource`. Ninguna viene de un CDN, porque la
+política de seguridad no admite un solo destino externo.
+
+### Hierarchy
+
+| Token | px | Uso |
+|---|---|---|
+| `--text-2xs` | 11 | etiqueta legal, pie, firma |
+| `--text-xs` | 12 | versalitas de sección |
+| `--text-sm` | 13 | metadatos, enlaces, giros |
+| `--text-base` | 15 | cuerpo |
+| `--text-md` | 17 | nombre de lugar en listas |
+| `--text-lg` | 22 | subtítulos |
+| `--text-xl` | 24 | título de ficha |
+| `--text-2xl` | 30 | título de panel y de hoja |
+
+### Named Rules
+
+**La regla de los cuatro papeles.** Cada familia tiene un trabajo y solo uno. Fraunces titula,
+Instrument Sans habla, Kode Mono firma, Instrument Serif rotula el mapa. Una familia que empieza a
+hacer dos trabajos es una familia de más.
+
+**La regla de la cifra alineada.** Cualquier columna de números lleva `font-variant-numeric:
+tabular-nums`. Un conteo que baila al cambiar de dígito se lee como un error.
+
+## Layout
+
+Escala de 4 px, de `--space-1` (4) a `--space-8` (32). El panel es
+`clamp(22.5rem, 28vw, 27.5rem)`: ancho fijo en escritorio, hoja inferior en móvil.
+
+En móvil manda el pulgar: lo que se toca vive abajo, lo que se lee vive arriba. La hoja se arrastra,
+no se abre con un botón.
+
+**La regla de los 16 px de margen.** Ningún contenido toca el borde de la pantalla, a ninguna
+anchura. El mapa sí, porque es el fondo.
+
+## Elevation & Depth
+
+La profundidad se dice con translucidez y desenfoque, no con sombras fuertes. Tres sombras y una
+sola receta de desenfoque:
+
+- `--shadow-sm`: tarjetas en reposo y pastillas
+- `--shadow-md`: panel y hoja
+- `--shadow-lg`: diálogos, lo único que tapa el mapa entero
+- `--blur-surface`: `saturate(1.4) blur(14px)`, en todo lo que flota
+
+**La regla de la capa única.** Una superficie flotante no contiene otra superficie flotante. Si
+dentro de una tarjeta hace falta separar algo, se separa con un filete o con aire, no con una
+segunda tarjeta.
+
+## Shapes
+
+`--radius-sm` 8 px para cajas pequeñas, `md` 14 px para tarjetas, `lg` 20 px y `xl` 28 px para
+paneles y hojas, `pill` para todo lo que se pulsa.
+
+**La regla de la píldora.** Lo redondo se pulsa. Un rectángulo con esquinas de 8 px es contenido; una
+píldora es un control. Mezclarlos enseña al dedo a dudar.
+
+Las fotos de local son círculos, como el avatar de un contacto, porque es el logotipo del negocio y
+así se ve en sus redes.
+
+## Components
+
+**El punto de estado.** Sobre la foto, abajo a la derecha, 11 px con aro del color de la tarjeta.
+Cuatro estados y ninguno más: verde abierto, gris cerrado, hueco sin horario publicado, ámbar cerrado
+temporalmente. El hueco existe porque "no se sabe" no es lo mismo que "cerrado", y pintarlo gris
+sería afirmar algo que la guía no sabe.
+
+**Las pastillas de filtro.** Píldora, superficie translúcida, conteo a la derecha en `tabular-nums`.
+Una pastilla que daría cero resultados no se dibuja: el filtro de "abierto ahora" desaparece solo a
+las cuatro de la mañana.
+
+**Los botones.** Ocho estados obligatorios en cualquier control: reposo, hover, `:focus-visible`,
+activo, deshabilitado, cargando, error, éxito. El anillo de foco aparece **al instante**, nunca con
+transición.
+
+## Motion
+
+Dos curvas y tres duraciones, y nada fuera de eso:
+
+```
+--ease-out: cubic-bezier(0.22, 1, 0.36, 1)      entrar, salir, por omisión
+--ease-in-out: cubic-bezier(0.65, 0, 0.35, 1)   moverse por la pantalla
+--duration-fast: 140ms   --duration-base: 240ms   --duration-slow: 420ms
+```
+
+**Nunca `ease-in` en interfaz.** Empieza lento justo en el instante que la persona está mirando.
+
+**La regla de lo que se anima.** Solo `transform` y `opacity`, más color y sombra cuando el cambio
+es de estado. Animar `width`, `height`, `top`, `left`, `right` o `bottom` fuerza recálculo de
+disposición en cada fotograma, y esta guía dibuja un mapa 3D al mismo tiempo.
+
+**La regla de la frecuencia.** Lo que se usa cien veces al día no se anima. Abrir el panel sí; cada
+tecla del buscador, no.
+
+Con `prefers-reduced-motion: reduce` las tres duraciones pasan a 0 ms en los tokens, además de la
+regla global. No es "menos movimiento": es ninguno.
+
+## Do's and Don'ts
+
+**Sí**
+- Decir lo que la guía no sabe. Un hueco honesto vale más que un dato inventado.
+- Un solo juego de iconos (lucide), siempre con texto al lado.
+- Comprobar en el navegador a 375 px antes de dar nada por bueno.
+
+**No**
+- **Ninguna petición a terceros.** `connect-src 'self'` sin excepciones, y las pruebas E2E lo fijan.
+- **Ninguna media pública.** El conteo de corazones se publica a partir de cinco; las estrellas
+  ordenan sin verse.
+- **Ni guion largo ni comillas curvas dobles** en texto de interfaz, comentarios, datos o commits.
+- **Ningún dato de negocio inventado**: ni horario, ni teléfono, ni descripción, ni foto.
+- Ningún degradado de marca, ningún titular con relleno degradado, ningún icono emoji.
+
+## Reglas del detector que están apagadas, y por qué
+
+`.impeccable/config.json` silencia dos de las 59 reglas. Las dos se apagaron con una medición
+delante, no para que el contador llegara a cero.
+
+**`cream-palette`.** La regla dice que un beige cálido de fondo es la superficie "de buen gusto" a
+la que se recurre por reflejo, y pide que el fondo salga de una paleta deliberada. Aquí sale: el
+`#f8f4ed` deriva de `#d1c3b0`, uno de los tres hexadecimales de marca fijados antes de escribir
+código y documentados en la cabecera de `src/styles/tokens.css`. La premisa de la regla no se cumple,
+así que la regla no aplica.
+
+**`monotonous-spacing`.** Avisó de "~4 px usado 9 de 13 veces" en una muestra de la portada. El
+reparto real en las 36 hojas es otro: 8 px aparece 53 veces, 12 px 48, 16 px 44, y 4 px solo 11.
+Hay ritmo; lo que había era una muestra pequeña de una pantalla concreta.
+
+**Lo que NO se apagó: `overused-font`.** Avisa de que Instrument Sans ocupa el 74 % del texto y de
+que Fraunces también está en su lista. Esa premisa sí se cumple, así que se queda sonando. Es una
+decisión que vale la pena revisar algún día, no un error de medición, y apagarla sería justo lo que
+convierte un defecto en estilo de la casa.
+
+## Lo que este archivo NO canoniza
+
+Dos cosas que el build carga hoy y que **no** son el sistema:
+
+1. **Texto justificado sin partición** en la descripción de la ficha. Es un defecto conocido, no una
+   regla: en una columna de 38 caracteres abre ríos entre palabras. Se corrige, no se hereda.
+2. **El tipo de letra señalado por `impeccable detect`** (Instrument Sans en el 74 % del texto).
+   Queda anotado como decisión consciente, no como regla que impida revisarla: la pareja
+   Fraunces + Instrument Sans se eligió por lo que hace la primera con los nombres de las plazas, y
+   cambiarla cuesta volver a medir el presupuesto de peso, que está a 0,4 KB del límite.
