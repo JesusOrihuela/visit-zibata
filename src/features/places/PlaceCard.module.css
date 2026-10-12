@@ -59,8 +59,16 @@
    * es además uno de los tells más reconocibles de interfaz generada.
    *
    * Sin plaza alrededor (una tarjeta suelta en una prueba) cae al filete de siempre.
+   *
+   * Va por fuera y con `outline`, no con `box-shadow` ni `inset`, y el grosor es el de siempre.
+   *
+   * `inset` lo apoyaba sobre el borde ya suavizado de la foto recortada: dos bordes suavizados uno
+   * encima de otro dan filo sucio. Y `box-shadow` a 1,5 px escalonaba la curva. `outline` sigue el
+   * radio, lo dibuja el navegador como un trazo y no como una sombra, y a 1 px vuelve a ser el
+   * filete fino que era, solo que ahora con el color de su plaza.
    */
-  box-shadow: inset 0 0 0 1.5px var(--plaza-accent, var(--color-border));
+  outline: 1px solid var(--plaza-accent, var(--color-border));
+  outline-offset: 0;
 }
 
 .body {

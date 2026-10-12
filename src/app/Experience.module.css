@@ -77,7 +77,12 @@
   gap: var(--space-3);
   max-width: 46rem;
   padding: var(--card-pad) 0.5rem var(--card-pad) 0.6rem;
-  border-radius: var(--radius-xl);
+  /*
+   * Contenedor, no control. Con `xl` el radio quedaba en la mitad de su alto y se leía como una
+   * cápsula gigante con dos cápsulas dentro: tres formas de control anidadas para una barra que no
+   * se pulsa. `lg` sigue siendo suave y ya no compite con las píldoras que contiene.
+   */
+  border-radius: var(--radius-lg);
   background: var(--color-surface);
   backdrop-filter: var(--blur-surface);
   box-shadow:

@@ -21,41 +21,112 @@
   background: radial-gradient(120% 90% at 50% 45%, transparent 60%, rgb(120 104 80 / 0.14) 100%);
 }
 
+/*
+ * La espera del mapa, sin caja.
+ *
+ * Era una pastilla flotando en el centro de una pantalla vacía: una superficie con forma de control
+ * para algo que nadie pulsa, y una más en una interfaz que ya tenía demasiadas. Ahora el aviso no
+ * tiene contenedor, y lo que ocupa el hueco es la trama de puntos de la marca, la misma de la
+ * página 404, respirando muy despacio.
+ *
+ * Es el recurso que ya existía para "aquí todavía no hay nada", y resuelve de paso lo que de verdad
+ * se sentía mal: no era el indicador, era el beige vacío detrás de él.
+ */
 .loading {
   position: absolute;
-  left: 50%;
-  top: 50%;
-  translate: -50% -50%;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-5);
-  border-radius: var(--radius-pill);
-  background: var(--color-surface);
-  backdrop-filter: var(--blur-surface);
-  box-shadow: var(--shadow-md);
+  inset: 0;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: var(--space-4);
   color: var(--color-text-muted);
   font-size: var(--text-sm);
   z-index: 1;
+  pointer-events: none;
+}
+
+.loading::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(var(--olive-600) 1px, transparent 1px);
+  background-size: 26px 26px;
+  /* Solo `opacity`: es lo único que puede animarse sobre un área entera sin costar un repintado. */
+  animation: respira 2.6s var(--ease-in-out) infinite;
+  opacity: 0.06;
+}
+
+@keyframes respira {
+  0%,
+  100% {
+    opacity: 0.045;
+  }
+  50% {
+    opacity: 0.1;
+  }
+}
+
+/* La trama se queda quieta y visible: una textura estática no molesta, una congelada a media luz sí. */
+@media (prefers-reduced-motion: reduce) {
+  .loading::before {
+    animation: none;
+    opacity: 0.07;
+  }
+}
+
+/*
+ * Tres puntos que se encienden en orden, en la rampa de verdes de la marca.
+ *
+ * Antes era uno solo latiendo con `scale` y `opacity`, que es el indicador de carga por omisión de
+ * cualquier interfaz. Tres en secuencia dicen lo mismo y además dicen algo de este producto: son los
+ * mismos verdes con los que el mapa pinta la zona que está llegando.
+ *
+ * Hecho a mano con `animation-delay`, cero bytes de librería. Se encienden hacia la derecha, en el
+ * sentido en que se lee el texto que tienen al lado.
+ */
+.loadingDots {
+  display: inline-flex;
+  gap: 0.3rem;
 }
 
 .loadingDot {
-  width: 0.625rem;
-  height: 0.625rem;
+  width: 0.5rem;
+  height: 0.5rem;
   border-radius: 50%;
-  background: var(--lime-500);
-  animation: pulse 1.2s var(--ease-in-out) infinite;
+  background: var(--lime-300);
+  animation: llega 1.4s var(--ease-in-out) infinite;
 }
 
-@keyframes pulse {
+.loadingDot:nth-child(2) {
+  background: var(--lime-500);
+  animation-delay: 0.16s;
+}
+
+.loadingDot:nth-child(3) {
+  background: var(--olive-600);
+  animation-delay: 0.32s;
+}
+
+@keyframes llega {
   0%,
+  70%,
   100% {
-    opacity: 0.35;
-    transform: scale(0.8);
+    opacity: 0.3;
   }
-  50% {
+  35% {
     opacity: 1;
-    transform: scale(1.1);
+  }
+}
+
+/*
+ * Sin movimiento, los tres se quedan encendidos. La regla global pone las duraciones a casi cero y
+ * eso congelaría la animación en su primer fotograma, que es el apagado: tres puntos grises que no
+ * dicen nada. Encendidos al menos se leen como un indicador presente.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .loadingDot {
+    animation: none;
+    opacity: 1;
   }
 }
 

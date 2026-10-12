@@ -2,6 +2,47 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado semántico.
 
+## [4.23.0]: 2026-10-12
+
+### Corregido
+
+- **El tallo de los marcadores se había soltado de su etiqueta.** En la v4.21 se cambió de `height` a
+  `scale` aplicando la regla de no animar propiedades de disposición, sin mirar qué hacía esa
+  propiedad: `.anchor` es una columna flex anclada por su base, así que **el alto del tallo es lo que
+  sube la etiqueta**. Con `scale` la caja seguía midiendo 14 px, el tallo se estiraba hacia abajo y
+  la etiqueta se quedaba donde estaba.
+
+  Vuelve a `height`, y queda escrito en el CSS que ahí la regla tiene excepción: el nivel de
+  elevación solo cambia cuando el solucionador de choques reparte etiquetas, no en cada fotograma.
+  Medido: los once marcadores dan 0 px de separación entre el pie de la etiqueta y la cabeza del
+  tallo, incluidos los elevados a 62 y 110 px.
+
+- **Un local cerrado temporalmente decía "Abierto" en su horario.** `estadoDe()` se escribió para que
+  la pregunta viviera en un sitio y quedó una llamada sin migrar: `HoursTable` seguía preguntándole
+  al horario, que responde "Abierto" con razón y aun así es falso. Ahora recibe el cierre y calla el
+  estado en vivo; el aviso ámbar de arriba es la única afirmación.
+
+- **El aviso de cierre tenía 32 px arriba y 20 abajo**, por un `margin-top` encima del `gap` del
+  contenedor. El hueco lo reparte el contenedor.
+
+- **El aro de las fotos salía grueso y escalonado.** Iba a 1,5 px y con `box-shadow`, que sobre una
+  curva se dibuja como sombra difuminada y escalona. Ahora es `outline` a 1 px: sigue el radio, lo
+  dibuja el navegador como trazo, y vuelve a ser el filete fino de siempre con el color de su plaza.
+
+### Cambiado
+
+- **Cuatro superficies dejan de tener forma de control sin serlo.** `DESIGN.md` dice que lo redondo
+  se pulsa, y había cápsulas que no se pulsan: la barra de búsqueda (una cápsula conteniendo dos
+  cápsulas), el resumen de filtros (una cápsula conteniendo un botón), la franja del pie y el aviso
+  de carga. Pasan a radio de contenedor. Los filtros, los toggles y los botones siguen siendo
+  píldoras, porque esos sí se pulsan.
+
+- **La espera del mapa ya no es una pastilla flotando en una pantalla vacía.** El aviso pierde su
+  caja y el hueco lo ocupa la trama de puntos de la marca, la misma de la página 404, respirando muy
+  despacio. El problema no era el indicador, era el beige vacío detrás. Solo se anima `opacity`, que
+  es lo único que puede animarse sobre un área entera sin costar repintado, y en CSS, que corre fuera
+  del hilo principal justo cuando el navegador está más ocupado.
+
 ## [4.22.0]: 2026-10-12
 
 ### Añadido
