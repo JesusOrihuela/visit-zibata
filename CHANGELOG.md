@@ -2,6 +2,20 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado semántico.
 
+## [4.18.1]: 2026-10-12
+
+### Cambiado
+
+- **El panel privado queda abierto para su dueño.** `ACCESS_TEAM` y `ACCESS_AUD` estaban vacíos
+  desde que se escribió el panel, y con ellos vacíos el Worker responde 403 a todo el mundo. Ahora
+  llevan los identificadores de la aplicación de Cloudflare Access que ya está configurada, que
+  cubre `visitzibata.com/panel` y `visitzibata.com/api/panel` con una política de un solo correo.
+
+  No son secretos y por eso van versionados: el dominio del equipo sale en la URL de inicio de
+  sesión y la etiqueta AUD identifica la aplicación, como un `client_id`. Lo que decide quién entra
+  es la política de Access, no estos dos valores: si se borra la regla, el panel vuelve a 403 en vez
+  de quedar abierto.
+
 ## [4.18.0]: 2026-10-12
 
 ### Añadido

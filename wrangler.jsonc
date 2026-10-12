@@ -26,10 +26,16 @@
    *
    * **Vacíos, el panel está cerrado.** Es deliberado: un despliegue a medias deja fuera a todo el
    * mundo en vez de publicar los números. Ver docs/DESPLIEGUE.md para de dónde salen.
+   *
+   * La etiqueta AUD lleva `gitleaks:allow` porque es 64 caracteres hexadecimales al lado de una
+   * clave que contiene "ACCESS", y la regla `generic-api-key` la toma por una credencial. No lo es:
+   * identifica la aplicación, no autoriza nada, y quien entra lo decide la política de Access. La
+   * marca va en esta línea y no en un `.gitleaksignore` para que la razón se lea donde está el
+   * valor, y porque una huella de `.gitleaksignore` caduca en cuanto la línea se mueve.
    */
   "vars": {
-    "ACCESS_TEAM": "",
-    "ACCESS_AUD": ""
+    "ACCESS_TEAM": "aurariola.cloudflareaccess.com",
+    "ACCESS_AUD": "1d34898158a68d5bcc95ca810e155f7b045e8f93701a9ec607d5c09a97bcc265" // gitleaks:allow
   },
   /*
    * La base de visitas. El `database_id` no es un secreto: identifica la base, no da acceso a ella,
