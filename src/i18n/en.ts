@@ -113,6 +113,8 @@ export const en = {
   'favorites.add': 'Save to favourites',
   'favorites.remove': 'Remove from favourites',
   'favorites.filter': 'Favourites',
+  'filters.openNow': 'Open now',
+  'filters.openNowLabel': 'Open now: {name}',
   'favorites.saved': 'Saved to favourites',
 
   'brand.by': 'A project by',
@@ -123,6 +125,10 @@ export const en = {
   'seo.title': '{name} · Visit Zibatá',
   'seo.place.fallback': '{giros} at {plaza}, Zibatá. Hours, contact and directions.',
   'seo.plaza.fallback': '{name}, Zibatá. What is there, hours and directions.',
+  'seo.nearby': 'More in {plaza}',
+  'seo.whatsHere': 'What is here',
+  'seo.zones': 'The areas of Zibatá',
+  'seo.backHome': 'See the map of Zibatá',
 
   'share.action': 'Share',
   'share.place': 'Share {name}',

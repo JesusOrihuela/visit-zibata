@@ -4,7 +4,7 @@
  * se vuelve a lo que había debajo. Desde cada una se salta a las otras dos, sin volver a buscarlas en
  * la interfaz.
  *
- * Son tres y no cuatro porque privacidad y términos van juntas desde la v4.16. La dirección no
+ * Son tres y no cuatro porque privacidad y términos van juntas desde la v4.18. La dirección no
  * cambió (/info/privacidad): ya estaba indexada, y partirla en dos habría dejado dos páginas cortas
  * que se repiten.
  */
@@ -144,7 +144,7 @@ export function InfoDialog({ topic, onClose, onGoTo }: InfoDialogProps) {
         <p className={styles.lead}>{t(page.lead)}</p>
         <p className={styles.body}>{t(page.body)}</p>
         {/*
-         * En "Sugiere un cambio" el formulario ocupa el sitio del detalle. Desde la v4.16 siempre
+         * En "Sugiere un cambio" el formulario ocupa el sitio del detalle. Desde la v4.18 siempre
          * está: ya no depende de una clave de terceros que podía faltar, así que no hay caso en el
          * que la página tenga que explicar que el canal no existe.
          */}

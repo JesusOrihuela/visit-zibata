@@ -118,6 +118,9 @@ export const es = {
   'favorites.add': 'Guardar en favoritos',
   'favorites.remove': 'Quitar de favoritos',
   'favorites.filter': 'Favoritos',
+  'filters.openNow': 'Abierto ahora',
+  // Para el punto de la tarjeta, que no lleva texto a la vista. Lo lee un lector de pantalla.
+  'filters.openNowLabel': 'Abierto ahora: {name}',
   'favorites.saved': 'Guardado en favoritos',
 
   'brand.by': 'Un proyecto de',
@@ -132,6 +135,13 @@ export const es = {
   'seo.title': '{name} · Visit Zibatá',
   'seo.place.fallback': '{giros} en {plaza}, Zibatá. Horario, contacto y cómo llegar.',
   'seo.plaza.fallback': '{name}, Zibatá. Qué hay, horarios y cómo llegar.',
+  // Los cuatro siguientes solo salen en el HTML que se sirve antes de que arranque la aplicación
+  // (ver scripts/build/contenido.ts). Son texto de interfaz igual: los lee quien no tiene
+  // JavaScript, y los lee un buscador.
+  'seo.nearby': 'Más en {plaza}',
+  'seo.whatsHere': 'Qué hay aquí',
+  'seo.zones': 'Las zonas de Zibatá',
+  'seo.backHome': 'Ver el mapa de Zibatá',
 
   'share.action': 'Compartir',
   'share.place': 'Compartir {name}',
@@ -213,7 +223,7 @@ export const es = {
   /*
    * Dos nombres para la misma página, y es a propósito. "Privacidad" es la etiqueta corta de la
    * franja del mapa y del pasaporte, donde el ancho es escaso. El título largo es el que se lee
-   * dentro y el que se indexa, porque desde la v4.16 esta página también son los términos de uso:
+   * dentro y el que se indexa, porque desde la v4.18 esta página también son los términos de uso:
    * eran dos avisos cortos que se repetían, y leerlos juntos es más claro que buscarlos por
    * separado (ver docs/CUENTAS.md para lo que sí se guarda).
    */

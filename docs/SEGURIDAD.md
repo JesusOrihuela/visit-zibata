@@ -70,11 +70,11 @@ manifest-src 'self'; object-src 'none'; frame-src 'none'; base-uri 'self'; form-
   política volvió a cerrarse. El motivo del cambio no fue la política sino que Turnstile dejaba fuera
   en silencio a quien usa Tor o un bloqueador duro; cerrar la CSP fue el premio.
 
-- **`connect-src` no tiene ningún destino externo.** Desde la v4.16 es `'self'` a secas, así que no
+- **`connect-src` no tiene ningún destino externo.** Desde la v4.18 es `'self'` a secas, así que no
   solo navegar: usar la guía entera, incluido escribir en "Sugiere un cambio", no hace una sola
   petición fuera del propio origen.
 
-  Hasta la v4.15.2 aquí estaba abierto **api.web3forms.com**, el servicio que iba a entregar las
+  Hasta la v4.17 aquí estaba abierto **api.web3forms.com**, el servicio que iba a entregar las
   sugerencias por correo. Nunca llegó a usarse en producción (faltaba la clave, así que el formulario
   no se dibujaba) y para cuando tocaba ponerla ya había servidor propio, de modo que abrir un destino
   externo para algo que podemos guardar nosotros dejó de tener sentido. Ahora el formulario envía a
@@ -120,7 +120,7 @@ encontraría a nadie: no hay identificadores, ni IP, ni user agent, ni referente
 
 ## Las sugerencias
 
-Desde la v4.16, "Sugiere un cambio" escribe en nuestra propia base: `POST /api/sugerencia`, en
+Desde la v4.18, "Sugiere un cambio" escribe en nuestra propia base: `POST /api/sugerencia`, en
 `worker/sugerencias.ts`. Antes salía a Web3Forms y nunca llegó a usarse en producción, así que no
 hubo nada que migrar.
 

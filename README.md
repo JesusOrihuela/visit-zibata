@@ -19,6 +19,10 @@ En la interfaz y en las URLs esas agrupaciones se llaman **zona**; en los datos 
 - **Señales de la comunidad sin reseñas**: se publica cuánta gente guardó cada lugar (a partir de
   cinco) y nada más. Las calificaciones ordenan la guía pero su media no sale del servidor, y las
   cuentas no tienen correo, ni nombre, ni contraseña.
+- **Filtro de abiertos**: una pastilla deja solo lo que está abierto en este momento, y lo abierto
+  sube en el orden de las listas con un punto discreto en la tarjeta.
+- **Contenido sin JavaScript**: cada página trae escritos su nombre, su horario, su contacto y
+  enlaces de verdad a la zona y a los locales vecinos, antes de que arranque nada.
 - **Una página real por ruta**, en los dos idiomas: 234 archivos HTML con su título, su descripción, su
   canonical, sus `hreflang` y sus datos estructurados, más una imagen de vista previa por local. Es lo
   que hace que cada ficha se indexe y se comparta por separado.

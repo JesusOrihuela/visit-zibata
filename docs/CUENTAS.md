@@ -261,7 +261,7 @@ memoria en silencio, y es aceptable porque el dato nunca salió del dispositivo.
 ### 4. La CSP y la prueba que la respalda
 
 Esto dejó de ser un obstáculo, y conviene anotar por qué. La API vive en el mismo origen que la
-guía, así que `connect-src 'self'` ya la admite sin abrir nada: desde la v4.16 no queda ningún
+guía, así que `connect-src 'self'` ya la admite sin abrir nada: desde la v4.18 no queda ningún
 destino externo en la política (antes estaba `https://api.web3forms.com`, para las sugerencias, y se
 fue al pasarlas a nuestro propio servidor). `tests/e2e/security.spec.ts` sigue afirmando **cero
 peticiones externas** en todo el recorrido, y eso ahora se cumple sin excepciones que explicar.

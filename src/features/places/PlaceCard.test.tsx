@@ -116,3 +116,35 @@ describe('PlaceCard', () => {
     expect(JSON.parse(window.localStorage.getItem('zibata:favoritos') ?? '[]')).toEqual([])
   })
 })
+
+describe('la marca de abierto', () => {
+  const nunca = {
+    mon: [],
+    tue: [],
+    wed: [],
+    thu: [],
+    fri: [],
+    sat: [],
+    sun: [],
+  }
+
+  it('un local abierto lleva su punto, con texto para quien no lo ve', async () => {
+    const place = makePlace({ id: 'abre', plazaId: 'plaza-sur', name: 'Abre', hours: allDay })
+    await renderWithCatalog(<PlaceCard place={place} onOpen={vi.fn()} />)
+    expect(screen.getByText('Abierto ahora: Abre')).toBeInTheDocument()
+  })
+
+  it('un local cerrado no lleva nada', async () => {
+    // La ausencia significa "no necesariamente abierto", que es lo que la guía sabe. Un segundo
+    // punto para "cerrado" convertiría la lista en un semáforo de cien luces.
+    const place = makePlace({ id: 'cierra', plazaId: 'plaza-sur', name: 'Cierra', hours: nunca })
+    await renderWithCatalog(<PlaceCard place={place} onOpen={vi.fn()} />)
+    expect(screen.queryByText(/Abierto ahora/)).not.toBeInTheDocument()
+  })
+
+  it('un local sin horario tampoco, porque no se sabe', async () => {
+    const place = makePlace({ id: 'sin', plazaId: 'plaza-sur', name: 'Sin' })
+    await renderWithCatalog(<PlaceCard place={place} onOpen={vi.fn()} />)
+    expect(screen.queryByText(/Abierto ahora/)).not.toBeInTheDocument()
+  })
+})

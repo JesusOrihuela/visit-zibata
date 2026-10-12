@@ -67,7 +67,7 @@ ficha que seguía en el estado. En escritorio se llega desde la franja inferior 
 en móvil, donde esa franja se pelearía con la hoja y con la atribución, desde el botón de información
 de la barra superior. Cada página es su propia hoja (`InfoDialog`) y lleva a las otras.
 
-Privacidad y términos van en una sola página desde la v4.16. La dirección no cambió, porque ya
+Privacidad y términos van en una sola página desde la v4.18. La dirección no cambió, porque ya
 estaba indexada: lo que cambió es que el título dice las dos cosas y los términos se leen debajo del
 aviso de privacidad. En la franja y en el pasaporte la etiqueta sigue siendo "Privacidad", que es lo
 que cabe.
@@ -149,12 +149,23 @@ Las listas de una plaza y de resultados (sin texto de búsqueda) se ordenan con 
   pesan 0,3 como mucho: orientan, nunca mandan sobre el gusto propio. En la interfaz solo se publican
   los **corazones**; la media de estrellas ordena pero no se enseña junto al negocio, porque un promedio
   público es un arma de doble filo para un local pequeño.
+- **Abierto ahora (0,5).** Un local cerrado no sirve para decidir dónde ir en este momento, así que
+  estar abierto sube. Pesa más que la comunidad y que el giro, pero no manda: un favorito aporta
+  0,76 por la vía directa, así que un lugar que esta persona guardó y está cerrado puede seguir por
+  delante de uno indiferente que está abierto. Los once locales sin horario publicado quedan en
+  medio (0,35) y no en el suelo: no se sabe si están abiertos, y hundirlos castigaría al negocio por
+  un hueco de la guía.
 - **Descubrimiento y segundas oportunidades.** Una de cada cuatro posiciones es para un lugar que no ha
   abierto nunca **o que no abre desde hace más de 60 días**, con una rotación diaria determinista: lo
   nuevo tiene sitio y lo que se descartó hace tiempo puede volver.
 - **Las pastillas de categoría** también se ordenan por afinidad (`categoryAffinity`), con el orden
   curado como desempate: quien siempre busca tacos los encuentra primero.
-- **Sin señales**, el orden curado de la guía, tal cual. Con texto de búsqueda manda la relevancia.
+- **Sin señales**, el orden curado de la guía, con una sola excepción: lo abierto ahora sube, y
+  dentro de cada grupo (abierto, sin horario, cerrado) se conserva el orden curado. Estar abierto no
+  es una señal personal, es una propiedad del mundo, así que no hace falta haber marcado nada para
+  que valga. El resto de la maquinaria (afinidades, descubrimiento, rotación diaria) sí espera a que
+  haya algo marcado: barajarle la guía cada día a quien llega por primera vez no le sirve de nada.
+  Con texto de búsqueda manda la relevancia.
 - Las señales se leen una vez por lista: marcar un favorito dentro de ella no la reordena bajo el dedo.
 
 Las señales vienen de una `PreferenceSource` (`preferences.ts`). Hoy es local (`zibata:favoritos`,
@@ -256,7 +267,14 @@ portada, las 11 zonas activas, 101 locales y 3 páginas de información), más `
 esto se escribe a mano: sale de `data/commercial/*.json` en cada compilación, así que añadir un local
 o cambiarle el nombre se refleja solo en la siguiente publicación.
 
-Las 234 cargan exactamente la misma aplicación; lo único distinto es el `<head>`: `<html lang>`,
+Desde la v4.16 cada una trae también su contenido escrito dentro de `<div id="root">`: el nombre, los
+giros, la dirección, el horario, el contacto y enlaces a la zona y a los locales vecinos. Antes el
+cuerpo eran 193 bytes iguales en todas, así que un rastreador veía páginas vacías y sin enlaces entre
+ellas, y Search Console lo decía con esas palabras ("Página de referencia: no se ha detectado
+ninguna"). React lo sustituye al montar, así que no es contenido distinto del que enseña la
+aplicación: es el mismo, servido antes. Hay E2E que lo comprueban con JavaScript desactivado.
+
+Las 234 cargan la misma aplicación; lo demás distinto está en el `<head>`: `<html lang>`,
 `<title>`, `description`, `canonical` y las tres `hreflang` (`es`, `en` y `x-default` apuntando al
 español, que es el idioma por omisión del sitio). Las dos listas de páginas se generan con el mismo
 recorrido, así que la gemela en el otro idioma ocupa la misma posición y las `hreflang` salen sin
@@ -345,7 +363,7 @@ sin pasar por él, que es lo que mantiene el costo en cero y evita contar un arc
 
 ## Las sugerencias
 
-"Sugiere un cambio" es el único formulario de la guía, y desde la v4.16 su envío va a `POST
+"Sugiere un cambio" es el único formulario de la guía, y desde la v4.18 su envío va a `POST
 /api/sugerencia` (`worker/sugerencias.ts`), no a un servicio de terceros. El módulo es puro: lee el
 cuerpo, recorta los textos a sus topes y devuelve `null` si no hay mensaje o si el sello no tiene
 forma de sello. Las tres consultas (guardar, últimas cincuenta, cuántas sin atender) son constantes

@@ -55,7 +55,11 @@ const KB = 1024
  */
 const BUDGET = {
   initialJs: 122,
-  initialCss: 10,
+  // 11 y no 10: el estilo del contenido escrito que trae cada página (v4.16) dejó la medida en 9,9
+  // de 10, y un margen de cien bytes hace que el siguiente cambio honesto rompa la compilación sin
+  // que haya pasado nada. El tope sigue existiendo para cazar un crecimiento descuidado, no para
+  // discutir decimales.
+  initialCss: 11,
   mapJs: 320,
   mapCss: 15,
   dataJs: 34,

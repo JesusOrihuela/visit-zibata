@@ -2,7 +2,7 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado semántico.
 
-## [4.16.0]: 2026-10-12
+## [4.18.0]: 2026-10-12
 
 ### Añadido
 
@@ -36,6 +36,66 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
   el que se indexa; en la franja del mapa y en el pasaporte la etiqueta sigue siendo "Privacidad",
   que es lo que cabe.
 
+## [4.17.0]: 2026-10-12
+
+### Anadido
+
+- **Filtro de "Abierto ahora"**, junto al de favoritos. Solo aparece si hay algo abierto, asi que a
+  las cuatro de la manana desaparece solo, y el numero de la pastilla dice cuantos resultados dara
+  al pulsarla. Deja fuera los once locales sin horario publicado: el filtro dice "abierto ahora", y
+  de esos no se sabe.
+- **Lo abierto sube en el orden de las listas**, con peso 0,5. Pesa mas que la comunidad y que el
+  giro, pero no manda: un favorito aporta 0,76 por la via directa, asi que un lugar guardado y
+  cerrado puede seguir por delante de uno indiferente y abierto. Los que no publican horario quedan
+  en medio (0,35) y no en el suelo: no se sabe si estan abiertos, y hundirlos castigaria al negocio
+  por un hueco de la guia.
+- **Un punto verde discreto** en la tarjeta de lo que esta abierto, con texto para lectores de
+  pantalla. Nada para cerrado ni para los que no tienen horario: la ausencia significa "no
+  necesariamente", que es lo que la guia sabe. Un segundo punto para "cerrado" convertiria la lista
+  en un semaforo de cien luces.
+
+### Decisiones que quedan escritas
+
+- **Sin haber marcado nada, lo abierto tambien sube.** Estar abierto no es una senal personal, es
+  una propiedad del mundo. Va por un camino aparte que solo reordena por apertura y conserva el
+  orden curado dentro de cada grupo: el resto de la maquinaria (afinidades, descubrimiento, rotacion
+  diaria) si espera a que haya algo marcado, porque barajarle la guia cada dia a quien llega por
+  primera vez no le sirve de nada.
+- El reloj es el compartido de `OpenStatus`, que avanza al cambiar el minuto, asi que el filtro y el
+  orden se reevaluan solos cuando un local abre o cierra mientras alguien mira la guia.
+
+### Corregido
+
+- `AGENTS.md` decia que el despliegue era a GitHub Pages. Es Cloudflare desde la v4.9.0.
+
+## [4.16.0]: 2026-10-12
+
+Las paginas dejan de estar vacias para quien no ejecuta JavaScript.
+
+### Anadido
+
+- **Cada pagina trae su contenido escrito** dentro de `<div id="root">`: el nombre como `<h1>`, los
+  giros, la zona con su direccion, la descripcion, el horario dia por dia, los enlaces de contacto y
+  enlaces a la zona y a los locales vecinos. Las zonas listan sus locales y la portada sus zonas.
+  React lo sustituye al montar, asi que no es contenido distinto del que ensena la aplicacion (eso
+  seria enganar a un buscador): es el mismo, servido antes.
+- Las paginas de informacion tambien. Importa sobre todo en privacidad: una politica que solo existe
+  si se ejecuta JavaScript no se puede citar ni archivar.
+- `tests/e2e/sin-javascript.spec.ts`, con JavaScript desactivado, comprueba que el texto y los
+  enlaces esten en el HTML en los dos arboles de idioma.
+
+### Por que
+
+El cuerpo de las 234 paginas eran 193 bytes identicos: un `<noscript>` y un `<div>` vacio. Eso tenia
+dos costos. Google las renderiza, pero lo hace en una cola aparte y la deja para el final en sitios
+sin autoridad, asi que un dominio nuevo con 234 paginas sin texto es el peor caso. Y como los
+enlaces de la guia los dibuja React, un rastreador veia 234 URL sueltas sin nada que las uniera:
+Search Console lo decia con todas sus letras, "Pagina de referencia: no se ha detectado ninguna".
+
+### Cambiado
+
+- El presupuesto de CSS inicial pasa de 10 a 11 KB. El estilo del contenido escrito dejo la medida
+  en 9,9 de 10, y cien bytes de margen hacen que el siguiente cambio honesto rompa la compilacion.
 ## [4.15.2]: 2026-10-12
 
 ### Corregido

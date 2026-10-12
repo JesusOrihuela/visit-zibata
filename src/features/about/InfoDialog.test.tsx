@@ -20,7 +20,7 @@ describe('InfoDialog', () => {
     // El conteo de visitas se declara aquí: callarlo sería mentir por omisión.
     expect(screen.getByText(/una visita por página y por día/)).toBeInTheDocument()
     expect(screen.getByText(/no se vende ni se comparte/)).toBeInTheDocument()
-    // Los términos viven en esta misma página desde la v4.16, y lo que fijan son cuatro cosas.
+    // Los términos viven en esta misma página desde la v4.18, y lo que fijan son cuatro cosas.
     expect(screen.getByRole('heading', { name: 'Términos de uso' })).toBeInTheDocument()
     expect(screen.getByText(/No tiene relación comercial/)).toBeInTheDocument()
     expect(screen.getByText(/nadie paga por estar/)).toBeInTheDocument()

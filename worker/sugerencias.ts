@@ -1,7 +1,7 @@
 /**
  * "Sugiere un cambio", sin terceros.
  *
- * Antes de la v4.16 esto salía a Web3Forms, que lo entregaba por correo. Nunca llegó a funcionar en
+ * Antes de la v4.18 esto salía a Web3Forms, que lo entregaba por correo. Nunca llegó a funcionar en
  * producción (faltaba la clave y el formulario no se dibujaba), y para cuando iba a ponerse ya
  * había servidor propio, así que no tenía sentido abrir un destino externo en la política de
  * seguridad para algo que podemos guardar nosotros.

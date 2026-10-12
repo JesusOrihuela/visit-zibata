@@ -14,7 +14,7 @@ export const SITE_URL = __SITE_URL__
 /**
  * Adónde se envía "Sugiere un cambio": a nuestro propio servidor.
  *
- * Antes de la v4.16 salía a Web3Forms, que lo entregaba por correo. Nunca llegó a funcionar en
+ * Antes de la v4.18 salía a Web3Forms, que lo entregaba por correo. Nunca llegó a funcionar en
  * producción (faltaba la clave, así que el formulario no se dibujaba), y para cuando iba a ponerse
  * ya había servidor propio. Abrir un destino externo en la política de seguridad para algo que
  * podemos guardar nosotros no se sostenía (ver worker/sugerencias.ts).

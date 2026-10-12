@@ -126,7 +126,7 @@ de **Rate limiting** sobre el alta:
 3. Condicion: **URI Path** equals `/api/cuenta`, y **Request Method** equals `POST`.
 4. Contar por **IP**, 5 peticiones cada 10 segundos. Accion **Block**, 10 segundos.
 
-Desde la v4.16 conviene una segunda regla igual para `/api/sugerencia`, el formulario de "Sugiere un
+Desde la v4.18 conviene una segunda regla igual para `/api/sugerencia`, el formulario de "Sugiere un
 cambio", que tambien cuesta una prueba de trabajo. Ahi el limite puede ser mas estrecho, porque
 nadie manda dos recados en diez segundos: contar por **IP**, 3 peticiones cada 60 segundos, accion
 **Block** 60 segundos.

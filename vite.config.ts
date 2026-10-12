@@ -65,7 +65,7 @@ export const CONTENT_SECURITY_POLICY = [
   "img-src 'self' data: blob:",
   "font-src 'self'",
   /*
-   * Solo el propio origen. Desde la v4.16 no queda ningún destino externo: "Sugiere un cambio" iba
+   * Solo el propio origen. Desde la v4.18 no queda ningún destino externo: "Sugiere un cambio" iba
    * a Web3Forms y ahora va a nuestro servidor, así que usar la guía entera, incluido escribir, no
    * hace ni una petición fuera.
    */

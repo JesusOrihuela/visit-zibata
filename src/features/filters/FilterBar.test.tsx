@@ -23,6 +23,9 @@ function setup(overrides: Partial<ComponentProps<typeof FilterBar>> = {}) {
     favoritesCount: 0,
     favoritesOnly: false,
     onToggleFavorites: vi.fn(),
+    openNowCount: 0,
+    openNowOnly: false,
+    onToggleOpenNow: vi.fn(),
     filtersActive: false,
     resultCount: 4,
     onClear: vi.fn(),
@@ -86,5 +89,34 @@ describe('FilterBar', () => {
     const props = setup({ favoritesCount: 2 })
     await userEvent.click(screen.getByRole('button', { name: /Favoritos/ }))
     expect(props.onToggleFavorites).toHaveBeenCalled()
+  })
+})
+
+describe('el filtro de abiertos', () => {
+  it('no se dibuja cuando no hay nada abierto', () => {
+    // Una pastilla que no puede dar resultados estorba más de lo que ayuda. A las cuatro de la
+    // mañana desaparece sola.
+    setup({ openNowCount: 0 })
+    expect(screen.queryByRole('button', { name: /Abierto ahora/ })).not.toBeInTheDocument()
+  })
+
+  it('anuncia cuántos hay abiertos y se puede pulsar', async () => {
+    const onToggleOpenNow = vi.fn()
+    setup({ openNowCount: 7, onToggleOpenNow })
+    const boton = screen.getByRole('button', { name: /Abierto ahora/ })
+    expect(boton).toHaveTextContent('7')
+    expect(boton).toHaveAttribute('aria-pressed', 'false')
+    await userEvent.click(boton)
+    expect(onToggleOpenNow).toHaveBeenCalled()
+  })
+
+  it('sigue a la vista cuando está puesto, aunque el conteo baje a cero', () => {
+    // Si desapareciera al cerrar el último local, no habría forma de quitarlo y la lista se
+    // quedaría vacía sin explicación.
+    setup({ openNowCount: 0, openNowOnly: true })
+    expect(screen.getByRole('button', { name: /Abierto ahora/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
   })
 })
