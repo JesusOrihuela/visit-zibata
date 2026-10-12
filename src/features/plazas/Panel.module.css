@@ -191,11 +191,16 @@
   text-underline-offset: 3px;
 }
 
+/*
+ * El nombre de la zona, en su color del mapa. Es la pieza que hace legible una búsqueda que mezcla
+ * zonas: cada grupo trae el color con el que esa plaza se ve arriba.
+ */
 .groupName {
   font-family: var(--font-display);
   font-weight: 600;
   font-size: var(--text-lg);
   line-height: 1.1;
+  color: var(--plaza-accent, inherit);
 }
 
 .plazaList {
