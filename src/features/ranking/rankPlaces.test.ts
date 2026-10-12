@@ -156,3 +156,64 @@ describe('rankPlaces', () => {
     expect(new Set(first).size).toBe(places.length)
   })
 })
+
+describe('abierto ahora', () => {
+  // NOW es 2026-09-21T12:00:00Z, que en Querétaro son las 06:00 de un lunes.
+  const conHorario = (id: string, franjas: string[]): Place =>
+    makePlace({
+      id,
+      plazaId: 'p1',
+      giros: ['pizza'],
+      hours: { mon: franjas, tue: [], wed: [], thu: [], fri: [], sat: [], sun: [] },
+    })
+
+  const abierto = conHorario('abierto', ['06:00-22:00'])
+  const cerrado = conHorario('cerrado', ['14:00-22:00'])
+  const sinDato = makePlace({ id: 'sin-dato', plazaId: 'p1', giros: ['pizza'] })
+  const trio = [cerrado, sinDato, abierto]
+  const opcionesTrio = {
+    ...options,
+    placeById: (id: string) => trio.find((x) => x.id === id),
+  }
+  // Una señal cualquiera: sin ninguna, rankPlaces devuelve el orden curado sin ordenar nada.
+  const algo: PreferenceSignals = { ...none, favorites: new Set(['otro']) }
+
+  it('lo abierto sube, lo cerrado baja y lo que no tiene horario queda en medio', () => {
+    // El que no tiene horario no se hunde: no sabemos si está abierto, y castigarlo sería penalizar
+    // al negocio por un hueco de la guía.
+    expect(ids(rankPlaces(trio, algo, opcionesTrio))).toEqual(['abierto', 'sin-dato', 'cerrado'])
+  })
+
+  it('no manda sobre el gusto propio: un favorito cerrado gana a un indiferente abierto', () => {
+    const signals: PreferenceSignals = { ...none, favorites: new Set(['cerrado']) }
+    const orden = ids(rankPlaces([abierto, cerrado], signals, opcionesTrio))
+    expect(orden[0]).toBe('cerrado')
+  })
+
+  it('lo abierto sube también para quien no ha marcado nada', () => {
+    /*
+     * El caso que se me escapó y encontré en el navegador: con una lista entera de abiertos y
+     * cerrados, un visitante nuevo veía el orden curado sin tocar, porque la función salía antes
+     * de llegar al peso. Estar abierto no es una señal personal: es una propiedad del mundo.
+     */
+    expect(ids(rankPlaces(trio, none, opcionesTrio))).toEqual(['abierto', 'sin-dato', 'cerrado'])
+  })
+
+  it('y sin personalizar nada más: dentro de cada grupo manda el orden curado', () => {
+    // Nada de rotación diaria ni posiciones de descubrimiento para quien llega por primera vez.
+    const abiertos = [
+      conHorario('b', ['06:00-22:00']),
+      conHorario('a', ['06:00-22:00']),
+      conHorario('z', ['14:00-22:00']),
+      conHorario('c', ['06:00-22:00']),
+    ]
+    const opciones = { ...options, placeById: (id: string) => abiertos.find((x) => x.id === id) }
+    expect(ids(rankPlaces(abiertos, none, opciones))).toEqual(['b', 'a', 'c', 'z'])
+  })
+
+  it('sin horario en ningún lugar, el orden es el de siempre', () => {
+    // Las ocho fichas de arriba no tienen horario, así que la apertura les suma lo mismo a todas y
+    // no mueve nada. Es lo que mantiene en pie al resto de las pruebas de este archivo.
+    expect(ids(rankPlaces(places, none, options))).toEqual(ids(places))
+  })
+})

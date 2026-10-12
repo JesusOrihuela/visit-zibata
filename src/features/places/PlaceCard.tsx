@@ -1,8 +1,10 @@
 import { CategoryIcon } from '../../components/icons/CategoryIcon.tsx'
 import { useCatalog } from '../../data/CatalogContext.tsx'
 import { localized, t } from '../../i18n/index.ts'
+import { getOpenStatus } from '../../lib/hours.ts'
 import type { Place } from '../../types/domain.ts'
 import { FavoriteButton } from '../favorites/FavoriteButton.tsx'
+import { useZonedNow } from './OpenStatus.tsx'
 import styles from './PlaceCard.module.css'
 import { PlacePicture } from './PlacePicture.tsx'
 import { girosOf, girosSecundariosOf } from './placeIcon.ts'
@@ -17,6 +19,15 @@ interface PlaceCardProps {
 export function PlaceCard({ place, onOpen, showPlaza = false }: PlaceCardProps) {
   const catalog = useCatalog()
   const plaza = catalog.plazaById.get(place.plazaId)
+  /*
+   * Un punto, y solo cuando está abierto.
+   *
+   * Sutil a propósito: la ficha ya dice "Abierto" con todas sus letras, y aquí hay cien tarjetas en
+   * una lista. Repetir la palabra cien veces la convierte en ruido; un punto se lee de reojo. No se
+   * dibuja nada para cerrado ni para los once sin horario, así que la ausencia significa "no
+   * necesariamente", que es exactamente lo que la guía sabe.
+   */
+  const abierto = getOpenStatus(place.hours ?? null, useZonedNow()).state === 'open'
   // En la lista, el icono es de los principales; los secundarios solo se leen.
   const giros = girosOf(place, catalog)
   const secundarios = girosSecundariosOf(place, catalog)
@@ -67,7 +78,22 @@ export function PlaceCard({ place, onOpen, showPlaza = false }: PlaceCardProps) 
           />
         </span>
         <span className={styles.body}>
-          <span className={styles.name}>{place.name}</span>
+          {/*
+           * El punto va fuera del nombre y no dentro, por el mismo motivo que `.categoryText`
+           * existe aparte: el nombre se recorta con `text-overflow`, y un hijo dentro de esa caja
+           * se recorta con él. Los nombres largos (que son muchos) perdían su marca justo cuando
+           * más falta hace distinguirlos.
+           */}
+          <span className={styles.nameRow}>
+            <span className={styles.name}>{place.name}</span>
+            {abierto && (
+              <span className={styles.abierto}>
+                <span className="visually-hidden">
+                  {t('filters.openNowLabel', { name: place.name })}
+                </span>
+              </span>
+            )}
+          </span>
           <span className={styles.category} title={tituloCompleto}>
             {giros.map((giro) => (
               <CategoryIcon key={giro.id} name={giro.icon} size={14} strokeWidth={2} />

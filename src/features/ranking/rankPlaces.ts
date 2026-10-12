@@ -13,11 +13,16 @@
  *    que dice esta persona, y solo puede subir. La media de estrellas no llega hasta aquí: el
  *    servidor manda el empuje ya hecho, así que la interfaz no puede enseñarla ni queriendo (ver
  *    worker/senales.ts).
- * 3. Descubrimiento y segundas oportunidades: una de cada `exploreEvery` posiciones se reserva a un
+ * 3. Abierto ahora: un local cerrado no sirve para decidir dónde ir en este momento, así que estar
+ *    abierto sube. Pesa mucho (0,8) pero no manda: un lugar que esta persona adora y está cerrado
+ *    puede seguir por delante de uno indiferente que está abierto, que es lo que querría ver quien
+ *    está planeando y no saliendo ya. Quien quiere solo lo abierto tiene el filtro.
+ * 4. Descubrimiento y segundas oportunidades: una de cada `exploreEvery` posiciones se reserva a un
  *    lugar que no ha abierto nunca (o que no abre desde hace meses), con una rotación diaria entre
  *    ellos. Así lo nuevo tiene sitio y lo que descartó hace tiempo puede volver a aparecer.
- * 4. Sin ninguna señal se respeta el orden curado de la guía: el orden personal se gana, no se inventa.
+ * 5. Sin ninguna señal se respeta el orden curado de la guía: el orden personal se gana, no se inventa.
  */
+import { getOpenStatus, getZonedMoment } from '../../lib/hours.ts'
 import type { Place } from '../../types/domain.ts'
 import { allGiroIds } from '../places/placeIcon.ts'
 
@@ -77,7 +82,25 @@ const WEIGHT = {
   plaza: 0.15,
   /** La comunidad orienta, nunca manda sobre el gusto propio. */
   community: 0.3,
+  /**
+   * Estar abierto ahora. Pesa más que la comunidad y que el giro, porque de todo lo que esta
+   * función sabe es lo único que decide si el resultado **sirve** en este momento.
+   *
+   * 0,5 y no más: un favorito aporta `tanh(3/3) = 0,76` por la vía directa, así que con 0,8 un
+   * local cualquiera que estuviera abierto le ganaba a uno que esta persona guardó a propósito.
+   * Eso es justo lo que no debe pasar, y lo cazó una prueba de este archivo. Quien quiera solo lo
+   * abierto tiene el filtro; el orden sigue siendo suyo.
+   */
+  openNow: 0.5,
 }
+
+/**
+ * Cuánto suma el estado del horario, de 0 a 1.
+ *
+ * Los once locales sin horario publicado quedan en medio y no en el suelo: no sabemos si están
+ * abiertos, y hundirlos sería castigar al negocio por un hueco de la guía, no por estar cerrado.
+ */
+const APERTURA = { open: 1, unknown: 0.35, closed: 0 } as const
 
 /*
  * Antes la aritmética de la comunidad vivía aquí, con tres constantes escritas a mano: dividir los
@@ -161,7 +184,30 @@ export function rankPlaces(
   signals: PreferenceSignals,
   { now, placeById, categoryOfGiro, exploreEvery = 4, community }: RankOptions,
 ): Place[] {
-  if (places.length < 2 || !hasSignals(signals)) return [...places]
+  if (places.length < 2) return [...places]
+
+  // Un solo cálculo de la hora local para toda la lista: `getZonedMoment` monta un Intl.DateTimeFormat
+  // y hacerlo por lugar cuesta más que todo lo demás junto.
+  const momento = getZonedMoment(new Date(now))
+  const apertura = (place: Place) => APERTURA[getOpenStatus(place.hours ?? null, momento).state]
+
+  /*
+   * Sin nada que esta persona haya marcado, el orden sigue siendo el curado de la guía y lo único
+   * que se mueve es que lo abierto ahora sube, conservando el orden dentro de cada grupo.
+   *
+   * Es un camino aparte y no el mismo de abajo a propósito: estar abierto no es una señal personal,
+   * es una propiedad del mundo, así que no hace falta haber marcado nada para que valga. Pero el
+   * resto de la maquinaria (afinidades, descubrimiento, rotación diaria) sí depende de haber
+   * marcado algo, y meter a quien llega por primera vez en las posiciones de descubrimiento le
+   * barajaría la guía cada día sin que hubiera pedido nada.
+   */
+  if (!hasSignals(signals)) {
+    const conApertura = places.map((place, index) => ({ place, index, abierto: apertura(place) }))
+    if (conApertura.every((x) => x.abierto === conApertura[0]?.abierto)) return [...places]
+    return conApertura
+      .sort((a, b) => b.abierto - a.abierto || a.index - b.index)
+      .map((x) => x.place)
+  }
 
   // Afinidad aprendida de todo lo que la persona ha marcado, no solo de esta lista.
   const affinity = new Map<string, number>()
@@ -206,6 +252,7 @@ export function rankPlaces(
         soft(Math.max(...allGiroIds(place).map((giro) => affinity.get(`g:${giro}`) ?? 0), 0), 3) +
       WEIGHT.plaza * soft(affinity.get(`p:${place.plazaId}`) ?? 0, 4) +
       WEIGHT.community * (community?.(place.id)?.empuje ?? 0) +
+      WEIGHT.openNow * apertura(place) +
       // A igualdad de gusto manda el orden curado de la guía.
       0.05 * (1 - index / places.length)
     const visit = signals.interactions.get(place.id)

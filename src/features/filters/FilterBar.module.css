@@ -122,6 +122,20 @@
   box-shadow: inset 0 0 0 1px rgb(180 67 44 / 0.35);
 }
 
+/*
+ * La pastilla de abiertos usa el verde de marca y no el rojo de favoritos: son dos filtros con
+ * naturalezas distintas (uno es tuyo, el otro es del reloj) y compartir color los haría parecer el
+ * mismo tipo de cosa.
+ */
+.toggle[data-abierto="si"] svg {
+  color: var(--olive-600);
+}
+
+.toggle[data-abierto="si"][aria-pressed="true"] {
+  background: var(--lime-50);
+  box-shadow: inset 0 0 0 1px rgb(83 108 42 / 0.35);
+}
+
 .badge {
   font-size: var(--text-2xs);
   font-weight: 700;

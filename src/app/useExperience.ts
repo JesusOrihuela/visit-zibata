@@ -8,10 +8,12 @@ import {
   countByPlaza,
   hasActiveFilters,
 } from '../features/filters/filters.ts'
+import { useZonedNow } from '../features/places/OpenStatus.tsx'
 import { preferences } from '../features/ranking/preferences.ts'
 import { categoryAffinity } from '../features/ranking/rankPlaces.ts'
 import { usePersonalOrder } from '../features/ranking/usePersonalOrder.ts'
 import { createSearchIndex } from '../features/search/searchIndex.ts'
+import { getOpenStatus } from '../lib/hours.ts'
 import { searchTerms } from '../lib/text.ts'
 import type { Catalog, Place, Plaza } from '../types/domain.ts'
 import { useAppState } from './AppStateContext.tsx'
@@ -36,10 +38,15 @@ export function useExperience(catalog: Catalog) {
    */
   const scopedPlazaId = hasQuery ? null : state.selectedPlazaId
 
+  // El reloj compartido de OpenStatus, no uno nuevo: avanza al cambiar el minuto, así que el filtro
+  // y el orden se reevalúan solos cuando un local abre o cierra mientras alguien mira la guía.
+  const ahora = useZonedNow()
+
   const filtersActive = hasActiveFilters({
     query,
     categoryId: state.activeCategoryId,
     favoritesOnly: state.favoritesOnly,
+    openNowOnly: state.openNowOnly,
   })
 
   const matching = useMemo(
@@ -52,10 +59,21 @@ export function useExperience(catalog: Catalog) {
           categoryId: state.activeCategoryId,
           plazaId: null,
           favoritesOnly: state.favoritesOnly,
+          openNowOnly: state.openNowOnly,
         },
         favorites.ids,
+        ahora,
       ),
-    [catalog, searchIndex, query, state.activeCategoryId, state.favoritesOnly, favorites.ids],
+    [
+      catalog,
+      searchIndex,
+      query,
+      state.activeCategoryId,
+      state.favoritesOnly,
+      state.openNowOnly,
+      favorites.ids,
+      ahora,
+    ],
   )
 
   const matchCounts = useMemo(
@@ -76,12 +94,35 @@ export function useExperience(catalog: Catalog) {
           categoryId: null,
           plazaId: scopedPlazaId,
           favoritesOnly: state.favoritesOnly,
+          openNowOnly: state.openNowOnly,
         },
         favorites.ids,
+        ahora,
       ),
-    [catalog, searchIndex, query, scopedPlazaId, state.favoritesOnly, favorites.ids],
+    [
+      catalog,
+      searchIndex,
+      query,
+      scopedPlazaId,
+      state.favoritesOnly,
+      state.openNowOnly,
+      favorites.ids,
+      ahora,
+    ],
   )
   const categoryCounts = useMemo(() => countByCategory(forChips, catalog), [forChips, catalog])
+
+  /**
+   * Cuántos están abiertos ahora dentro del ámbito actual, **sin** contar el propio filtro de
+   * abiertos. Es lo que la pastilla anuncia: los resultados que dará al pulsarla, no los que ya
+   * está dando. Con el filtro puesto el número no cambia, que es lo que deja ver cuántos se
+   * quedaron fuera.
+   */
+  const openNowCount = useMemo(
+    () =>
+      forChips.filter((place) => getOpenStatus(place.hours ?? null, ahora).state === 'open').length,
+    [forChips, ahora],
+  )
   /**
    * "Todo" cuenta lugares, no giros: un local con dos giros reales aparece en dos categorías, pero
    * sigue siendo un lugar.
@@ -184,6 +225,7 @@ export function useExperience(catalog: Catalog) {
     matchCounts,
     placeCounts,
     categoryCounts,
+    openNowCount,
     totalCount,
     visibleCategories,
     panel,

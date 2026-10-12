@@ -46,7 +46,16 @@
   min-width: 0;
 }
 
+/* La fila del nombre: el nombre se encoge y se recorta, el punto nunca. */
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
 .name {
+  min-width: 0;
   overflow: hidden;
   font-size: var(--text-base);
   font-weight: 600;
@@ -54,6 +63,23 @@
   color: var(--ink-900);
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/*
+ * El punto de "abierto ahora". Va dentro del renglón del nombre y después del texto, así que se
+ * mueve con él y nunca se separa del local al que pertenece.
+ *
+ * Va en su propia fila flex junto al nombre, no dentro de él: el nombre se recorta con
+ * `text-overflow`, y un hijo dentro de esa caja se recorta con él. Es el mismo motivo por el que
+ * `.categoryText` existe aparte.
+ */
+.abierto {
+  flex-shrink: 0;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: var(--lime-500);
+  box-shadow: 0 0 0 2.5px rgb(140 186 55 / 0.22);
 }
 
 .category {

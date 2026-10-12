@@ -2,6 +2,38 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado semántico.
 
+## [4.17.0]: 2026-10-12
+
+### Anadido
+
+- **Filtro de "Abierto ahora"**, junto al de favoritos. Solo aparece si hay algo abierto, asi que a
+  las cuatro de la manana desaparece solo, y el numero de la pastilla dice cuantos resultados dara
+  al pulsarla. Deja fuera los once locales sin horario publicado: el filtro dice "abierto ahora", y
+  de esos no se sabe.
+- **Lo abierto sube en el orden de las listas**, con peso 0,5. Pesa mas que la comunidad y que el
+  giro, pero no manda: un favorito aporta 0,76 por la via directa, asi que un lugar guardado y
+  cerrado puede seguir por delante de uno indiferente y abierto. Los que no publican horario quedan
+  en medio (0,35) y no en el suelo: no se sabe si estan abiertos, y hundirlos castigaria al negocio
+  por un hueco de la guia.
+- **Un punto verde discreto** en la tarjeta de lo que esta abierto, con texto para lectores de
+  pantalla. Nada para cerrado ni para los que no tienen horario: la ausencia significa "no
+  necesariamente", que es lo que la guia sabe. Un segundo punto para "cerrado" convertiria la lista
+  en un semaforo de cien luces.
+
+### Decisiones que quedan escritas
+
+- **Sin haber marcado nada, lo abierto tambien sube.** Estar abierto no es una senal personal, es
+  una propiedad del mundo. Va por un camino aparte que solo reordena por apertura y conserva el
+  orden curado dentro de cada grupo: el resto de la maquinaria (afinidades, descubrimiento, rotacion
+  diaria) si espera a que haya algo marcado, porque barajarle la guia cada dia a quien llega por
+  primera vez no le sirve de nada.
+- El reloj es el compartido de `OpenStatus`, que avanza al cambiar el minuto, asi que el filtro y el
+  orden se reevaluan solos cuando un local abre o cierra mientras alguien mira la guia.
+
+### Corregido
+
+- `AGENTS.md` decia que el despliegue era a GitHub Pages. Es Cloudflare desde la v4.9.0.
+
 ## [4.16.0]: 2026-10-12
 
 Las paginas dejan de estar vacias para quien no ejecuta JavaScript.

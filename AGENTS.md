@@ -54,6 +54,6 @@ npm run test:e2e       # si tocaste UI o mapa
 - precommit-hooks: off
 - lint-format: on (Biome)
 - security-scan: on (Gitleaks en CI)
-- ci-cd: on (GitHub Actions → GitHub Pages)
+- ci-cd: on (GitHub Actions → Cloudflare Workers)
 - a11y-perf: on (axe en E2E)
 - dep-updates: on (Dependabot)
