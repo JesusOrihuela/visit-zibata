@@ -7,8 +7,7 @@
   display: flex;
   flex-direction: column;
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-  background: var(--color-surface);
-  backdrop-filter: var(--blur-surface);
+  background: var(--color-surface-solid);
   box-shadow:
     0 -1px 0 var(--color-border),
     0 -18px 40px -24px rgb(31 36 25 / 0.45);

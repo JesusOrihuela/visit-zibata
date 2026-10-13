@@ -54,7 +54,16 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: var(--space-3);
+  /*
+   * El hueco entre la barra de búsqueda y el plano de filtros baja de 12 a 8 px, y no es un ajuste
+   * estético: lo que sobra aquí se lo queda el mapa. La barra superior se mide en vivo y los
+   * marcadores se colocan en lo que queda debajo, así que cada píxel de más empuja una plaza a punto
+   * y un punto puede acabar bajo la insignia de la vecina.
+   *
+   * Se puede recortar sin perder claridad porque desde la v4.25 los filtros tienen plano propio: ya
+   * no hacía falta tanto aire para separar dos cosas que ahora se distinguen por tener fondo.
+   */
+  gap: var(--space-2);
   pointer-events: none;
   transition: right var(--duration-slow) var(--ease-out);
 }

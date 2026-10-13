@@ -24,7 +24,6 @@ interface FilterBarProps {
   openNowOnly: boolean
   onToggleOpenNow: () => void
   filtersActive: boolean
-  resultCount: number
   onClear: () => void
 }
 
@@ -44,7 +43,6 @@ export function FilterBar({
   openNowOnly,
   onToggleOpenNow,
   filtersActive,
-  resultCount,
   onClear,
 }: FilterBarProps) {
   const selectId = useId()
@@ -146,14 +144,17 @@ export function FilterBar({
           </fieldset>
         )}
 
+        {/*
+         * Solo la salida, sin el conteo.
+         *
+         * La cifra estaba aquí y también en la cabecera del panel y en la de la zona: tres copias
+         * del mismo número, y la de la barra es la que menos ayuda, porque está lejos de la lista
+         * que cuenta. Un estado se dice donde está el contenido al que se refiere.
+         */}
         {hasSelection && (
-          <p className={styles.summary}>
-            {/* Elegir plaza también acota la lista: el conteo aparece igual que con los demás filtros. */}
-            <span className={styles.results}>{t('filters.results', { count: resultCount })}</span>
-            <button type="button" className={styles.clear} onClick={onClear}>
-              {t('filters.clear')}
-            </button>
-          </p>
+          <button type="button" className={styles.clear} onClick={onClear}>
+            {t('filters.clear')}
+          </button>
         )}
       </div>
     </div>

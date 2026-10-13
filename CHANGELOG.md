@@ -2,6 +2,46 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado semántico.
 
+## [4.25.0]: 2026-10-12
+
+### Cambiado
+
+- **Los filtros viven sobre un plano, no flotando sueltos sobre el mapa.** La versión anterior les
+  quitó el fondo a los controles, y eso no es lo mismo que tener un plano: detrás no hay papel, hay
+  un mapa 3D con edificios, calles y árboles, y ahí ninguna sombra de texto se lee. Se veían como
+  piezas sueltas flotando.
+
+  Ahora hay una superficie **sólida** que los contiene, y dentro los controles van planos y se
+  distinguen por su forma. Las categorías eran **dieciocho pastillas con cristal y sombra propios**,
+  que es el caso extremo de "cuando todo flota, nada está delante"; ahora son planas dentro del
+  plano. La franja del pie recupera también superficie, por el mismo motivo.
+
+  Quedan **dos** superficies de cristal en toda la guía, de las diez que había: el plano de búsqueda
+  y el velo del diálogo que esté abierto, y nunca coinciden más de dos en pantalla.
+
+- **La fila de contexto es una retícula con tres sitios con nombre** (ámbito, llaves, salida) en vez
+  de un `flex-wrap`. Con `wrap` los controles saltaban de renglón en cualquier orden según el ancho,
+  y una barra que se recoloca sola no se puede aprender. Debajo de 600 px van apilados, encima en
+  línea, y nunca cambian de orden. La consulta es **de contenedor**, no de ventana, porque la barra
+  también se estrecha al abrir el panel de escritorio.
+
+  Con dos sitios, "Abierto ahora" se partía en dos renglones a 375 px: medido, llaves y salida juntas
+  pedían 420 px contra 358 disponibles. Un texto que se pulsa no se parte nunca.
+
+### Corregido
+
+- **Una plaza degradada a punto podía quedar bajo la insignia de la vecina y dejar de poder pulsarse.**
+  El solucionador comparaba el punto solo contra otros puntos, ignorando las etiquetas, para que
+  "ninguna plaza desaparezca del mapa". La promesa era falsa: un punto tapado no desaparece, pero
+  tampoco se alcanza, que es peor porque parece alcanzable.
+
+  Ahora el punto prefiere un sitio limpio y, si no hay ninguno, entra igual y se dibuja por encima.
+  Se cumplen las dos promesas: ninguna plaza queda fuera y la que entra forzada se puede pulsar.
+
+  El fallo no venía de esta tanda: llevaba en esa línea desde que se escribió. Lo destapó que la
+  barra superior creciera de **157 a 221 px** al ganar áreas pulsables de 44 px, porque lo que crece
+  arriba se lo quita al mapa. Antes del cambio ya había cinco plazas degradadas a punto.
+
 ## [4.24.0]: 2026-10-12
 
 ### Cambiado

@@ -27,7 +27,6 @@ function setup(overrides: Partial<ComponentProps<typeof FilterBar>> = {}) {
     openNowOnly: false,
     onToggleOpenNow: vi.fn(),
     filtersActive: false,
-    resultCount: 4,
     onClear: vi.fn(),
     ...overrides,
   }
@@ -65,16 +64,15 @@ describe('FilterBar', () => {
     expect(props.onPlazaChange).toHaveBeenCalledWith('plaza-sur')
   })
 
-  it('con una plaza elegida también dice cuántos resultados hay', async () => {
-    // Elegir plaza acota la lista igual que un filtro: el conteo no puede aparecer y desaparecer.
-    setup({ selectedPlazaId: 'plaza-sur', resultCount: 2 })
-    expect(screen.getByText('2 resultados')).toBeInTheDocument()
+  it('con una plaza elegida ofrece la salida', async () => {
+    // Elegir plaza acota la lista igual que un filtro, así que tiene que poder deshacerse. El conteo
+    // ya no se repite aquí: lo dicen las cabeceras de los paneles, al lado de la lista que cuentan.
+    setup({ selectedPlazaId: 'plaza-sur' })
     expect(screen.getByRole('button', { name: 'Limpiar filtros' })).toBeInTheDocument()
   })
 
-  it('con filtros activos muestra resultados y permite limpiarlos', async () => {
-    const props = setup({ filtersActive: true, resultCount: 1, activeCategoryId: 'pizza' })
-    expect(screen.getByText('1 resultado')).toBeInTheDocument()
+  it('con filtros activos permite limpiarlos', async () => {
+    const props = setup({ filtersActive: true, activeCategoryId: 'pizza' })
     await userEvent.click(screen.getByRole('button', { name: 'Limpiar filtros' }))
     expect(props.onClear).toHaveBeenCalled()
   })

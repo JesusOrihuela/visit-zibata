@@ -3,26 +3,105 @@
  * sin esto la fila de pastillas crece hasta su ancho de contenido: se sale de la pantalla y, como no
  * desborda dentro de su carril, las flechas de desplazamiento nunca aparecen.
  */
+/*
+ * Un plano, no una hilera de objetos sueltos.
+ *
+ * Esto fue el error de las tres versiones anteriores. "No todo puede ser cristal" no quiere decir
+ * "sin superficie": quiere decir **un solo plano**. Al quitarle el fondo a cada control, los
+ * controles quedaron planos sobre un mapa 3D en movimiento, que no es un fondo: es dibujo con
+ * edificios, calles y árboles. Ninguna sombra de texto arregla eso, y se veía como basura flotando.
+ *
+ * Ahora los filtros viven sobre una superficie **sólida**, y es sólida y no translúcida justo por lo
+ * mismo: detrás no hay papel, hay mapa.
+ *
+ * Dentro del plano, los controles van planos y se distinguen por su forma, no por tener cada uno su
+ * propia cajita: las categorías son pastillas, la zona es un desplegable con filete, las llaves son
+ * interruptores. Antes había dieciocho pastillas con cristal y sombra propios, que es el caso
+ * extremo de "cuando todo flota, nada está delante".
+ *
+ * El contenedor además es la referencia de las consultas de abajo: miden el ancho real de la barra,
+ * que se estrecha al abrir el panel de escritorio, y no el de la ventana.
+ */
 .bar {
+  container-type: inline-size;
   align-self: stretch;
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  /*
+   * El hueco interno es corto a propósito. La barra superior se mide en vivo y lo que queda debajo
+   * es el mapa: cada píxel que engorda este plano se lo quita a los marcadores, y al crecer 16 px
+   * una plaza se quedó sin sitio para su etiqueta, cayó a punto y quedó tapada por la insignia de la
+   * vecina. Un plano se nota por tener fondo, no por tener aire de sobra.
+   */
+  gap: var(--space-1);
   min-width: 0;
-  pointer-events: none;
+  padding: var(--space-1) 0;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-solid);
+  box-shadow:
+    0 0 0 1px var(--color-border),
+    var(--shadow-sm);
+  pointer-events: auto;
 }
 
 .bar > * {
   pointer-events: auto;
 }
 
+/*
+ * La fila de contexto: una retícula con dos sitios con nombre, no un `flex-wrap`.
+ *
+ * Con `wrap` los controles saltaban de renglón en cualquier orden y con huecos distintos según el
+ * ancho: una barra que se recoloca sola no se puede aprender, porque la mano deja de saber dónde
+ * estaba el interruptor. Y forzar una sola línea tampoco servía: medido, los tres controles piden
+ * 559 px y en un teléfono hay 382, así que lo único que conseguía era esconder "Favoritos" detrás de
+ * un desplazamiento que nadie ve.
+ *
+ * Dos sitios, siempre los mismos: **el ámbito** (en qué zona) y **los refinamientos** (qué llaves
+ * están puestas y cómo salir). Debajo de 600 px van uno sobre otro, encima van lado a lado, y en
+ * ningún caso cambian de orden ni de sitio.
+ *
+ * La consulta es de contenedor y no de ventana a propósito: esta barra se estrecha también cuando se
+ * abre el panel de escritorio, y una consulta de ventana no se entera de eso.
+ */
 .row {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-areas:
+    "ambito"
+    "llaves"
+    "salida";
+  justify-items: start;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-2) var(--space-5);
   padding-inline: 12px;
   pointer-events: none;
+}
+
+.select {
+  grid-area: ambito;
+}
+
+.switches {
+  grid-area: llaves;
+}
+
+.clear {
+  grid-area: salida;
+}
+
+/*
+ * Tres sitios y no dos. Con las llaves y la salida en el mismo, a 375 px pedían 420 px contra 358
+ * disponibles, y lo que cedía era la etiqueta del interruptor: "Abierto ahora" se partía en dos
+ * renglones. Un texto que se pulsa no se parte nunca, porque entonces no se sabe si el corte es
+ * parte del diseño o un fallo.
+ *
+ * La salida solo aparece cuando hay algo que limpiar, así que el tercer renglón es intermitente.
+ */
+@container (min-width: 600px) {
+  .row {
+    grid-template-areas: "ambito llaves salida";
+    grid-template-columns: auto auto auto;
+  }
 }
 
 .row > * {
@@ -164,6 +243,8 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
+  /* La etiqueta no se parte jamás: ver la nota de las tres áreas en `.row`. */
+  white-space: nowrap;
   /* El área pulsable sigue siendo de 44 px aunque no se vea ninguna caja. */
   min-height: 2.75rem;
   padding: 0;
@@ -172,9 +253,6 @@
   color: var(--ink-800);
   font-size: var(--text-sm);
   font-weight: 600;
-  text-shadow:
-    0 0 2px var(--sand-50),
-    0 0 6px var(--sand-50);
 }
 
 .toggle svg {
@@ -252,9 +330,6 @@
   height: 2.125rem;
   font-size: var(--text-sm);
   color: var(--ink-700);
-  text-shadow:
-    0 0 2px var(--sand-50),
-    0 0 6px var(--sand-50);
 }
 
 .results {
@@ -262,7 +337,9 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* La salida: lo único de la fila que es una acción, y por eso lo único con forma de botón. */
 .clear {
+  flex-shrink: 0;
   height: 1.625rem;
   padding: 0 0.6rem;
   border: 0;

@@ -9,11 +9,15 @@
   gap: var(--space-3);
   width: max-content;
   max-width: 100%;
-  padding: 0.25rem 0.8rem;
-  /* Una franja de texto y enlaces, no un control: no tiene por qué tener forma de botón. */
+  padding: 0.3rem 0.8rem;
+  /*
+   * Superficie sólida, no una sombra de texto. Estuvo plana una versión y se veía mal por el mismo
+   * motivo que los filtros: detrás no hay papel, hay un mapa 3D con edificios y árboles, y ningún
+   * halo de texto sobrevive a eso. Sólida y sin desenfoque: el cristal se queda para la barra de
+   * búsqueda, que es lo que se toca primero.
+   */
   border-radius: var(--radius-md);
-  background: var(--color-surface);
-  backdrop-filter: var(--blur-surface);
+  background: var(--color-surface-solid);
   box-shadow:
     0 0 0 1px var(--color-border),
     var(--shadow-sm);

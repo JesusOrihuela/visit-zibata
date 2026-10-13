@@ -133,15 +133,13 @@
   }
 }
 
-/* Sobre el mapa: pastillas con fondo translúcido y sombra. */
-.rail[data-variant="floating"] .chip {
-  background: var(--color-surface);
-  backdrop-filter: var(--blur-surface);
-  box-shadow:
-    0 0 0 1px var(--color-border),
-    var(--shadow-sm);
-}
-
+/*
+ * Las pastillas ya no llevan cristal ni sombra propios: viven dentro del plano de filtros, que es
+ * quien se apoya sobre el mapa. Dieciocho superficies flotantes en fila eran la razón de que la
+ * barra se leyera como un muro de cápsulas (ver FilterBar.module.css).
+ *
+ * Queda el mismo dibujo que dentro del panel, que es lo correcto: una pastilla es una pastilla.
+ */
 .rail[data-variant="floating"] .chip[aria-pressed="true"] {
   background: var(--olive-600);
 }
