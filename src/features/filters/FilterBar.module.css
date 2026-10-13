@@ -29,23 +29,31 @@
   pointer-events: auto;
 }
 
+/*
+ * El selector de zona: un desplegable, no una pastilla.
+ *
+ * Despliega una lista de once nombres, y esa es una forma distinta a la de un filtro que se enciende
+ * o se apaga. Antes compartía cápsula con todo lo demás, así que la fila no decía nada sobre qué
+ * hacía cada cosa.
+ *
+ * Ahora es texto con un filete debajo, que es como se ha dibujado un desplegable desde siempre en
+ * cualquier formulario. Y el filete lleva el color de la zona elegida, el mismo del mapa: se sabe
+ * dónde estás sin leer el nombre.
+ */
 .select {
   position: relative;
   display: inline-flex;
   align-items: center;
-  height: 2.125rem;
-  border-radius: var(--radius-pill);
-  background: var(--color-surface);
-  backdrop-filter: var(--blur-surface);
-  box-shadow:
-    0 0 0 1px var(--color-border),
-    var(--shadow-sm);
+  height: 2.75rem;
   color: var(--ink-800);
+  text-shadow:
+    0 0 2px var(--sand-50),
+    0 0 6px var(--sand-50);
 }
 
 .select > svg:first-child {
   position: absolute;
-  left: 0.7rem;
+  left: 0;
   width: 0.95rem;
   height: 0.95rem;
   color: var(--olive-600);
@@ -53,11 +61,10 @@
 }
 
 .select select {
-  height: 100%;
+  height: 2.125rem;
   max-width: 14rem;
-  padding: 0 2rem 0 2rem;
+  padding: 0 1.3rem 0 1.4rem;
   border: 0;
-  border-radius: inherit;
   background: transparent;
   font-size: var(--text-sm);
   font-weight: 600;
@@ -73,7 +80,7 @@
 
 .chevron {
   position: absolute;
-  right: 0.65rem;
+  right: 0;
   width: 0.95rem;
   height: 0.95rem;
   color: var(--ink-500);
@@ -93,10 +100,27 @@
  * El color entra por `--plaza-accent`, que pone Experience con el tono de la plaza seleccionada; sin
  * zona elegida el selector no está activo y la variable no hace falta.
  */
+/*
+ * El nombre se queda en tinta y el color de la zona vive en el filete.
+ *
+ * Medido: el nombre en color de plaza daba 4,42:1 sobre las manchas verdes del mapa, por debajo del
+ * 4,5 que pide un texto. En tinta da 10,3. El filete es un objeto gráfico y le basta 3:1, que sí
+ * cumple, así que el color sigue diciendo en qué zona estás sin costarle legibilidad al nombre.
+ */
 .select[data-active="true"] {
-  background: var(--plaza-accent, var(--olive-600));
-  box-shadow: var(--shadow-sm);
-  color: white;
+  color: var(--ink-900);
+}
+
+/*
+ * El filete va en el `select` y no en su caja: así mide exactamente lo que mide el nombre de la
+ * zona, y crece y encoge con él. Dos píxeles cuando hay zona elegida, uno tenue cuando no.
+ */
+.select select {
+  border-bottom: 1px solid var(--color-border-strong);
+}
+
+.select[data-active="true"] select {
+  border-bottom: 2px solid var(--plaza-accent, var(--olive-600));
 }
 
 .select[data-active="true"] svg {
@@ -108,43 +132,49 @@
 }
 
 /*
- * El grupo de interruptores: una sola superficie con los dos dentro, separados por un filete.
+ * Los dos interruptores: un interruptor de verdad, no una pastilla más.
  *
- * La superficie, el desenfoque y la sombra viven aquí y no en cada botón. Así el grupo es un objeto
- * y no dos, que es justo lo que lo distingue del selector de zona (que despliega) y de las pastillas
- * de categoría (que son muchas y se desplazan).
+ * ## Por qué dejaron de ser pastillas
+ *
+ * La fila tenía cuatro cosas distintas (dónde estás, qué llaves están puestas, qué tipo de lugar,
+ * cuántos resultados) y las cuatro eran cápsulas iguales. Cambiarles el radio no arregló nada: el
+ * radio deja de ser una herramienta de jerarquía cuando todo lo lleva, y entonces solo es adorno.
+ *
+ * Un dato binario con efecto inmediato tiene una forma conocida desde hace décadas, y es esta. Nadie
+ * necesita que le expliquen qué hace un interruptor. Como además es `role="switch"`, lo que ve quien
+ * mira y lo que oye quien escucha dicen lo mismo.
+ *
+ * ## Por qué ya no flotan
+ *
+ * Nueve superficies de esta guía llevaban la misma receta: fondo translúcido, desenfoque, filete y
+ * sombra. Con nueve primeros planos no hay ninguno. Estos controles se quedan planos sobre el mapa y
+ * se leen por su sombra de texto, que es del color del papel. El cristal queda para la barra de
+ * búsqueda y las pastillas de categoría, que es lo que se toca primero.
  */
 .switches {
-  /* `fieldset` y no `div` con `role="group"`: es el elemento que ya significa eso. Trae su propio
-     borde, margen y relleno del navegador, y los tres se quitan aquí. */
   margin: 0;
   padding: 0;
   border: 0;
   display: inline-flex;
-  overflow: hidden;
-  border-radius: var(--radius-pill);
-  background: var(--color-surface);
-  backdrop-filter: var(--blur-surface);
-  box-shadow:
-    0 0 0 1px var(--color-border),
-    var(--shadow-sm);
-}
-
-/* El filete entre llaves. Solo entre ellas: con una sola, no hay nada que separar. */
-.switches > * + * {
-  box-shadow: inset 1px 0 0 var(--color-border);
+  align-items: center;
+  gap: var(--space-4);
 }
 
 .toggle {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  height: 2.125rem;
-  padding: 0 0.8rem;
+  /* El área pulsable sigue siendo de 44 px aunque no se vea ninguna caja. */
+  min-height: 2.75rem;
+  padding: 0;
   border: 0;
-  background: transparent;
+  background: none;
+  color: var(--ink-800);
   font-size: var(--text-sm);
   font-weight: 600;
+  text-shadow:
+    0 0 2px var(--sand-50),
+    0 0 6px var(--sand-50);
 }
 
 .toggle svg {
@@ -153,28 +183,50 @@
   color: var(--heart-600);
 }
 
-/* Encendido: se rellena. Es lo único que cambia, y basta porque la forma ya la da el grupo. */
-.toggle[aria-pressed="true"] {
-  background: var(--heart-50);
-}
-
-/*
- * La pastilla de abiertos usa el verde de marca y no el rojo de favoritos: son dos filtros con
- * naturalezas distintas (uno es tuyo, el otro es del reloj) y compartir color los haría parecer el
- * mismo tipo de cosa.
- */
 .toggle[data-abierto="si"] svg {
   color: var(--olive-600);
 }
 
-.toggle[data-abierto="si"][aria-pressed="true"] {
-  background: var(--lime-50);
+/*
+ * La vía y su perilla. Es lo único redondo que queda en la fila, y aquí la forma sí significa: una
+ * vía con una perilla que se desliza de un lado a otro no se confunde con nada.
+ */
+.track {
+  position: relative;
+  width: 1.85rem;
+  height: 1.05rem;
+  margin-left: 0.15rem;
+  border-radius: var(--radius-pill);
+  background: var(--sand-200);
+  box-shadow: inset 0 0 0 1px var(--color-border);
+  transition: background-color var(--duration-fast) var(--ease-out);
 }
 
-/*
- * La cifra. `line-height: 1` porque hereda 1,45 del cuerpo y a 11 px eso deja la caja más alta que
- * el glifo: el número quedaba pegado arriba dentro de una fila centrada por caja, no por texto.
- */
+.knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 50%;
+  background: var(--sand-25);
+  box-shadow: 0 1px 2px rgb(31 36 25 / 0.3);
+  transition: translate var(--duration-fast) var(--ease-out);
+}
+
+.toggle[aria-checked="true"] .track {
+  background: var(--heart-600);
+}
+
+.toggle[data-abierto="si"][aria-checked="true"] .track {
+  background: var(--olive-600);
+}
+
+/* Encendido: la perilla se va al otro extremo. 1,85rem - 0,65rem - 4px de margen. */
+.toggle[aria-checked="true"] .knob {
+  translate: calc(1.85rem - 0.65rem - 4px) 0;
+}
+
 .badge {
   font-size: var(--text-2xs);
   font-weight: 700;

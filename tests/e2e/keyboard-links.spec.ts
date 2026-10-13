@@ -82,7 +82,7 @@ test.describe('Teclado, enlaces y favoritos', () => {
       ),
     )
     await openApp(page)
-    const toggle = page.getByRole('button', { name: /Favoritos/ })
+    const toggle = page.getByRole('switch', { name: /Favoritos/ })
     await expect(toggle).toContainText('1')
     await toggle.click()
     if (isMobile(page)) {

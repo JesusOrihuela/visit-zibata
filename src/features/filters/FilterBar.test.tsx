@@ -82,12 +82,12 @@ describe('FilterBar', () => {
   it('oculta "Limpiar filtros" y favoritos cuando no aplican', () => {
     setup()
     expect(screen.queryByRole('button', { name: 'Limpiar filtros' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /Favoritos/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('switch', { name: /Favoritos/ })).not.toBeInTheDocument()
   })
 
   it('muestra el filtro de favoritos cuando hay alguno guardado', async () => {
     const props = setup({ favoritesCount: 2 })
-    await userEvent.click(screen.getByRole('button', { name: /Favoritos/ }))
+    await userEvent.click(screen.getByRole('switch', { name: /Favoritos/ }))
     expect(props.onToggleFavorites).toHaveBeenCalled()
   })
 })
@@ -97,15 +97,15 @@ describe('el filtro de abiertos', () => {
     // Una pastilla que no puede dar resultados estorba más de lo que ayuda. A las cuatro de la
     // mañana desaparece sola.
     setup({ openNowCount: 0 })
-    expect(screen.queryByRole('button', { name: /Abierto ahora/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('switch', { name: /Abierto ahora/ })).not.toBeInTheDocument()
   })
 
   it('anuncia cuántos hay abiertos y se puede pulsar', async () => {
     const onToggleOpenNow = vi.fn()
     setup({ openNowCount: 7, onToggleOpenNow })
-    const boton = screen.getByRole('button', { name: /Abierto ahora/ })
+    const boton = screen.getByRole('switch', { name: /Abierto ahora/ })
     expect(boton).toHaveTextContent('7')
-    expect(boton).toHaveAttribute('aria-pressed', 'false')
+    expect(boton).toHaveAttribute('aria-checked', 'false')
     await userEvent.click(boton)
     expect(onToggleOpenNow).toHaveBeenCalled()
   })
@@ -114,8 +114,8 @@ describe('el filtro de abiertos', () => {
     // Si desapareciera al cerrar el último local, no habría forma de quitarlo y la lista se
     // quedaría vacía sin explicación.
     setup({ openNowCount: 0, openNowOnly: true })
-    expect(screen.getByRole('button', { name: /Abierto ahora/ })).toHaveAttribute(
-      'aria-pressed',
+    expect(screen.getByRole('switch', { name: /Abierto ahora/ })).toHaveAttribute(
+      'aria-checked',
       'true',
     )
   })

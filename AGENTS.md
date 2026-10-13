@@ -51,6 +51,7 @@ Cuatro herramientas y un hueco cada una, para que no se pisen:
 | Estructura y tipografía | `/hallmark audit` | antes de un cambio grande de UI |
 | Movimiento | `review-animations` | si tocas una transición |
 | Datos del peor caso | `break-ui` | al cerrar un componente |
+| Catálogo de tells | `antislop-ui` | mientras se diseña, para consultar |
 
 El hook solo salta con Edit y Write: si editas por script, corre el detector a mano. Las reglas
 apagadas y su evidencia están en DESIGN.md; no se apaga una regla para que el contador baje.

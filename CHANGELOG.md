@@ -2,6 +2,36 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado semántico.
 
+## [4.24.0]: 2026-10-12
+
+### Cambiado
+
+- **Cada filtro toma la forma de su dato, en vez de ser todos una píldora.** Las dos versiones
+  anteriores cambiaron color y agrupación, pero los cuatro controles seguían siendo cápsulas
+  iguales. El radio deja de ser una herramienta de jerarquía en cuanto todo lo lleva: entonces solo
+  es adorno, y moverlo desparejaba la fila sin explicar nada.
+
+  | Control | Qué es | Forma |
+  |---|---|---|
+  | Zona | un desplegable de once nombres | texto con filete debajo |
+  | Abierto ahora, Favoritos | binarios de efecto inmediato | interruptores con vía y perilla |
+  | Resultados | información | texto |
+  | Categorías | muchas opciones de un eje | píldoras, que es su uso correcto |
+
+  Los interruptores son `role="switch"` con `aria-checked`, no botones disfrazados: lo que se ve y lo
+  que se escucha dicen lo mismo.
+
+- **La fila de filtros deja de aportar superficies de cristal.** Había **nueve** con la misma receta
+  (fondo translúcido, desenfoque, filete y sombra) y con nueve primeros planos no hay ninguno. El
+  desenfoque queda para la barra de búsqueda y las pastillas de categoría, que es lo que se toca
+  primero; el resto se apoya plano sobre el mapa y se lee por su sombra de texto.
+
+  Medido contra los dos peores fondos del mapa: los interruptores dan 10,3:1 y el resumen 7,3:1.
+
+- **El nombre de la zona va en tinta y el color de la zona en el filete.** En color daba 4,42:1 sobre
+  las manchas verdes del mapa, por debajo del 4,5 que pide un texto. En tinta da 8,97. El filete es
+  un objeto gráfico y le basta 3:1: comprobadas las once plazas, la peor da 3,36.
+
 ## [4.23.0]: 2026-10-12
 
 ### Corregido

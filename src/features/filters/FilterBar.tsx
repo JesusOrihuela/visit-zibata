@@ -112,27 +112,35 @@ export function FilterBar({
             {(openNowCount > 0 || openNowOnly) && (
               <button
                 type="button"
+                role="switch"
                 className={styles.toggle}
                 data-abierto="si"
-                aria-pressed={openNowOnly}
+                aria-checked={openNowOnly}
                 onClick={onToggleOpenNow}
               >
                 <Clock aria-hidden="true" />
                 {t('filters.openNow')}
                 <span className={styles.badge}>{openNowCount}</span>
+                <span className={styles.track} aria-hidden="true">
+                  <span className={styles.knob} />
+                </span>
               </button>
             )}
 
             {(favoritesCount > 0 || favoritesOnly) && (
               <button
                 type="button"
+                role="switch"
                 className={styles.toggle}
-                aria-pressed={favoritesOnly}
+                aria-checked={favoritesOnly}
                 onClick={onToggleFavorites}
               >
                 <Heart aria-hidden="true" fill={favoritesOnly ? 'currentColor' : 'none'} />
                 {t('favorites.filter')}
                 <span className={styles.badge}>{favoritesCount}</span>
+                <span className={styles.track} aria-hidden="true">
+                  <span className={styles.knob} />
+                </span>
               </button>
             )}
           </fieldset>

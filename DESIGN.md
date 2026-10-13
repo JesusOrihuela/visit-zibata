@@ -219,6 +219,18 @@ Se rompía en cuatro sitios hasta la v4.23, y los cuatro eran contenedores con f
 barra de búsqueda (una cápsula con dos cápsulas dentro), el resumen de filtros, la franja del pie y
 el aviso de carga. Si un contenedor y lo que contiene tienen la misma forma, la jerarquía desaparece.
 
+**La regla de la forma por el dato.** Un control toma la forma de lo que decide, no la del vecino.
+Un binario de efecto inmediato es un interruptor con vía y perilla. Un desplegable de once nombres es
+texto con un filete debajo. Muchas opciones de un mismo eje son píldoras. Información es texto.
+Cuando los cuatro eran píldoras, la fila no decía nada sobre qué hacía cada cosa, y cambiarles el
+radio solo la desparejaba: el radio deja de ser jerarquía en cuanto todo lo lleva.
+
+**La regla del cristal escaso.** El desenfoque es un acento, no un rasgo de carácter. Lo llevan la
+barra de búsqueda y las pastillas de categoría, que es lo que se toca primero. Llegó a haber nueve
+superficies con la misma receta (fondo translúcido, desenfoque, filete y sombra), y con nueve
+primeros planos no hay ninguno. Lo demás se apoya plano sobre el mapa y se lee por su sombra de
+texto, del color del papel.
+
 **La regla del aro.** El filete de las fotos circulares va con `outline` de 1 px, no con
 `box-shadow`. Una sombra sobre una curva se dibuja difuminada y escalona el borde; `outline` sigue el
 radio y lo dibuja como trazo. A 1,5 px se notaba en ambos sentidos.
