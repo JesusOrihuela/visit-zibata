@@ -12,7 +12,6 @@
   display: block;
   padding: 0;
   border: 0;
-  border-radius: var(--radius-pill);
   background: none;
   transition:
     opacity var(--duration-base) var(--ease-out),
@@ -24,40 +23,71 @@
   outline: none;
 }
 
+/*
+ * ## El marcador es la gota, y el nombre crece a su lado
+ *
+ * La pieza anclada es la gota, no la etiqueta. Eso es lo que hace que al aparecer o desaparecer el
+ * nombre **la gota no se mueva de su sitio**: lo que crece es la cinta, hacia un lado. Un marcador
+ * que se desplaza al abrirse deja de señalar el punto que señalaba, que es lo único que tiene que
+ * hacer un marcador.
+ *
+ * De ahí el `translate` de los modos de abajo: el botón se corre media etiqueta menos medio ancho de
+ * gota, y así la gota queda centrada sobre el tallo en los dos estados. El solucionador de choques
+ * calcula sus rectángulos con esa misma cuenta (ver PlazaMarkers.tsx).
+ *
+ * La cinta se mete 20 px por detrás de la gota, o sea pasado su centro, para que no quede ningún
+ * canto recto a la vista: es lo que separa una pieza de dos piezas pegadas.
+ */
 .label {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
-  padding: 0.3rem 0.35rem 0.3rem 0.75rem;
-  border-radius: var(--radius-pill);
-  background: rgb(252 250 246 / 0.95);
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--plaza-accent, var(--olive-600)) 22%, transparent),
-    0 6px 16px -6px rgb(31 36 25 / 0.35);
-  color: var(--ink-800);
+  filter: drop-shadow(0 2px 5px rgb(31 36 25 / 0.32));
+  transition: filter var(--duration-fast) var(--ease-out);
+}
+
+.gota {
+  position: relative;
+  z-index: 2;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50% 50% 50% 0;
+  /* Girar no mueve el centro de un elemento: el círculo de la gota cae en el centro de su caja. */
+  rotate: -45deg;
+  background: var(--plaza-accent, var(--olive-600));
+  transition: box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.count {
+  rotate: 45deg;
+  display: grid;
+  place-items: center;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  background: var(--sand-25);
+  color: var(--plaza-accent, var(--olive-700));
+  font-size: var(--text-xs);
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.name {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  margin-left: -17px;
+  padding: 0 0.875rem 0 1.375rem;
+  border-radius: 0 13px 13px 0;
+  background: var(--plaza-accent, var(--olive-600));
+  color: white;
   font-size: var(--text-sm);
   font-weight: 600;
   letter-spacing: -0.005em;
   white-space: nowrap;
-  /* Sin transición de padding: la colocación mide el ancho real de la etiqueta tras cambiar de modo. */
-  transition:
-    background-color var(--duration-fast) var(--ease-out),
-    color var(--duration-fast) var(--ease-out),
-    box-shadow var(--duration-fast) var(--ease-out);
-}
-
-.count {
-  display: inline-grid;
-  place-items: center;
-  min-width: 1.5rem;
-  height: 1.5rem;
-  padding: 0 0.4rem;
-  border-radius: var(--radius-pill);
-  background: var(--plaza-soft, var(--lime-100));
-  color: var(--plaza-accent, var(--olive-700));
-  font-size: var(--text-xs);
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
 }
 
 /*
@@ -71,18 +101,12 @@
  *
  * La regla tiene su excepción aquí y conviene dejarla escrita: el nivel solo cambia cuando el
  * solucionador de choques reparte etiquetas, no en cada fotograma, así que el costo es una
- * transición de 240 ms de vez en cuando y no un recálculo continuo. El diagnóstico que justificó
- * aquel cambio estaba sobredimensionado.
+ * transición de 240 ms de vez en cuando y no un recálculo continuo.
  */
 .stem {
   width: 2px;
   height: 0.875rem;
-  border-radius: 1px;
-  background: linear-gradient(
-    to bottom,
-    color-mix(in srgb, var(--plaza-accent, var(--olive-600)) 55%, transparent),
-    transparent
-  );
+  background: color-mix(in srgb, var(--plaza-accent, var(--olive-600)) 85%, transparent);
   transition:
     height var(--duration-base) var(--ease-out),
     opacity var(--duration-base) var(--ease-out);
@@ -98,20 +122,9 @@
   height: calc(0.875rem + 96px);
 }
 
-.stem:not([data-lift="0"]) {
-  background: linear-gradient(
-    to bottom,
-    color-mix(in srgb, var(--plaza-accent, var(--olive-600)) 65%, transparent),
-    color-mix(in srgb, var(--plaza-accent, var(--olive-600)) 30%, transparent)
-  );
-}
-
 .marker[data-state="hover"] .label,
 .marker:focus-visible .label {
-  background: var(--sand-25);
-  box-shadow:
-    0 0 0 2px var(--plaza-accent, var(--lime-500)),
-    0 10px 20px -8px rgb(31 36 25 / 0.4);
+  filter: drop-shadow(0 4px 9px rgb(31 36 25 / 0.42));
 }
 
 .marker[data-state="hover"],
@@ -121,32 +134,29 @@
 
 /* En pantallas táctiles no hay hover: respuesta inmediata al tocar. */
 .marker:active .label {
-  background: var(--plaza-soft, var(--lime-100));
   scale: 0.96;
 }
 
 .marker:focus-visible .label {
-  box-shadow:
-    0 0 0 2px var(--sand-25),
-    0 0 0 4.5px var(--color-focus);
+  outline: 2.5px solid var(--color-focus);
+  outline-offset: 3px;
 }
 
+/*
+ * Elegida: un aro del color del papel alrededor de la gota. El relleno ya es el color de la plaza en
+ * reposo, así que la selección no puede decirse con el relleno; se dice recortando la gota del mapa.
+ */
 .marker[data-state="selected"] {
   transform: translateY(-4px);
   z-index: 2;
 }
 
-.marker[data-state="selected"] .label {
-  background: var(--plaza-accent, var(--olive-600));
-  color: white;
-  box-shadow:
-    0 0 0 2px rgb(252 250 246 / 0.9),
-    0 12px 24px -10px rgb(31 36 25 / 0.55);
+.marker[data-state="selected"] .gota {
+  box-shadow: 0 0 0 3px var(--sand-25);
 }
 
-.marker[data-state="selected"] .count {
-  background: rgb(252 250 246 / 0.92);
-  color: var(--plaza-accent, var(--olive-700));
+.marker[data-state="selected"] .label {
+  filter: drop-shadow(0 6px 14px rgb(31 36 25 / 0.45));
 }
 
 .marker[data-state="dimmed"],
@@ -154,64 +164,64 @@
   opacity: 0.45;
 }
 
-/* Sin sitio ni para la cifra: un punto del color de la plaza, pulsable y con su nombre en aria-label.
+/*
+ * ## Los modos
+ *
+ * Con la gota anclada ya no hay tres colocaciones sino dos: la cinta sale a la derecha o sale a la
+ * izquierda. El antiguo modo "centrado" no existe, porque centrar la etiqueta es justo lo que movía
+ * la gota.
+ *
+ * La cuenta del `translate`: media etiqueta hacia la derecha deja su centro sobre el tallo, y 15 px
+ * de vuelta (medio ancho de gota) dejan ahí la gota en su lugar.
+ */
+.marker[data-mode="full"] {
+  translate: calc(50% - 15px) 0;
+}
+
+.marker[data-mode="left"] {
+  translate: calc(-50% + 15px) 0;
+}
+
+.marker[data-mode="left"] .label {
+  flex-direction: row-reverse;
+}
+
+/*
+ * Colgada por debajo del punto. MapLibre ancla el contenedor por su base, así que basta bajarlo su
+ * propio alto (la base pasa a ser la cabecera) e invertir la columna, para que el tallo nazca en el
+ * punto y la etiqueta quede debajo en vez de encima.
+ */
+.anchor[data-abajo="true"] {
+  flex-direction: column-reverse;
+  translate: 0 100%;
+}
+
+.anchor[data-abajo="true"] .stem {
+  background: color-mix(in srgb, var(--plaza-accent, var(--olive-600)) 85%, transparent);
+}
+
+.marker[data-mode="left"] .name {
+  margin-left: 0;
+  margin-right: -17px;
+  padding: 0 1.375rem 0 0.875rem;
+  border-radius: 13px 0 0 13px;
+}
+
+/* Sin sitio para el nombre: queda la gota con su cifra, que es el mismo objeto sin su cinta. */
+.marker[data-mode="compact"] .name,
+.marker[data-mode="dot"] .name {
+  display: none;
+}
+
+/* Último recurso: la misma gota, en el mismo sitio, pero colocada aunque no hubiera hueco limpio.
    Así ninguna plaza desaparece del mapa cuando la vista está alejada o la pantalla es estrecha. */
-.marker[data-mode="dot"] .name,
-.marker[data-mode="dot"] .count {
-  display: none;
-}
-
 .marker[data-mode="dot"] {
-  /* El contenedor está anclado por su base al punto: el punto se centra sobre él. */
-  translate: 0 50%;
-  /* Un punto puede quedar sobre el borde de una etiqueta vecina: encima, para poder pulsarlo. */
+  /* Puede quedar sobre el borde de una etiqueta vecina: encima, para poder pulsarla. */
   z-index: 1;
-}
-
-.marker[data-mode="dot"] .label {
-  width: 24px;
-  height: 24px;
-  padding: 0;
-  background: none;
-  box-shadow: none;
-}
-
-.marker[data-mode="dot"] .label::before {
-  content: "";
-  width: 12px;
-  height: 12px;
-  margin: auto;
-  border: 2px solid rgb(252 250 246 / 0.95);
-  border-radius: 50%;
-  background: var(--plaza-accent, var(--olive-600));
-  box-shadow: 0 2px 6px -2px rgb(31 36 25 / 0.5);
-}
-
-.marker[data-mode="dot"][data-state="hover"] .label::before,
-.marker[data-mode="dot"]:focus-visible .label::before {
-  scale: 1.25;
-}
-
-/* Zoom bajo: solo la cifra, para no saturar el mapa. El nombre sigue disponible en aria-label. */
-.marker[data-mode="compact"] .name {
-  display: none;
-}
-
-.marker[data-mode="compact"] .label {
-  padding: 0.25rem;
 }
 
 .marker[data-mode="hidden"],
 .marker[data-mode="hidden"] + .stem {
   opacity: 0;
   pointer-events: none;
-}
-
-/* Etiqueta desplazada a un lado para no chocar con otra; el tallo sigue marcando la plaza. */
-.marker[data-mode="left"] {
-  translate: calc(-50% + 1.1rem) 0;
-}
-
-.marker[data-mode="right"] {
-  translate: calc(50% - 1.1rem) 0;
 }

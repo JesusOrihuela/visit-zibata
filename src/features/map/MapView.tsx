@@ -207,7 +207,22 @@ export default function MapView({
     const plazaFrom = (event: MapLayerMouseEvent) =>
       event.features?.[0]?.properties?.plazaId as string | undefined
 
+    /*
+     * Un marcador es un elemento del DOM encima del lienzo, no un dibujo del mapa, así que el clic
+     * llega a los dos: al botón del marcador y, por debajo, al polígono que haya en ese píxel. Con
+     * la etiqueta centrada sobre su propia plaza daba igual, porque los dos decían lo mismo. Desde
+     * que la etiqueta sale hacia un lado de la gota, el píxel de debajo puede ser de la plaza vecina,
+     * y entonces pulsar un nombre abría otro: se vio como un clic que abría la plaza equivocada.
+     *
+     * Lo que manda es lo que se pulsa, así que el mapa ignora lo que pase sobre un marcador.
+     */
+    const sobreUnMarcador = (event: MapLayerMouseEvent) => {
+      const destino = event.originalEvent.target
+      return destino instanceof Element && destino.closest('.maplibregl-marker') !== null
+    }
+
     const onMove = (event: MapLayerMouseEvent) => {
+      if (sobreUnMarcador(event)) return
       const plazaId = plazaFrom(event)
       canvas.style.cursor = plazaId ? 'pointer' : ''
       setHoveredPlazaId(plazaId ?? null)
@@ -217,6 +232,7 @@ export default function MapView({
       setHoveredPlazaId(null)
     }
     const onClick = (event: MapLayerMouseEvent) => {
+      if (sobreUnMarcador(event)) return
       const plazaId = plazaFrom(event)
       if (plazaId) latest.current.onSelectPlaza(plazaId)
     }

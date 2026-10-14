@@ -43,7 +43,7 @@
   max-width: 70%;
   padding: 0.4rem 0.75rem 0.4rem 0.4rem;
   border: 0;
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-sm);
   background: var(--color-surface-muted);
   color: var(--ink-700);
   font-size: var(--text-sm);
@@ -67,13 +67,20 @@
   color: var(--olive-700);
 }
 
+/*
+ * Los tres botones de cromo (compartir, guardar, cerrar) llevan la esquina corta, no un círculo.
+ *
+ * Son exactamente lo mismo que la salida de la barra de filtros: controles que ejecutan una acción.
+ * La cápsula y el círculo pleno se quedan para las categorías y para lo que es identidad (el logo
+ * del lugar, los logotipos de las redes), que no se pulsan para hacer nada.
+ */
 .iconButton {
   display: grid;
   place-items: center;
   width: 2.5rem;
   height: 2.5rem;
   border: 0;
-  border-radius: 50%;
+  border-radius: var(--radius-sm);
   background: var(--color-surface-muted);
   color: var(--ink-700);
 }
@@ -153,7 +160,9 @@
   justify-content: center;
   gap: var(--space-2);
   padding: 0.7rem var(--space-4);
-  border-radius: var(--radius-pill);
+  /* Medía 608 px de ancho con radio completo: a ese tamaño ya no se lee como cápsula, se lee como
+     una barra con las puntas limadas. */
+  border-radius: var(--radius-sm);
   font-size: var(--text-sm);
   background: var(--olive-600);
   box-shadow: 0 10px 22px -12px rgb(83 108 42 / 0.8);
@@ -311,10 +320,9 @@
   width: 4rem;
   height: 4rem;
   overflow: hidden;
+  /* Sin aro, igual que en la tarjeta: un círculo sin filete se lee como una foto y con filete se
+     lee como un control. El costo es el mismo, que el color de la zona ya no llega aquí. */
   border-radius: 50%;
-  /* El mismo filete fino de la tarjeta, con `outline` por el mismo motivo: sigue el radio y lo
-     dibuja el navegador como trazo, así que no escalona la curva. */
-  outline: 1px solid var(--plaza-accent, var(--color-border));
 }
 
 /*

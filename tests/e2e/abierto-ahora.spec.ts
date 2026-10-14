@@ -14,7 +14,7 @@ test.describe('Abierto ahora', () => {
     await waitForMap(page)
     const region = panel(page)
 
-    const pastilla = page.getByRole('switch', { name: /Abierto ahora/ })
+    const pastilla = page.getByRole('button', { name: /Abierto ahora/ })
     if ((await pastilla.count()) === 0) {
       test.skip(true, 'No hay nada abierto a esta hora en Querétaro')
       return
@@ -22,7 +22,7 @@ test.describe('Abierto ahora', () => {
 
     const antes = await region.locator('article').count()
     await pastilla.click()
-    await expect(pastilla).toHaveAttribute('aria-checked', 'true')
+    await expect(pastilla).toHaveAttribute('aria-pressed', 'true')
 
     const tarjetas = region.locator('article')
     const despues = await tarjetas.count()
@@ -33,7 +33,7 @@ test.describe('Abierto ahora', () => {
 
     // Y se puede quitar: la lista vuelve a lo que era.
     await pastilla.click()
-    await expect(pastilla).toHaveAttribute('aria-checked', 'false')
+    await expect(pastilla).toHaveAttribute('aria-pressed', 'false')
     await expect(tarjetas).toHaveCount(antes)
   })
 

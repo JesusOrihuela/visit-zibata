@@ -47,28 +47,16 @@
   width: 3.5rem;
   height: 3.5rem;
   overflow: hidden;
-  /* Redondo como un avatar: es el logo del negocio, y así se ven en sus redes. */
-  border-radius: 50%;
   /*
-   * El aro lleva el color de la plaza del lugar, heredado del panel o del grupo de resultados. Era
-   * un filete neutro, y era el sitio donde el hilo de identidad se cortaba: el mapa pinta cada
-   * plaza de su color y la lista las devolvía a todas al mismo gris.
+   * Redondo como un avatar: es el logo del negocio, y así se ven en sus redes. El círculo es además
+   * el recorte que mejor aguanta una foto cualquiera, que es lo que llegará aquí.
    *
-   * Va en el aro y no en un fondo ni en una banda lateral: el acento de plaza aparece en una sola
-   * propiedad por superficie (ver DESIGN.md), y una banda gruesa de color a un lado de la tarjeta
-   * es además uno de los tells más reconocibles de interfaz generada.
-   *
-   * Sin plaza alrededor (una tarjeta suelta en una prueba) cae al filete de siempre.
-   *
-   * Va por fuera y con `outline`, no con `box-shadow` ni `inset`, y el grosor es el de siempre.
-   *
-   * `inset` lo apoyaba sobre el borde ya suavizado de la foto recortada: dos bordes suavizados uno
-   * encima de otro dan filo sucio. Y `box-shadow` a 1,5 px escalonaba la curva. `outline` sigue el
-   * radio, lo dibuja el navegador como un trazo y no como una sombra, y a 1 px vuelve a ser el
-   * filete fino que era, solo que ahora con el color de su plaza.
+   * Sin aro. Lo llevó del color de su plaza, para que el hilo de color del mapa no se cortara al
+   * entrar en la lista, y el costo de quitarlo es ese: la tarjeta deja de decir de qué zona es. Se
+   * quita porque un círculo sin filete se lee como una foto y con filete se lee como un control, y
+   * esto no se pulsa por su cuenta: lo que se pulsa es la fila entera.
    */
-  outline: 1px solid var(--plaza-accent, var(--color-border));
-  outline-offset: 0;
+  border-radius: 50%;
 }
 
 .body {

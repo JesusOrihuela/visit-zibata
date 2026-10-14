@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { catalogFixture, placesFixture, plazasFixture } from '../../test/fixtures.ts'
@@ -42,7 +42,9 @@ describe('PlazaPanel', () => {
 
   it('mueve el foco al título para lectores de pantalla', async () => {
     await setup()
-    expect(screen.getByRole('heading', { level: 2 })).toHaveFocus()
+    // El foco se mueve en un efecto, así que hay que esperarlo: comprobarlo a secas pasa aquí y
+    // falla en una máquina cargada, que es exactamente lo que hizo en CI.
+    await waitFor(() => expect(screen.getByRole('heading', { level: 2 })).toHaveFocus())
   })
 
   it('las pastillas anuncian los conteos con los filtros vigentes, no el total de la plaza', async () => {
