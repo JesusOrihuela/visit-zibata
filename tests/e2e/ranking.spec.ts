@@ -18,7 +18,18 @@ test.describe('Orden personal', () => {
     )
     await page.reload()
     await waitForSheet(page)
-    await expect(cards.first()).toHaveAccessibleName('Ver detalles de Luka')
+    /*
+     * Desde que el índice se reparte en abiertos y cerrados, el orden personal ordena **dentro de
+     * cada grupo**: un favorito cerrado no puede subir por encima de los que sí están abiertos. Así
+     * que no se comprueba que sea la primera tarjeta de la zona (eso dependería de la hora a la que
+     * corra la prueba), sino que es la primera de su grupo, que es lo que el orden personal decide.
+     */
+    const suGrupo = panel(page)
+      .getByRole('list')
+      .filter({ has: page.getByRole('button', { name: 'Ver detalles de Luka' }) })
+    await expect(
+      suGrupo.getByRole('button', { name: /^Ver detalles de/ }).first(),
+    ).toHaveAccessibleName('Ver detalles de Luka')
   })
 
   test('marcar un favorito dentro de la lista no la reordena bajo el dedo', async ({ page }) => {

@@ -28,6 +28,9 @@ Thumbs.db
 
 # Configuración local de agentes (no forma parte del producto)
 .claude/
+# Inventario de las habilidades instaladas con "npx skills": acompaña a .claude/skills,
+# que tampoco se versiona, asi que versionarlo describiria archivos que nadie mas tiene.
+skills-lock.json
 
 # Estado local de wrangler (base D1 de desarrollo, cachés).
 .wrangler/

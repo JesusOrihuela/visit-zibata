@@ -54,13 +54,19 @@ export function ComingSoonMarkers({ map, plazas }: { map: MapLibreMap; plazas: r
         const element = elements.get(plaza.id)
         if (!element) return null
         return createPortal(
-          <p className={styles.label} data-compact={!showNames}>
-            <span className={showNames ? styles.name : 'visually-hidden'}>{plaza.name}</span>
-            <span className={styles.badge}>
-              <Construction aria-hidden="true" />
-              <span className="visually-hidden">{t('plaza.comingSoon')}</span>
-            </span>
-          </p>,
+          <>
+            {/* Igual que una plaza abierta: la gota primero y el nombre a su lado, no al revés. */}
+            <p className={styles.label} data-compact={!showNames}>
+              <span className={styles.gota}>
+                <span className={styles.badge}>
+                  <Construction aria-hidden="true" />
+                  <span className="visually-hidden">{t('plaza.comingSoon')}</span>
+                </span>
+              </span>
+              <span className={showNames ? styles.name : 'visually-hidden'}>{plaza.name}</span>
+            </p>
+            <span className={styles.stem} aria-hidden="true" />
+          </>,
           element,
           plaza.id,
         )

@@ -59,7 +59,15 @@ export function PlazaPanel({
       style={{ '--plaza-accent': tone.accent } as CSSProperties}
       aria-labelledby="plaza-panel-title"
     >
-      <header className={styles.header}>
+      <header className={styles.header} data-sello="plaza">
+        {/*
+         * El matasellos: decoración de fondo, no un dato. Lleva el nombre de la zona en el color de
+         * esa zona, al 14 %, y el texto le pasa por encima sin apartarse. Es lo único de la guía que
+         * está ahí solo por carácter, y por eso aparece una vez por panel y nunca en una fila.
+         */}
+        <span className={styles.sello} aria-hidden="true">
+          {plaza.name}
+        </span>
         <div className={styles.topline}>
           <p className={styles.eyebrow}>
             <span className={styles.eyebrowDot} aria-hidden="true" />
@@ -133,7 +141,7 @@ export function PlazaPanel({
         </EmptyState>
       ) : (
         <>
-          <PlaceList places={places} onOpen={onOpenPlace} label={t('plaza.places')} />
+          <PlaceList places={places} onOpen={onOpenPlace} label={t('plaza.places')} byOpenNow />
           {filtersActive && (
             <button type="button" className={styles.textButton} onClick={onClearFilters}>
               {t('plaza.showAll')}

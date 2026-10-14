@@ -2,6 +2,109 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado semántico.
 
+## [4.26.0]: 2026-10-13
+
+### Cambiado
+
+- **Dos siluetas para toda la guía, y ninguna más.** La cápsula es solo de las categorías: dieciocho
+  pastillas de un conjunto del que se elige una. Todo lo que no es una categoría (la zona, las dos
+  condiciones, la salida, los controles del mapa, los botones de la ficha) lleva una esquina corta de
+  8 px, y se distingue por lo que lleva dentro y no por su forma.
+
+  Esto sale de una queja repetida: la zona, la condición y la acción eran funcionales, y el problema
+  era que las tres tenían forma de píldora siendo tres cosas distintas. Y de la de vuelta: una
+  esquina distinta en un solo control desentona, porque entonces el raro es ese control. Una silueta
+  solo informa cuando la lleva una familia entera.
+
+- **La zona enseña el alfiler de su plaza, en miniatura y con su color.** No un icono de ubicación de
+  catálogo: la misma gota que marca esa zona en el mapa, a 13 px. El control enseña la pieza que se
+  va a buscar con los ojos.
+
+- **Las dos condiciones son interruptores.** El icono viaja dentro de la perilla y la cifra ocupa el
+  hueco que la perilla deja libre, así que no hay texto a la vista y cada uno mide 68 px en vez de
+  los 164 y 129 que medían. El nombre sigue en el árbol de accesibilidad: un lector de pantalla lee
+  "Abierto ahora 8".
+
+- **La salida es un embudo tachado, sin cifra.** La llevó una versión y no se entendía: contaba
+  filtros puestos, pero el control nunca dice que cuente filtros. Con el embudo tachado el dibujo ya
+  dice lo que hace. El icono va a 19 px y no a los 15 del resto, y es una excepción medida: son tres
+  figuras y la más pequeña es una cuarta parte del total, así que a 15 el redondel se cierra.
+
+- **Los marcadores del mapa son una gota con su cifra, y el nombre sale a su lado.** La gota es la
+  pieza anclada: se queda clavada en su sitio y lo que crece es la cinta. Un marcador que se mueve al
+  abrirse deja de señalar el punto que señalaba.
+
+  La cinta se mete 17 px por detrás de la gota, pasado su centro, para que no quede ningún canto
+  recto a la vista: es lo que separa una pieza de dos piezas pegadas.
+
+- **Las etiquetas pueden colgar por debajo del punto.** Con la gota anclada, la etiqueta ocupa entero
+  uno de los dos lados, así que las plazas vecinas se quitan sitio y acaban sin nombre. Colgar hacia
+  abajo abre una banda que antes no se usaba. Medido a 1440 px: nueve de las once plazas conservan su
+  nombre, contra siete sin esta colocación.
+
+- **Los marcadores de obra hablan el mismo idioma.** Se habían quedado con la forma anterior
+  (pastilla con insignia redonda) y al cambiar aquella se quedaron solos, que es lo que delata un
+  sistema a medio aplicar. Ahora son la misma gota, hueca y con el contorno punteado: hueca porque el
+  relleno de color significa "aquí hay lugares" y ahí todavía no los hay.
+
+- **La foto del lugar pierde su aro,** en la tarjeta y en la ficha. Llevaba el color de su plaza, y
+  el costo de quitarlo es ese: la tarjeta deja de decir de qué zona es. Se quita porque un círculo
+  sin filete se lee como una foto y con filete se lee como un control, y la foto no se pulsa por su
+  cuenta: lo que se pulsa es la fila entera.
+
+- **El panel de zona lleva un matasellos de fondo** con el nombre de la zona y su color, al 10 %.
+  Es lo único de la guía que está ahí solo por carácter, y por eso aparece una vez por panel y nunca
+  en una fila.
+
+- **El índice de una zona va en grupos por horario**, cada uno con su rótulo y su cuenta: abiertos
+  ahora, cerrados ahora, cerrados temporalmente y sin horario publicado. Un grupo vacío no se dibuja.
+
+  Son cuatro grupos y no dos porque meter en "cerrados" a un local que no publica horario sería
+  afirmar algo que no se sabe. Y tiene una consecuencia que conviene dejar escrita: **el orden
+  personal ordena ahora dentro de cada grupo**, así que un favorito cerrado ya no puede ponerse por
+  encima de los que sí están abiertos.
+
+- **El botón de compartir de la ficha** era el único de los tres de cromo que seguía siendo un
+  círculo. Toma la esquina corta como los otros dos.
+
+- **El aviso de privacidad de "Sugiere un cambio"** pasa de tres líneas a una. Decía lo mismo tres
+  veces y empujaba el botón de enviar fuera de la vista en un teléfono.
+
+### Arreglado
+
+- **Horarios a medias en once locales.** Los Tarascos, Rometta y Tortas Fifthy Fifthy no tenían casi
+  ningún día; los otros ocho tenían sin declarar los días que no abren, y la guía no puede decir
+  "cerrado" de un día que nadie comprobó, así que salían sin estado. Ahora el build **avisa** cuando
+  un local tiene horario de unos días y no de otros: el caso lo encontró una persona mirando una
+  ficha, no una comprobación.
+
+- **Pulsar el nombre de una plaza podía abrir otra.** El mapa escucha los clics sobre los polígonos
+  de las zonas, y un marcador es un elemento del DOM encima del lienzo, así que el clic llegaba a los
+  dos: al botón del marcador y, por debajo, al polígono de ese píxel. Con la etiqueta centrada sobre
+  su propia plaza daba igual, porque los dos decían lo mismo; desde que sale hacia un lado de la
+  gota, el píxel de debajo puede ser del vecino. Ahora el mapa ignora lo que pase sobre un marcador,
+  al pulsar y al pasar el cursor.
+
+- **Una gota forzada podía robarle las pulsaciones a su vecina.** Cuando una no cabe se coloca igual
+  y por delante, y podía caer en mitad del cuerpo de una etiqueta. Ahora, antes de forzarla, la
+  etiqueta que estorba cede su nombre: es la prioridad que ya estaba escrita, que todas las plazas se
+  vean pesa más que enseñar el nombre.
+
+- **La caja de choque de la gota no coincidía con lo que pinta.** Una gota girada 45 grados pinta 41
+  px de alto, su caja medía 34 y además bajaba 17, así que el solucionador la creía 14 px más arriba
+  de donde estaba y dejaba solaparse dos marcadores sin enterarse.
+
+- **Las gotas forzadas se apilaban todas en el mismo nivel.** Ahora cada una sube al nivel donde
+  menos pisa, y el montón se deshace.
+
+- **El alfiler del filtro de zona se veía hundido.** Un cuadrado de 13 px girado 45 grados pinta 18,4
+  px de alto porque la punta sale por abajo, y su caja medía 15.
+
+- **El interruptor se sentía apretado:** con 62 px la perilla y la cifra se rozaban. Mide 68.
+
+- **La prueba del foco del panel de zona fallaba en CI y pasaba en local.** El foco se mueve en un
+  efecto y la aserción no lo esperaba, así que en una máquina cargada llegaba tarde.
+
 ## [4.25.0]: 2026-10-12
 
 ### Cambiado

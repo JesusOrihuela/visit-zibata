@@ -219,9 +219,11 @@ test.describe('Mapa', () => {
     await expect(
       region.getByText(`Zona · ${placesInPlaza('Xentric Anáhuac')} lugares`),
     ).toBeVisible()
-    await expect(
-      region.getByRole('list', { name: 'Lugares en esta zona' }).getByRole('listitem'),
-    ).toHaveCount(placesInPlaza('Xentric Anáhuac'))
+    // El índice va repartido en grupos por horario, así que se cuentan las tarjetas y no los
+    // elementos de una lista: lo que se fija es que estén todos los lugares de la zona.
+    await expect(region.getByRole('button', { name: /^Ver detalles de/ })).toHaveCount(
+      placesInPlaza('Xentric Anáhuac'),
+    )
     await expect(page).toHaveURL(/\/zona\/xentric-anahuac$/)
     await expect(marker).toHaveAttribute('aria-pressed', 'true')
   })

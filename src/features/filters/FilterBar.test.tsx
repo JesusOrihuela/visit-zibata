@@ -65,10 +65,16 @@ describe('FilterBar', () => {
   })
 
   it('con una plaza elegida ofrece la salida', async () => {
-    // Elegir plaza acota la lista igual que un filtro, así que tiene que poder deshacerse. El conteo
-    // ya no se repite aquí: lo dicen las cabeceras de los paneles, al lado de la lista que cuentan.
+    // Elegir plaza acota la lista igual que un filtro, así que tiene que poder deshacerse.
     setup({ selectedPlazaId: 'plaza-sur' })
     expect(screen.getByRole('button', { name: 'Limpiar filtros' })).toBeInTheDocument()
+  })
+
+  it('la barra no repite el conteo de resultados', () => {
+    // La cifra vive en la cabecera del panel, al lado de la lista que cuenta. Aquí estaba lejos de
+    // su contenido y era la tercera copia del mismo número.
+    setup({ filtersActive: true, activeCategoryId: 'pizza' })
+    expect(screen.queryByText(/resultados?$/)).not.toBeInTheDocument()
   })
 
   it('con filtros activos permite limpiarlos', async () => {
@@ -80,12 +86,12 @@ describe('FilterBar', () => {
   it('oculta "Limpiar filtros" y favoritos cuando no aplican', () => {
     setup()
     expect(screen.queryByRole('button', { name: 'Limpiar filtros' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('switch', { name: /Favoritos/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Favoritos/ })).not.toBeInTheDocument()
   })
 
   it('muestra el filtro de favoritos cuando hay alguno guardado', async () => {
     const props = setup({ favoritesCount: 2 })
-    await userEvent.click(screen.getByRole('switch', { name: /Favoritos/ }))
+    await userEvent.click(screen.getByRole('button', { name: /Favoritos/ }))
     expect(props.onToggleFavorites).toHaveBeenCalled()
   })
 })
@@ -95,15 +101,15 @@ describe('el filtro de abiertos', () => {
     // Una pastilla que no puede dar resultados estorba más de lo que ayuda. A las cuatro de la
     // mañana desaparece sola.
     setup({ openNowCount: 0 })
-    expect(screen.queryByRole('switch', { name: /Abierto ahora/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Abierto ahora/ })).not.toBeInTheDocument()
   })
 
   it('anuncia cuántos hay abiertos y se puede pulsar', async () => {
     const onToggleOpenNow = vi.fn()
     setup({ openNowCount: 7, onToggleOpenNow })
-    const boton = screen.getByRole('switch', { name: /Abierto ahora/ })
+    const boton = screen.getByRole('button', { name: /Abierto ahora/ })
     expect(boton).toHaveTextContent('7')
-    expect(boton).toHaveAttribute('aria-checked', 'false')
+    expect(boton).toHaveAttribute('aria-pressed', 'false')
     await userEvent.click(boton)
     expect(onToggleOpenNow).toHaveBeenCalled()
   })
@@ -112,8 +118,8 @@ describe('el filtro de abiertos', () => {
     // Si desapareciera al cerrar el último local, no habría forma de quitarlo y la lista se
     // quedaría vacía sin explicación.
     setup({ openNowCount: 0, openNowOnly: true })
-    expect(screen.getByRole('switch', { name: /Abierto ahora/ })).toHaveAttribute(
-      'aria-checked',
+    expect(screen.getByRole('button', { name: /Abierto ahora/ })).toHaveAttribute(
+      'aria-pressed',
       'true',
     )
   })

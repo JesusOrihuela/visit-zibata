@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { catalogFixture, placesFixture, plazasFixture } from '../../test/fixtures.ts'
@@ -36,13 +36,17 @@ describe('PlazaPanel', () => {
     expect(screen.getByText(/Zona · 3 lugares/)).toBeInTheDocument()
     const categories = screen.getByRole('list', { name: 'Categorías' })
     expect(within(categories).getAllByRole('button')).toHaveLength(4)
-    const list = screen.getByRole('list', { name: 'Lugares en esta zona' })
-    expect(within(list).getAllByRole('listitem')).toHaveLength(3)
+    // El índice va en grupos por horario, así que la lista es una por grupo y cada una lleva su
+    // rótulo. Lo que se fija aquí es que estén los tres lugares, repartidos como estén.
+    const grupos = screen.getAllByRole('list').filter((lista) => lista.dataset.estado !== undefined)
+    expect(grupos.flatMap((lista) => within(lista).getAllByRole('listitem'))).toHaveLength(3)
   })
 
   it('mueve el foco al título para lectores de pantalla', async () => {
     await setup()
-    expect(screen.getByRole('heading', { level: 2 })).toHaveFocus()
+    // El foco se mueve en un efecto, así que hay que esperarlo: comprobarlo a secas pasa aquí y
+    // falla en una máquina cargada, que es exactamente lo que hizo en CI.
+    await waitFor(() => expect(screen.getByRole('heading', { level: 2 })).toHaveFocus())
   })
 
   it('las pastillas anuncian los conteos con los filtros vigentes, no el total de la plaza', async () => {

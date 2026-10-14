@@ -22,25 +22,12 @@
   max-width: min(44rem, calc(100% - var(--controls-right, 5rem) - 3rem));
 }
 
-/*
- * Lo que se ve mientras baja el trozo del mapa, antes de que MapView exista siquiera.
- *
- * Lleva la misma trama de puntos que la espera de MapView (ver MapView.module.css) porque son dos
- * momentos seguidos de la misma espera: primero baja el código, luego las teselas. Con tratamientos
- * distintos se veía un cambio de fondo a mitad de carga, como si algo hubiera fallado y vuelto a
- * empezar. Aquí la trama no respira: este estado dura un instante y un parpadeo llamaría la atención
- * sobre algo que ya terminó.
- */
 .mapFallback {
   position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
-  /* El 7 % va en el color y no en una opacidad aparte: el fondo es una capa, no un elemento. */
-  background:
-    radial-gradient(color-mix(in srgb, var(--olive-600) 7%, transparent) 1px, transparent 1px) 0 0 /
-    26px 26px,
-    #e2d9c9;
+  background: #e2d9c9;
   color: var(--color-text-muted);
   font-size: var(--text-sm);
 }
@@ -54,16 +41,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  /*
-   * El hueco entre la barra de búsqueda y el plano de filtros baja de 12 a 8 px, y no es un ajuste
-   * estético: lo que sobra aquí se lo queda el mapa. La barra superior se mide en vivo y los
-   * marcadores se colocan en lo que queda debajo, así que cada píxel de más empuja una plaza a punto
-   * y un punto puede acabar bajo la insignia de la vecina.
-   *
-   * Se puede recortar sin perder claridad porque desde la v4.25 los filtros tienen plano propio: ya
-   * no hacía falta tanto aire para separar dos cosas que ahora se distinguen por tener fondo.
-   */
-  gap: var(--space-2);
+  gap: var(--space-3);
   pointer-events: none;
   transition: right var(--duration-slow) var(--ease-out);
 }

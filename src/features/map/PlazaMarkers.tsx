@@ -24,12 +24,14 @@ interface PlazaMarkersProps {
   onSelect: (plazaId: string) => void
 }
 
-type Mode = 'full' | 'left' | 'right' | 'compact' | 'dot' | 'hidden'
+type Mode = 'full' | 'left' | 'compact' | 'dot' | 'hidden'
 /** Niveles de elevación de la etiqueta (0 = junto al punto; cada nivel alarga el tallo). */
 type Lift = 0 | 1 | 2
 interface Placement {
   mode: Mode
   lift: Lift
+  /** La etiqueta cuelga por debajo del punto en vez de apoyarse encima. */
+  abajo?: boolean
 }
 interface Rect {
   left: number
@@ -41,15 +43,21 @@ interface Rect {
 /** Por debajo de este zoom todas las plazas muestran solo la cifra. */
 const COMPACT_BELOW_ZOOM = 14.3
 const MARKER_HEIGHT = 44
-const COMPACT_WIDTH = 34
-/** Último recurso: un punto pulsable (24 px, el mínimo táctil) que mantiene la plaza en el mapa. */
-const DOT_SIZE = 24
+/**
+ * El ancho de la gota, que es la pieza anclada: no cambia en ningún modo, y por eso sirve a la vez
+ * de ancho del marcador plegado y de corrección para dejarla centrada sobre el tallo.
+ */
+const PIN_WIDTH = 30
+const COMPACT_WIDTH = PIN_WIDTH
 const GAP = 4
 /** Lo que sube la etiqueta por nivel de elevación (debe coincidir con PlazaMarkers.module.css). */
 const LIFT_STEP = MARKER_HEIGHT + GAP
-/** Cuánto sobresale una etiqueta desplazada hacia el lado del tallo (≈1.1rem). */
-const SHIFT_OVERHANG = 17.6
 const EDGE_RESERVED_RIGHT = 64
+
+/** Cuánto se pisan dos sitios, en píxeles cuadrados. Cero si no se tocan. */
+const solape = (a: Rect, b: Rect) =>
+  Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)) *
+  Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top))
 
 const overlaps = (a: Rect, b: Rect) =>
   a.left < b.right + GAP &&
@@ -147,8 +155,8 @@ export function PlazaMarkers({
        * que estar representadas en la vista inicial**.
        *
        * Así que se cumplen las dos: el punto prefiere un sitio limpio y, si no hay ninguno, se coloca
-       * igual (`forzados`) y se dibuja por encima. Pierde 24 px de la etiqueta que tapa, que mide
-       * mucho más y sigue pulsándose por el resto.
+       * igual (`forzados`) y se dibuja por encima. Antes de eso, eso sí, la etiqueta que estorba cede
+       * su nombre: ver `cedeElNombre` más abajo.
        */
       const free =
         (_kind: 'named' | 'compact' | 'dot') =>
@@ -182,7 +190,16 @@ export function PlazaMarkers({
           }
         }
         const anchorX = box.left + box.width / 2
-        const anchorY = box.bottom
+        /*
+         * MapLibre ancla el contenedor por su base, así que el punto de la plaza es su borde
+         * inferior. Salvo cuando cuelga hacia abajo: ahí el contenedor se baja su propio alto, y
+         * entonces el punto es su borde superior.
+         *
+         * Sin esta línea la siguiente pasada del solucionador lee el contenedor ya desplazado, se
+         * cree que la plaza está un marcador más abajo de donde está, y a partir de ahí coloca todo
+         * mal. Se vio como un clic que abría la plaza equivocada.
+         */
+        const anchorY = element.dataset.abajo === 'true' ? box.top : box.bottom
         anchors.set(id, { x: anchorX, y: anchorY })
         const name = activePlazas.find((plaza) => plaza.id === id)?.name ?? ''
         const width = fullWidths.current.get(id) ?? name.length * 7.6 + 58
@@ -192,19 +209,61 @@ export function PlazaMarkers({
           top: anchorY - MARKER_HEIGHT - lift * LIFT_STEP,
           bottom: anchorY - lift * LIFT_STEP,
         })
+        const abajoRect = (left: number, right: number, lift: Lift): Rect => ({
+          left,
+          right,
+          top: anchorY + lift * LIFT_STEP,
+          bottom: anchorY + MARKER_HEIGHT + lift * LIFT_STEP,
+        })
+        /*
+         * Hacia qué lado conviene sacar la cinta.
+         *
+         * Con la gota anclada, una etiqueta ya no se reparte a los dos lados del punto: ocupa entero
+         * uno de ellos. Y el solucionador es glotón, así que el primero que pide sitio se queda con
+         * él: si todos piden hacia la derecha, el de más a la izquierda tapa a sus cuatro vecinos y
+         * ellos acaban de punto, aunque del otro lado hubiera sitio de sobra para todos.
+         *
+         * Por eso cada marcador prueba primero el lado donde tiene menos vecinos cerca, contando solo
+         * los que están al alcance de su cinta y a una altura parecida. No garantiza el reparto
+         * óptimo (eso ya no es un problema de colocar etiquetas, es de empaquetado), pero quita el
+         * caso que se daba siempre: una fila de plazas vecinas estorbándose todas en la misma
+         * dirección.
+         */
+        const ordenarPorHueco = (
+          propio: string,
+          x: number,
+          y: number,
+          opciones: [Placement, Rect][],
+        ): [Placement, Rect][] => {
+          let haciaLaDerecha = 0
+          for (const [otro, punto] of anchors) {
+            if (otro === propio) continue
+            if (Math.abs(punto.y - y) > LIFT_STEP) continue
+            if (Math.abs(punto.x - x) > width) continue
+            haciaLaDerecha += punto.x > x ? 1 : -1
+          }
+          return haciaLaDerecha > 0 ? [...opciones].reverse() : opciones
+        }
+
         options.set(id, (kind, lift) =>
           kind === 'dot'
             ? [
+                /*
+                 * El punto ocupa exactamente lo mismo que la gota plegada, porque es la gota plegada.
+                 *
+                 * Antes era un círculo de 12 px centrado sobre el punto de la plaza, y por eso tenía
+                 * su propia caja, más pequeña y corrida hacia abajo. Con la gota eso dejó de ser
+                 * cierto: una gota girada 45 grados pinta 41 px de alto, su caja medía 34 y además
+                 * bajaba 17, así que el solucionador la creía 14 px más arriba de donde estaba y dos
+                 * marcadores podían solaparse sin que él lo supiera. El de encima se quedaba con las
+                 * pulsaciones del de debajo.
+                 *
+                 * Lo que distingue al punto ya no es su forma ni su sitio: es que puede colocarse sin
+                 * hueco limpio cuando no queda otra.
+                 */
                 [
-                  // Centrado en el punto de la plaza (no encima, como la etiqueta): así cabe aunque el
-                  // punto quede a un paso del borde superior de la franja libre.
                   { mode: 'dot', lift },
-                  {
-                    left: anchorX - DOT_SIZE / 2,
-                    right: anchorX + DOT_SIZE / 2,
-                    top: anchorY - lift * LIFT_STEP - DOT_SIZE / 2,
-                    bottom: anchorY - lift * LIFT_STEP + DOT_SIZE / 2,
-                  },
+                  rect(anchorX - PIN_WIDTH / 2, anchorX + PIN_WIDTH / 2, lift),
                 ],
               ]
             : kind === 'compact'
@@ -215,15 +274,38 @@ export function PlazaMarkers({
                   ],
                 ]
               : [
-                  [{ mode: 'full', lift }, rect(anchorX - width / 2, anchorX + width / 2, lift)],
-                  [
-                    { mode: 'left', lift },
-                    rect(anchorX - width + SHIFT_OVERHANG, anchorX + SHIFT_OVERHANG, lift),
-                  ],
-                  [
-                    { mode: 'right', lift },
-                    rect(anchorX - SHIFT_OVERHANG, anchorX + width - SHIFT_OVERHANG, lift),
-                  ],
+                  ...ordenarPorHueco(id, anchorX, anchorY, [
+                    // La gota se queda sobre el punto en los dos: lo que cambia es hacia dónde sale la cinta.
+                    [
+                      { mode: 'full', lift },
+                      rect(anchorX - PIN_WIDTH / 2, anchorX - PIN_WIDTH / 2 + width, lift),
+                    ],
+                    [
+                      { mode: 'left', lift },
+                      rect(anchorX + PIN_WIDTH / 2 - width, anchorX + PIN_WIDTH / 2, lift),
+                    ],
+                  ]),
+                  /*
+                   * Y si arriba no cabe, la etiqueta cuelga por debajo del punto.
+                   *
+                   * Con la gota anclada la etiqueta ocupa entero uno de los dos lados, así que donde
+                   * hay plazas vecinas se quitan sitio unas a otras y acaban sin nombre. Colgar
+                   * hacia abajo abre una banda que antes no se usaba, y el tallo sigue diciendo a
+                   * qué punto pertenece: lo único que cambia es de qué lado del punto nace.
+                   *
+                   * Va después de las dos de arriba a propósito: una etiqueta encima del punto es la
+                   * convención de cualquier mapa, y esto es el plan B.
+                   */
+                  ...ordenarPorHueco(id, anchorX, anchorY, [
+                    [
+                      { mode: 'full', lift, abajo: true },
+                      abajoRect(anchorX - PIN_WIDTH / 2, anchorX - PIN_WIDTH / 2 + width, lift),
+                    ],
+                    [
+                      { mode: 'left', lift, abajo: true },
+                      abajoRect(anchorX + PIN_WIDTH / 2 - width, anchorX + PIN_WIDTH / 2, lift),
+                    ],
+                  ]),
                 ],
         )
       }
@@ -255,13 +337,52 @@ export function PlazaMarkers({
             placed.set(id, fitting[1])
             if (kind === 'dot') dots.add(id)
           } else if (kind === 'dot' && !covered) {
-            // Última pasada y sin hueco limpio: entra igual, encima de lo que haya. Ninguna plaza se
-            // queda fuera del mapa, y la que entra así se puede pulsar porque va delante.
-            const [placement, rect] = optionsFor('dot', 0)[0] as [Placement, Rect]
+            /*
+             * Última pasada y sin hueco limpio. Antes de meter el punto encima de lo que haya, las
+             * etiquetas que estorban ceden su nombre y se quedan en gota sola.
+             *
+             * Esto no es una preferencia estética, es la prioridad que ya estaba escrita arriba: que
+             * todas las plazas se vean pesa más que mostrar el nombre. Y desde que la cinta sale
+             * entera hacia un lado, un punto colocado encima ya no roza una esquina de la etiqueta:
+             * puede caerle en mitad del cuerpo y robarle las pulsaciones, así que ahí no se ven las
+             * dos, se ve una. Cediendo el nombre se ven las dos y las dos se pueden pulsar.
+             */
+            const estorbo = optionsFor('dot', 0)[0] as [Placement, Rect]
+            for (const [otro, suRect] of [...placed]) {
+              const suyo = next.get(otro)
+              if (!suyo || (suyo.mode !== 'full' && suyo.mode !== 'left')) continue
+              if (!overlaps(estorbo[1], suRect)) continue
+              const encogido = options.get(otro)?.('compact', suyo.lift)[0]
+              if (!encogido) continue
+              next.set(otro, encogido[0])
+              placed.set(otro, encogido[1])
+            }
+            // Con el sitio liberado casi siempre hay hueco limpio; si no, entra igual y por delante.
+            const limpio = optionsFor('dot', 0).find(free('dot'))
+            /*
+             * Y si ni así: el nivel que menos pise, no siempre el de abajo.
+             *
+             * Forzar todas las gotas al nivel 0 las amontonaba unas sobre otras en el único rincón
+             * donde esto pasa, y entonces la de encima se queda con las pulsaciones de las de debajo.
+             * Repartiéndolas por niveles el montón se deshace: cada una sube hasta donde estorba
+             * menos, y el tallo sigue diciendo a qué punto pertenece.
+             */
+            const apilado = ([0, 1, 2] as Lift[])
+              .map((nivel) => optionsFor('dot', nivel)[0] as [Placement, Rect])
+              .filter(([, caja]) => insideView(caja))
+              .map(
+                (opcion) =>
+                  [
+                    opcion,
+                    [...placed].reduce((suma, [, otra]) => suma + solape(opcion[1], otra), 0),
+                  ] as const,
+              )
+              .sort((a, b) => a[1] - b[1])[0]?.[0]
+            const [placement, rect] = limpio ?? apilado ?? estorbo
             next.set(id, placement)
             placed.set(id, rect)
             dots.add(id)
-            forzados.add(id)
+            if (!limpio) forzados.add(id)
           } else if (selected) {
             // Va primera: solo no cabe fuera de la vista; se coloca igualmente.
             const [placement, rect] = optionsFor('named', 0)[0] as [Placement, Rect]
@@ -282,6 +403,8 @@ export function PlazaMarkers({
         const element = elements.get(id)
         if (!element) continue
         const front = id === selectedPlazaId || id === hoveredIdRef.current
+        if (next.get(id)?.abajo) element.dataset.abajo = 'true'
+        else delete element.dataset.abajo
         element.style.zIndex = String(
           Math.round(anchor.y) + (forzados.has(id) ? 5_000 : 0) + (front ? 10_000 : 0),
         )
@@ -384,8 +507,10 @@ export function PlazaMarkers({
               onClick={() => onSelect(plaza.id)}
             >
               <span className={styles.label}>
+                <span className={styles.gota}>
+                  <span className={styles.count}>{count}</span>
+                </span>
                 <span className={styles.name}>{plaza.name}</span>
-                <span className={styles.count}>{count}</span>
               </span>
             </button>
             {/* El tallo va fuera del botón: el área pulsable es solo la etiqueta. */}

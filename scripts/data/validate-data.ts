@@ -95,6 +95,28 @@ try {
     }
   }
 
+  /*
+   * Un horario a medias no se ve en la guía: el día ausente sale "sin horario publicado" y nadie se
+   * entera de que falta un dato. Pasó con once locales y lo encontró una persona mirando una ficha,
+   * no una comprobación.
+   *
+   * Un día que el local no abre se escribe como lista vacía (`"mon": []`), que es lo que el
+   * analizador del CSV produce con `lun cerrado`. Ausente significa "no se comprobó", y eso es lo
+   * que aquí se avisa.
+   */
+  const DIAS_SEMANA = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const
+  for (const place of dataset.places) {
+    if (!place.hours) continue
+    const faltan = DIAS_SEMANA.filter((dia) => place.hours?.[dia] === undefined)
+    if (faltan.length === 0 || faltan.length === DIAS_SEMANA.length) continue
+    issues.push({
+      level: 'warning',
+      dataset: 'places',
+      id: place.id,
+      message: `Horario a medias: faltan ${faltan.join(', ')}. Si no abre esos días, ponlos como lista vacía; si no se comprobaron, queda pendiente`,
+    })
+  }
+
   const errors = issues.filter((issue) => issue.level === 'error')
   const warnings = issues.filter((issue) => issue.level === 'warning')
   for (const issue of [...errors, ...warnings]) {

@@ -219,11 +219,35 @@ Se rompía en cuatro sitios hasta la v4.23, y los cuatro eran contenedores con f
 barra de búsqueda (una cápsula con dos cápsulas dentro), el resumen de filtros, la franja del pie y
 el aviso de carga. Si un contenedor y lo que contiene tienen la misma forma, la jerarquía desaparece.
 
-**La regla de la forma por el dato.** Un control toma la forma de lo que decide, no la del vecino.
-Un binario de efecto inmediato es un interruptor con vía y perilla. Un desplegable de once nombres es
-texto con un filete debajo. Muchas opciones de un mismo eje son píldoras. Información es texto.
-Cuando los cuatro eran píldoras, la fila no decía nada sobre qué hacía cada cosa, y cambiarles el
-radio solo la desparejaba: el radio deja de ser jerarquía en cuanto todo lo lleva.
+**La regla de las dos siluetas.** Desde la v4.26 hay **dos** y no más. La **cápsula** es solo de las
+categorías: dieciocho pastillas de un conjunto del que se elige una, y nada más en la guía la lleva.
+La **esquina de 8** (`--radius-sm`) es de todo lo que no es una categoría: la zona, las condiciones,
+la salida, los controles del mapa y los botones de la ficha. El mapa no usa ninguna de las dos, para
+que un marcador no se confunda nunca con un control.
+
+Esto corrige dos errores seguidos. El primero: dar a cada control una forma propia, que dejaba cuatro
+siluetas para cuatro controles y una fila sin gramática. El segundo: dar una esquina distinta a uno
+solo, que lo convierte en el raro. **Una silueta solo informa cuando la lleva una familia entera.**
+
+**La regla de la forma por el dato.** Dentro de una misma silueta, un control enseña lo que decide.
+Un binario de efecto inmediato lleva vía y perilla. Un desplegable de once nombres enseña el nombre
+elegido y el color de esa zona. Información es texto. Lo que no vale es que cuatro funciones
+distintas se dibujen igual: entonces la fila no dice nada sobre qué hace cada cosa, y cambiarles el
+radio solo la desempareja, porque el radio deja de ser jerarquía en cuanto todo lo lleva.
+
+**La regla del objeto anclado.** En el mapa, la pieza que señala no se mueve nunca. La gota se queda
+clavada en su punto y lo que crece o desaparece es la cinta del nombre. Un marcador que se desplaza
+al abrirse deja de señalar lo que señalaba, que es lo único que un marcador tiene que hacer.
+
+De ahí salen dos cuentas que hay que mantener a la vez: el `translate` del botón en CSS y el
+rectángulo que el solucionador calcula en `PlazaMarkers.tsx`. Si se separan, el mapa se coloca mal
+sin que ninguna prueba lo note.
+
+**La regla de la caja que pinta.** Girar un elemento no mueve su centro, pero sí cambia lo que ocupa.
+Un cuadrado girado 45 grados pinta su diagonal, no su lado: 13 px pasan a 18,4 y 30 a 41. Hay que
+medir sobre lo que se pinta, no sobre lo que se dispone. Centrar por la caja dejaba el alfiler
+hundido, y calcular los choques por la caja dejaba solaparse dos marcadores sin que el solucionador
+se enterase.
 
 **La regla del plano.** Lo que flota sobre el mapa es **un plano**, no una colección de objetos. Los
 controles van dentro, planos, y se distinguen por su forma. Quitarle el fondo a cada uno no es lo
@@ -246,7 +270,9 @@ texto, del color del papel.
 radio y lo dibuja como trazo. A 1,5 px se notaba en ambos sentidos.
 
 Las fotos de local son círculos, como el avatar de un contacto, porque es el logotipo del negocio y
-así se ve en sus redes.
+así se ve en sus redes. **Sin aro desde la v4.26**: lo llevó del color de su plaza, y se quitó porque
+un círculo con filete se lee como un control y la foto no se pulsa por su cuenta. El costo, escrito
+para que no se olvide, es que la tarjeta ya no dice de qué zona es.
 
 ## Components
 

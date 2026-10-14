@@ -32,8 +32,11 @@
   color: var(--heart-600);
 }
 
+/* En la ficha es uno de los tres botones de cromo, así que lleva su misma esquina. En la tarjeta no:
+   ahí no tiene superficie, es el corazón suelto. */
 .button[data-size="md"] {
   width: 2.5rem;
   height: 2.5rem;
+  border-radius: var(--radius-sm);
   background: var(--color-surface-muted);
 }

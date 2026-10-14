@@ -18,6 +18,57 @@
   gap: var(--space-2);
 }
 
+/*
+ * El matasellos de la zona. Solo en la cabecera del panel de plaza (`data-sello`), porque es lo
+ * único que tiene un nombre propio que sellar: el panel de resultados y el de explorar no.
+ *
+ * Se sale por el canto derecho a propósito y se recorta ahí. El texto de la cabecera pasa por
+ * encima: al 14 % queda muy por debajo del contraste de un texto, que es lo que corresponde a una
+ * marca de agua, y por eso no hace falta apartarle sitio.
+ */
+.header[data-sello] {
+  position: relative;
+  overflow: hidden;
+}
+
+.header > * {
+  position: relative;
+  z-index: 1;
+}
+
+.sello {
+  position: absolute;
+  z-index: 0;
+  /* Centrado en el titular y no en la cabecera entera: así su arco no cruza por el botón de cerrar. */
+  top: 58%;
+  right: -2.25rem;
+  translate: 0 -50%;
+  rotate: -12deg;
+  display: grid;
+  place-content: center;
+  place-items: center;
+  width: 9.125rem;
+  height: 9.125rem;
+  padding-inline: 1.375rem;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 3px currentColor,
+    0 0 0 7px transparent,
+    0 0 0 10px currentColor;
+  color: var(--plaza-accent, var(--olive-600));
+  opacity: 0.1;
+  font-family: var(--font-mono);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: 1.18;
+  letter-spacing: 0.03em;
+  text-align: center;
+  text-transform: uppercase;
+  /* El nombre entero, en un solo cuerpo, partiendo donde haga falta. */
+  overflow-wrap: anywhere;
+  pointer-events: none;
+}
+
 .topline {
   display: flex;
   align-items: center;

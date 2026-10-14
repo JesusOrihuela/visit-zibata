@@ -103,7 +103,8 @@
         ],
         "sat": [
           "09:00-15:00"
-        ]
+        ],
+        "sun": []
       },
       "location": {
         "lat": 20.67792,
@@ -560,6 +561,18 @@
         "en": "🥖 Tortas, wraps, salads and much more.\n🥗 One of a kind flavor, made with the highest quality ingredients."
       },
       "hours": {
+        "mon": [
+          "12:00-21:00"
+        ],
+        "tue": [
+          "12:00-21:00"
+        ],
+        "wed": [
+          "12:00-21:00"
+        ],
+        "thu": [
+          "12:00-21:00"
+        ],
         "fri": [
           "10:00-21:00"
         ],
@@ -621,8 +634,26 @@
         "en": "Gastro Bar🍸.\nCocktails and gourmet dishes."
       },
       "hours": {
+        "mon": [
+          "14:00-22:00"
+        ],
+        "tue": [
+          "14:00-22:00"
+        ],
+        "wed": [
+          "14:00-22:00"
+        ],
+        "thu": [
+          "14:00-22:00"
+        ],
+        "fri": [
+          "14:00-01:00"
+        ],
+        "sat": [
+          "14:00-01:00"
+        ],
         "sun": [
-          "09:00-17:00"
+          "10:00-17:00"
         ]
       },
       "location": {
@@ -938,6 +969,7 @@
         "en": "Good birria for a happy belly.\nWe create unique, delicious recipes."
       },
       "hours": {
+        "mon": [],
         "tue": [
           "09:00-17:00"
         ],
@@ -1005,6 +1037,11 @@
         "mon": [
           "14:00-01:00"
         ],
+        "tue": [],
+        "wed": [],
+        "thu": [],
+        "fri": [],
+        "sat": [],
         "sun": [
           "14:00-01:00"
         ]
@@ -2572,6 +2609,7 @@
         "en": "Fancy a culinary trip to vibrant Venezuela without leaving Zibatá? Come to Arepanas\nArepa Bar 🫓🫓🫓"
       },
       "hours": {
+        "mon": [],
         "tue": [
           "13:00-21:30"
         ],
@@ -3683,6 +3721,7 @@
         "fri": [
           "12:30-20:00"
         ],
+        "sat": [],
         "sun": [
           "12:30-20:00"
         ]
@@ -4740,7 +4779,8 @@
         ],
         "sat": [
           "08:00-15:00"
-        ]
+        ],
+        "sun": []
       },
       "location": null,
       "googleMapsUri": null,
@@ -4962,7 +5002,9 @@
         ],
         "fri": [
           "08:30-16:00"
-        ]
+        ],
+        "sat": [],
+        "sun": []
       },
       "location": null,
       "googleMapsUri": null,
@@ -5566,6 +5608,7 @@
         "en": "🌮✨ The real flavor is at Kekas Fritas El Xavi! ✨🌮\nCome and try our fried quesadillas: golden, crispy and filled with the tastiest homemade stews, with pure Mexican seasoning."
       },
       "hours": {
+        "mon": [],
         "tue": [
           "15:00-23:00"
         ],
@@ -5642,7 +5685,9 @@
         ],
         "fri": [
           "12:00-16:00"
-        ]
+        ],
+        "sat": [],
+        "sun": []
       },
       "location": null,
       "googleMapsUri": null,
