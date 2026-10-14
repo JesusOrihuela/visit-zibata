@@ -149,11 +149,11 @@ test.describe('Plazas y lugares', () => {
       region.getByRole('button', { name: 'Quitar de favoritos: Escarola' }),
     ).toHaveAttribute('aria-pressed', 'true')
     await region.getByRole('button', { name: 'Cerrar panel' }).click()
-    await page.getByRole('button', { name: /Favoritos/ }).click()
+    await page.getByRole('switch', { name: /Favoritos/ }).click()
     await expect(region.getByRole('heading', { name: 'Resultados' })).toBeVisible()
     await expect(region.getByRole('button', { name: /^Ver detalles de/ })).toHaveCount(1)
     await page.reload()
-    await expect(page.getByRole('button', { name: /Favoritos/ })).toContainText('1')
+    await expect(page.getByRole('switch', { name: /Favoritos/ })).toContainText('1')
   })
 
   test('en móvil la hoja inferior se expande y se reduce sin tapar todo el mapa', async ({

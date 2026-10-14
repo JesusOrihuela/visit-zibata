@@ -22,12 +22,25 @@
   max-width: min(44rem, calc(100% - var(--controls-right, 5rem) - 3rem));
 }
 
+/*
+ * Lo que se ve mientras baja el trozo del mapa, antes de que MapView exista siquiera.
+ *
+ * Lleva la misma trama de puntos que la espera de MapView (ver MapView.module.css) porque son dos
+ * momentos seguidos de la misma espera: primero baja el código, luego las teselas. Con tratamientos
+ * distintos se veía un cambio de fondo a mitad de carga, como si algo hubiera fallado y vuelto a
+ * empezar. Aquí la trama no respira: este estado dura un instante y un parpadeo llamaría la atención
+ * sobre algo que ya terminó.
+ */
 .mapFallback {
   position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
-  background: #e2d9c9;
+  /* El 7 % va en el color y no en una opacidad aparte: el fondo es una capa, no un elemento. */
+  background:
+    radial-gradient(color-mix(in srgb, var(--olive-600) 7%, transparent) 1px, transparent 1px) 0 0 /
+    26px 26px,
+    #e2d9c9;
   color: var(--color-text-muted);
   font-size: var(--text-sm);
 }
@@ -41,7 +54,16 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: var(--space-3);
+  /*
+   * El hueco entre la barra de búsqueda y el plano de filtros baja de 12 a 8 px, y no es un ajuste
+   * estético: lo que sobra aquí se lo queda el mapa. La barra superior se mide en vivo y los
+   * marcadores se colocan en lo que queda debajo, así que cada píxel de más empuja una plaza a punto
+   * y un punto puede acabar bajo la insignia de la vecina.
+   *
+   * Se puede recortar sin perder claridad porque desde la v4.25 los filtros tienen plano propio: ya
+   * no hacía falta tanto aire para separar dos cosas que ahora se distinguen por tener fondo.
+   */
+  gap: var(--space-2);
   pointer-events: none;
   transition: right var(--duration-slow) var(--ease-out);
 }
@@ -77,7 +99,12 @@
   gap: var(--space-3);
   max-width: 46rem;
   padding: var(--card-pad) 0.5rem var(--card-pad) 0.6rem;
-  border-radius: var(--radius-xl);
+  /*
+   * Contenedor, no control. Con `xl` el radio quedaba en la mitad de su alto y se leía como una
+   * cápsula gigante con dos cápsulas dentro: tres formas de control anidadas para una barra que no
+   * se pulsa. `lg` sigue siendo suave y ya no compite con las píldoras que contiene.
+   */
+  border-radius: var(--radius-lg);
   background: var(--color-surface);
   backdrop-filter: var(--blur-surface);
   box-shadow:

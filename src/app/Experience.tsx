@@ -324,6 +324,9 @@ function ReadyExperience({ catalog }: { catalog: Catalog }) {
 
   // Lo que hay en la lista ahora mismo: con una plaza abierta, sus lugares; buscando, todo Zibatá.
   // No depende de si además hay una ficha abierta encima.
+  //
+  // Ya no se pinta en la barra de filtros (lo dicen las cabeceras de los paneles, junto a la lista
+  // que cuentan), pero sigue anunciándose aquí: quien no ve la pantalla necesita oír que cambió.
   const resultCount = experience.visibleCount
 
   // Una sola región viva para toda la interfaz: avisos y número de resultados (no se duplican anuncios).
@@ -512,7 +515,6 @@ function ReadyExperience({ catalog }: { catalog: Catalog }) {
             openNowOnly={state.openNowOnly}
             onToggleOpenNow={() => dispatch({ type: 'toggleOpenNow' })}
             filtersActive={filtersActive}
-            resultCount={resultCount}
             onClear={(event?: { detail?: number }) => {
               clearFilters()
               selectPlaza(null)

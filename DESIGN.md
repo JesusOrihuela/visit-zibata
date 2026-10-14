@@ -212,8 +212,38 @@ segunda tarjeta.
 `--radius-sm` 8 px para cajas pequeñas, `md` 14 px para tarjetas, `lg` 20 px y `xl` 28 px para
 paneles y hojas, `pill` para todo lo que se pulsa.
 
-**La regla de la píldora.** Lo redondo se pulsa. Un rectángulo con esquinas de 8 px es contenido; una
+**La regla de la píldora.** Lo redondo se pulsa. Un rectángulo con esquinas blandas es contenido; una
 píldora es un control. Mezclarlos enseña al dedo a dudar.
+
+Se rompía en cuatro sitios hasta la v4.23, y los cuatro eran contenedores con forma de botón: la
+barra de búsqueda (una cápsula con dos cápsulas dentro), el resumen de filtros, la franja del pie y
+el aviso de carga. Si un contenedor y lo que contiene tienen la misma forma, la jerarquía desaparece.
+
+**La regla de la forma por el dato.** Un control toma la forma de lo que decide, no la del vecino.
+Un binario de efecto inmediato es un interruptor con vía y perilla. Un desplegable de once nombres es
+texto con un filete debajo. Muchas opciones de un mismo eje son píldoras. Información es texto.
+Cuando los cuatro eran píldoras, la fila no decía nada sobre qué hacía cada cosa, y cambiarles el
+radio solo la desparejaba: el radio deja de ser jerarquía en cuanto todo lo lleva.
+
+**La regla del plano.** Lo que flota sobre el mapa es **un plano**, no una colección de objetos. Los
+controles van dentro, planos, y se distinguen por su forma. Quitarle el fondo a cada uno no es lo
+mismo que tener un plano: detrás no hay papel, hay un mapa 3D con edificios y árboles, y ahí ningún
+halo de texto se lee. Las categorías llegaron a ser dieciocho pastillas con cristal y sombra propios.
+
+**La regla del alto prestado.** Todo lo que crece arriba se lo quita al mapa: la barra superior se
+mide en vivo y los marcadores se colocan en lo que queda. Subir de 157 a 221 px empujó una plaza a
+punto y la dejó bajo la insignia de la vecina. Antes de engordar la interfaz, mirar qué pasa con los
+marcadores.
+
+**La regla del cristal escaso.** El desenfoque es un acento, no un rasgo de carácter. Lo llevan la
+barra de búsqueda y las pastillas de categoría, que es lo que se toca primero. Llegó a haber nueve
+superficies con la misma receta (fondo translúcido, desenfoque, filete y sombra), y con nueve
+primeros planos no hay ninguno. Lo demás se apoya plano sobre el mapa y se lee por su sombra de
+texto, del color del papel.
+
+**La regla del aro.** El filete de las fotos circulares va con `outline` de 1 px, no con
+`box-shadow`. Una sombra sobre una curva se dibuja difuminada y escalona el borde; `outline` sigue el
+radio y lo dibuja como trazo. A 1,5 px se notaba en ambos sentidos.
 
 Las fotos de local son círculos, como el avatar de un contacto, porque es el logotipo del negocio y
 así se ve en sus redes.

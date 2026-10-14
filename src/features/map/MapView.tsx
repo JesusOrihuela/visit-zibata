@@ -278,7 +278,11 @@ export default function MapView({
       <div ref={containerRef} className={styles.canvas} data-testid="map-canvas" />
       {status.state === 'loading' && (
         <div className={styles.loading} role="status">
-          <span className={styles.loadingDot} aria-hidden="true" />
+          <span className={styles.loadingDots} aria-hidden="true">
+            <span className={styles.loadingDot} />
+            <span className={styles.loadingDot} />
+            <span className={styles.loadingDot} />
+          </span>
           {t('map.loading')}
         </div>
       )}

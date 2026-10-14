@@ -4,7 +4,15 @@ import type { Hours } from '../../types/domain.ts'
 import styles from './HoursTable.module.css'
 import { OpenStatus, useZonedNow } from './OpenStatus.tsx'
 
-export function HoursTable({ hours }: { hours: Hours | null }) {
+/**
+ * El horario del lugar.
+ *
+ * `cerrado` es el cierre temporal, y lo único que hace es callar el estado en vivo: un local en obra
+ * tiene su horario de siempre bien puesto, así que `getOpenStatus` responde "Abierto" con razón y
+ * aun así sería falso. La ficha ya lo dice arriba con todas sus letras y en ámbar; repetirlo aquí en
+ * verde fue justo lo que salió publicado en la v4.20.
+ */
+export function HoursTable({ hours, cerrado = false }: { hours: Hours | null; cerrado?: boolean }) {
   const now = useZonedNow()
   if (!hasAnyHours(hours)) return null
 
@@ -15,7 +23,7 @@ export function HoursTable({ hours }: { hours: Hours | null }) {
         <h3 id="place-hours-title" className={styles.title}>
           {t('place.hours')}
         </h3>
-        <OpenStatus hours={hours} />
+        {!cerrado && <OpenStatus hours={hours} />}
       </div>
       <dl className={styles.table}>
         {groups.map((group) => {

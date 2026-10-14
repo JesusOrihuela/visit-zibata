@@ -35,8 +35,7 @@
   flex-direction: column;
   overflow: hidden;
   border-radius: var(--radius-md);
-  background: var(--color-surface);
-  backdrop-filter: var(--blur-surface);
+  background: var(--color-surface-solid);
   box-shadow:
     0 0 0 1px var(--color-border),
     var(--shadow-md);

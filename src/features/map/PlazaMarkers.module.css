@@ -61,36 +61,41 @@
 }
 
 /*
- * El tallo mide siempre lo mismo y crece con `scale`, no con `height`.
+ * El tallo crece con `height`, y aquí eso NO es un descuido.
  *
- * Son hasta quince marcadores a la vez y se alargan mientras el mapa se mueve: animar `height`
- * recalcula la disposición de cada uno en cada fotograma. `scale` solo compone. El degradado es una
- * rampa de dos paradas, así que estirarlo se ve igual, y el `transform-origin` abajo mantiene el
- * pie clavado en la plaza, que es lo único que el tallo tiene que hacer.
+ * `.anchor` es una columna flex con la etiqueta arriba y el tallo debajo, y MapLibre la ancla por su
+ * base. O sea que **el alto del tallo es lo que sube la etiqueta**: no es decoración, es el
+ * mecanismo de la elevación. En la v4.21 se cambió a `scale` por la regla de no animar propiedades
+ * de disposición, y rompió el mapa: la caja seguía midiendo 14 px, así que el tallo se estiraba
+ * hacia abajo y la etiqueta se quedaba donde estaba, separada de su línea.
+ *
+ * La regla tiene su excepción aquí y conviene dejarla escrita: el nivel solo cambia cuando el
+ * solucionador de choques reparte etiquetas, no en cada fotograma, así que el costo es una
+ * transición de 240 ms de vez en cuando y no un recálculo continuo. El diagnóstico que justificó
+ * aquel cambio estaba sobredimensionado.
  */
 .stem {
   width: 2px;
   height: 0.875rem;
   border-radius: 1px;
-  transform-origin: bottom;
   background: linear-gradient(
     to bottom,
     color-mix(in srgb, var(--plaza-accent, var(--olive-600)) 55%, transparent),
     transparent
   );
   transition:
-    scale var(--duration-base) var(--ease-out),
+    height var(--duration-base) var(--ease-out),
     opacity var(--duration-base) var(--ease-out);
 }
 
 /* Etiqueta elevada para no chocar con otra: el tallo se alarga 48 px por nivel (LIFT_STEP) y sigue
-   señalando la plaza. La escala es (14 px + 48 n) / 14 px, con 0,875rem = 14 px. */
+   señalando la plaza. */
 .stem[data-lift="1"] {
-  scale: 1 4.4286;
+  height: calc(0.875rem + 48px);
 }
 
 .stem[data-lift="2"] {
-  scale: 1 7.8571;
+  height: calc(0.875rem + 96px);
 }
 
 .stem:not([data-lift="0"]) {

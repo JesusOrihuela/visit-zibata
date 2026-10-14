@@ -2,6 +2,153 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado semántico.
 
+## [4.25.0]: 2026-10-12
+
+### Cambiado
+
+- **Los filtros viven sobre un plano, no flotando sueltos sobre el mapa.** La versión anterior les
+  quitó el fondo a los controles, y eso no es lo mismo que tener un plano: detrás no hay papel, hay
+  un mapa 3D con edificios, calles y árboles, y ahí ninguna sombra de texto se lee. Se veían como
+  piezas sueltas flotando.
+
+  Ahora hay una superficie **sólida** que los contiene, y dentro los controles van planos y se
+  distinguen por su forma. Las categorías eran **dieciocho pastillas con cristal y sombra propios**,
+  que es el caso extremo de "cuando todo flota, nada está delante"; ahora son planas dentro del
+  plano. La franja del pie recupera también superficie, por el mismo motivo.
+
+  Quedan **dos** superficies de cristal en toda la guía, de las diez que había: el plano de búsqueda
+  y el velo del diálogo que esté abierto, y nunca coinciden más de dos en pantalla.
+
+- **La fila de contexto es una retícula con tres sitios con nombre** (ámbito, llaves, salida) en vez
+  de un `flex-wrap`. Con `wrap` los controles saltaban de renglón en cualquier orden según el ancho,
+  y una barra que se recoloca sola no se puede aprender. Debajo de 600 px van apilados, encima en
+  línea, y nunca cambian de orden. La consulta es **de contenedor**, no de ventana, porque la barra
+  también se estrecha al abrir el panel de escritorio.
+
+  Con dos sitios, "Abierto ahora" se partía en dos renglones a 375 px: medido, llaves y salida juntas
+  pedían 420 px contra 358 disponibles. Un texto que se pulsa no se parte nunca.
+
+### Corregido
+
+- **Una plaza degradada a punto podía quedar bajo la insignia de la vecina y dejar de poder pulsarse.**
+  El solucionador comparaba el punto solo contra otros puntos, ignorando las etiquetas, para que
+  "ninguna plaza desaparezca del mapa". La promesa era falsa: un punto tapado no desaparece, pero
+  tampoco se alcanza, que es peor porque parece alcanzable.
+
+  Ahora el punto prefiere un sitio limpio y, si no hay ninguno, entra igual y se dibuja por encima.
+  Se cumplen las dos promesas: ninguna plaza queda fuera y la que entra forzada se puede pulsar.
+
+  El fallo no venía de esta tanda: llevaba en esa línea desde que se escribió. Lo destapó que la
+  barra superior creciera de **157 a 221 px** al ganar áreas pulsables de 44 px, porque lo que crece
+  arriba se lo quita al mapa. Antes del cambio ya había cinco plazas degradadas a punto.
+
+## [4.24.0]: 2026-10-12
+
+### Cambiado
+
+- **Cada filtro toma la forma de su dato, en vez de ser todos una píldora.** Las dos versiones
+  anteriores cambiaron color y agrupación, pero los cuatro controles seguían siendo cápsulas
+  iguales. El radio deja de ser una herramienta de jerarquía en cuanto todo lo lleva: entonces solo
+  es adorno, y moverlo desparejaba la fila sin explicar nada.
+
+  | Control | Qué es | Forma |
+  |---|---|---|
+  | Zona | un desplegable de once nombres | texto con filete debajo |
+  | Abierto ahora, Favoritos | binarios de efecto inmediato | interruptores con vía y perilla |
+  | Resultados | información | texto |
+  | Categorías | muchas opciones de un eje | píldoras, que es su uso correcto |
+
+  Los interruptores son `role="switch"` con `aria-checked`, no botones disfrazados: lo que se ve y lo
+  que se escucha dicen lo mismo.
+
+- **La fila de filtros deja de aportar superficies de cristal.** Había **nueve** con la misma receta
+  (fondo translúcido, desenfoque, filete y sombra) y con nueve primeros planos no hay ninguno. El
+  desenfoque queda para la barra de búsqueda y las pastillas de categoría, que es lo que se toca
+  primero; el resto se apoya plano sobre el mapa y se lee por su sombra de texto.
+
+  Medido contra los dos peores fondos del mapa: los interruptores dan 10,3:1 y el resumen 7,3:1.
+
+- **El nombre de la zona va en tinta y el color de la zona en el filete.** En color daba 4,42:1 sobre
+  las manchas verdes del mapa, por debajo del 4,5 que pide un texto. En tinta da 8,97. El filete es
+  un objeto gráfico y le basta 3:1: comprobadas las once plazas, la peor da 3,36.
+
+## [4.23.0]: 2026-10-12
+
+### Corregido
+
+- **El tallo de los marcadores se había soltado de su etiqueta.** En la v4.21 se cambió de `height` a
+  `scale` aplicando la regla de no animar propiedades de disposición, sin mirar qué hacía esa
+  propiedad: `.anchor` es una columna flex anclada por su base, así que **el alto del tallo es lo que
+  sube la etiqueta**. Con `scale` la caja seguía midiendo 14 px, el tallo se estiraba hacia abajo y
+  la etiqueta se quedaba donde estaba.
+
+  Vuelve a `height`, y queda escrito en el CSS que ahí la regla tiene excepción: el nivel de
+  elevación solo cambia cuando el solucionador de choques reparte etiquetas, no en cada fotograma.
+  Medido: los once marcadores dan 0 px de separación entre el pie de la etiqueta y la cabeza del
+  tallo, incluidos los elevados a 62 y 110 px.
+
+- **Un local cerrado temporalmente decía "Abierto" en su horario.** `estadoDe()` se escribió para que
+  la pregunta viviera en un sitio y quedó una llamada sin migrar: `HoursTable` seguía preguntándole
+  al horario, que responde "Abierto" con razón y aun así es falso. Ahora recibe el cierre y calla el
+  estado en vivo; el aviso ámbar de arriba es la única afirmación.
+
+- **El aviso de cierre tenía 32 px arriba y 20 abajo**, por un `margin-top` encima del `gap` del
+  contenedor. El hueco lo reparte el contenedor.
+
+- **El aro de las fotos salía grueso y escalonado.** Iba a 1,5 px y con `box-shadow`, que sobre una
+  curva se dibuja como sombra difuminada y escalona. Ahora es `outline` a 1 px: sigue el radio, lo
+  dibuja el navegador como trazo, y vuelve a ser el filete fino de siempre con el color de su plaza.
+
+- **El contador de "Abierto ahora" anunciaba un resultado más de los que daba.** `useExperience`
+  seguía preguntándole al horario directamente, así que contaba como abierto un local en obra que el
+  filtro excluía. Es el tercer sitio del mismo cambio donde se escapó la misma pregunta.
+
+  Para que no haya un cuarto, `scripts/convenciones.test.ts` falla si cualquier archivo fuera de tres
+  permitidos importa `getOpenStatus`. Probada introduciendo la violación a propósito: señala el
+  archivo culpable por su nombre. Una convención que se rompe tres veces no se sostiene con un
+  comentario.
+
+- **En "Tu Zibatá", diez de las once zonas se pintaban con el verde de la primera.** `plazaTones`
+  reparte los colores **por posición en la lista** que recibe, y la lista de lugares pedía el tono
+  pasando una lista de un solo elemento: siempre el índice 0. El mismo lugar salía verde ahí y de su
+  color en el mapa. No venía de los cambios de esta tanda; apareció al revisar el sistema de color.
+
+- **Los dos estados de espera del mapa no se parecían.** El que se ve mientras baja el trozo de
+  código era beige plano y el de las teselas ya tenía la trama de puntos, así que a mitad de carga
+  cambiaba el fondo, como si algo hubiera fallado y vuelto a empezar. Ahora comparten la misma
+  rejilla de 26 px.
+
+### Cambiado
+
+- **La fila de filtros deja de ser una hilera de cápsulas iguales.** Eran cuatro cosas distintas con
+  la misma forma: dónde estás, qué filtras, qué llaves están puestas y cuántos resultados hay. Ahora
+  el peso visual dice de qué tipo es cada una.
+
+  **El selector de zona se pinta del color de esa zona**, el mismo del mapa, en vez del olivo de
+  marca. Es una revisión de una decisión tomada al revés dos versiones antes: entonces se dejó olivo
+  razonando que los controles son olivo, y el costo fue que la fila quedó sin diferenciación. La
+  regla de los dos canales, bien leída, apunta a esto: el olivo marca acción y el acento marca lugar,
+  y este control nombra un lugar. De paso, basta mirar la barra para saber en qué zona estás.
+
+  **Los dos interruptores viven en una sola superficie**, separados por un filete, como un grupo de
+  llaves. Se leen como lo que son y la fila pasa de cuatro objetos a tres.
+
+  **El resumen pierde su superficie.** No es un filtro: es una cifra y una salida. Ahora es texto, con
+  una sombra del color del papel para que se lea sobre el mapa sin añadir una caja.
+
+  La barra de búsqueda, la franja del pie y el aviso de carga pasan a radio de contenedor, porque
+  tampoco se pulsan. Las pastillas de categoría no cambian: esas sí son filtros y sí se pulsan.
+
+- **La cifra de los interruptores estaba alta.** Heredaba `line-height: 1.45` del cuerpo, y a 11 px
+  eso deja la caja más alta que el glifo dentro de una fila centrada por caja. Con `line-height: 1`
+  el desfase medido es 0,00.
+
+- **La espera del mapa ya no es una pastilla flotando en una pantalla vacía.** El aviso pierde su
+  caja y el hueco lo ocupa la trama de puntos de la marca, la misma de la página 404, respirando muy
+  despacio. El problema no era el indicador, era el beige vacío detrás. Solo se anima `opacity`, que
+  es lo único que puede animarse sobre un área entera sin costar repintado, y en CSS, que corre fuera
+  del hilo principal justo cuando el navegador está más ocupado.
+
 ## [4.22.0]: 2026-10-12
 
 ### Añadido

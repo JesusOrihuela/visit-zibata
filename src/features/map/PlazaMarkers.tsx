@@ -132,13 +132,28 @@ export function PlazaMarkers({
       const placed = new Map<string, Rect>()
       /** Plazas reducidas a un punto: un punto puede rozar una etiqueta, pero no a otro punto. */
       const dots = new Set<string>()
+      // Puntos colocados sin hueco limpio: van por delante para poder pulsarse.
+      const forzados = new Set<string>()
       const next = new Map<string, Placement>()
       const collides = (rect: Rect, onlyDots = false) =>
         [...placed].some(([id, other]) => (!onlyDots || dots.has(id)) && overlaps(rect, other))
+      /*
+       * Un sitio está libre si cabe en la vista y no pisa a nadie. También el punto, que antes solo
+       * se comparaba contra otros puntos.
+       *
+       * Esa excepción tenía un costo que se vio al crecer la barra de filtros: un punto podía quedar
+       * bajo la insignia de la vecina y entonces no se podía pulsar, aunque se viera. Pero quitarla a
+       * secas rompe algo más importante, que `map.spec.ts` fija: **todas las plazas activas tienen
+       * que estar representadas en la vista inicial**.
+       *
+       * Así que se cumplen las dos: el punto prefiere un sitio limpio y, si no hay ninguno, se coloca
+       * igual (`forzados`) y se dibuja por encima. Pierde 24 px de la etiqueta que tapa, que mide
+       * mucho más y sigue pulsándose por el resto.
+       */
       const free =
-        (kind: 'named' | 'compact' | 'dot') =>
+        (_kind: 'named' | 'compact' | 'dot') =>
         ([, rect]: [Placement, Rect]) =>
-          insideView(rect) && !collides(rect, kind === 'dot')
+          insideView(rect) && !collides(rect)
 
       // Posibles colocaciones de cada marcador, según su punto en pantalla y el ancho de su etiqueta.
       const options = new Map<
@@ -239,6 +254,14 @@ export function PlazaMarkers({
             next.set(id, fitting[0])
             placed.set(id, fitting[1])
             if (kind === 'dot') dots.add(id)
+          } else if (kind === 'dot' && !covered) {
+            // Última pasada y sin hueco limpio: entra igual, encima de lo que haya. Ninguna plaza se
+            // queda fuera del mapa, y la que entra así se puede pulsar porque va delante.
+            const [placement, rect] = optionsFor('dot', 0)[0] as [Placement, Rect]
+            next.set(id, placement)
+            placed.set(id, rect)
+            dots.add(id)
+            forzados.add(id)
           } else if (selected) {
             // Va primera: solo no cabe fuera de la vista; se coloca igualmente.
             const [placement, rect] = optionsFor('named', 0)[0] as [Placement, Rect]
@@ -259,7 +282,9 @@ export function PlazaMarkers({
         const element = elements.get(id)
         if (!element) continue
         const front = id === selectedPlazaId || id === hoveredIdRef.current
-        element.style.zIndex = String(Math.round(anchor.y) + (front ? 10_000 : 0))
+        element.style.zIndex = String(
+          Math.round(anchor.y) + (forzados.has(id) ? 5_000 : 0) + (front ? 10_000 : 0),
+        )
       }
 
       setModes((previous) =>

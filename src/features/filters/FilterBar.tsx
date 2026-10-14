@@ -1,6 +1,7 @@
 /** FilterBar: categoría + plaza (combinables), favoritos, nº de resultados y limpiar filtros. */
 import { ChevronDown, Clock, Heart, MapPin } from 'lucide-react'
-import { useId } from 'react'
+import { type CSSProperties, useId } from 'react'
+import { plazaTones } from '../../config/palette.ts'
 import { t } from '../../i18n/index.ts'
 import type { Category, Plaza } from '../../types/domain.ts'
 import { CategoryChips } from '../plazas/CategoryChips.tsx'
@@ -23,7 +24,6 @@ interface FilterBarProps {
   openNowOnly: boolean
   onToggleOpenNow: () => void
   filtersActive: boolean
-  resultCount: number
   onClear: () => void
 }
 
@@ -43,11 +43,19 @@ export function FilterBar({
   openNowOnly,
   onToggleOpenNow,
   filtersActive,
-  resultCount,
   onClear,
 }: FilterBarProps) {
   const selectId = useId()
   const hasSelection = filtersActive || selectedPlazaId !== null
+  /*
+   * El tono de la zona elegida, para que el selector se pinte de su color. `plazaTones` reparte por
+   * posición, así que la lista tiene que ser la misma que usan el mapa y los paneles: las plazas
+   * activas del catálogo, que es exactamente lo que llega en `plazas`.
+   */
+  const tonoDeZona =
+    selectedPlazaId === null
+      ? null
+      : (plazaTones(plazas.map((plaza) => plaza.id)).get(selectedPlazaId)?.accent ?? null)
 
   return (
     <div className={styles.bar}>
@@ -61,7 +69,11 @@ export function FilterBar({
         variant="floating"
       />
       <div className={styles.row}>
-        <div className={styles.select} data-active={selectedPlazaId !== null}>
+        <div
+          className={styles.select}
+          data-active={selectedPlazaId !== null}
+          style={tonoDeZona ? ({ '--plaza-accent': tonoDeZona } as CSSProperties) : undefined}
+        >
           <MapPin aria-hidden="true" />
           <label htmlFor={selectId} className="visually-hidden">
             {t('filters.plaza')}
@@ -82,45 +94,67 @@ export function FilterBar({
         </div>
 
         {/*
-         * La pastilla solo aparece si hay algo abierto, igual que la de favoritos solo aparece si
-         * hay favoritos: un filtro que no puede dar resultados estorba más de lo que ayuda. A las
-         * cuatro de la mañana desaparece sola.
+         * Los dos interruptores viven en una sola superficie, separados por un filete.
+         *
+         * Antes eran dos pastillas sueltas e iguales a todo lo demás, y la fila entera se leía como
+         * una hilera de cápsulas sin jerarquía: el selector de zona, los dos interruptores y el
+         * resumen tenían la misma forma siendo cuatro cosas distintas. Agrupados se leen como lo que
+         * son, un par de llaves que se encienden y se apagan, y de paso la fila pasa de cuatro
+         * objetos a tres.
+         *
+         * Cada uno solo aparece si puede dar resultados: a las cuatro de la mañana no hay abiertos y
+         * el grupo se queda con una sola llave, que sigue leyéndose bien.
          */}
-        {(openNowCount > 0 || openNowOnly) && (
-          <button
-            type="button"
-            className={styles.toggle}
-            data-abierto="si"
-            aria-pressed={openNowOnly}
-            onClick={onToggleOpenNow}
-          >
-            <Clock aria-hidden="true" />
-            {t('filters.openNow')}
-            <span className={styles.badge}>{openNowCount}</span>
-          </button>
+        {(openNowCount > 0 || openNowOnly || favoritesCount > 0 || favoritesOnly) && (
+          <fieldset className={styles.switches} aria-label={t('filters.switches')}>
+            {(openNowCount > 0 || openNowOnly) && (
+              <button
+                type="button"
+                role="switch"
+                className={styles.toggle}
+                data-abierto="si"
+                aria-checked={openNowOnly}
+                onClick={onToggleOpenNow}
+              >
+                <Clock aria-hidden="true" />
+                {t('filters.openNow')}
+                <span className={styles.badge}>{openNowCount}</span>
+                <span className={styles.track} aria-hidden="true">
+                  <span className={styles.knob} />
+                </span>
+              </button>
+            )}
+
+            {(favoritesCount > 0 || favoritesOnly) && (
+              <button
+                type="button"
+                role="switch"
+                className={styles.toggle}
+                aria-checked={favoritesOnly}
+                onClick={onToggleFavorites}
+              >
+                <Heart aria-hidden="true" fill={favoritesOnly ? 'currentColor' : 'none'} />
+                {t('favorites.filter')}
+                <span className={styles.badge}>{favoritesCount}</span>
+                <span className={styles.track} aria-hidden="true">
+                  <span className={styles.knob} />
+                </span>
+              </button>
+            )}
+          </fieldset>
         )}
 
-        {(favoritesCount > 0 || favoritesOnly) && (
-          <button
-            type="button"
-            className={styles.toggle}
-            aria-pressed={favoritesOnly}
-            onClick={onToggleFavorites}
-          >
-            <Heart aria-hidden="true" fill={favoritesOnly ? 'currentColor' : 'none'} />
-            {t('favorites.filter')}
-            <span className={styles.badge}>{favoritesCount}</span>
-          </button>
-        )}
-
+        {/*
+         * Solo la salida, sin el conteo.
+         *
+         * La cifra estaba aquí y también en la cabecera del panel y en la de la zona: tres copias
+         * del mismo número, y la de la barra es la que menos ayuda, porque está lejos de la lista
+         * que cuenta. Un estado se dice donde está el contenido al que se refiere.
+         */}
         {hasSelection && (
-          <p className={styles.summary}>
-            {/* Elegir plaza también acota la lista: el conteo aparece igual que con los demás filtros. */}
-            <span className={styles.results}>{t('filters.results', { count: resultCount })}</span>
-            <button type="button" className={styles.clear} onClick={onClear}>
-              {t('filters.clear')}
-            </button>
-          </p>
+          <button type="button" className={styles.clear} onClick={onClear}>
+            {t('filters.clear')}
+          </button>
         )}
       </div>
     </div>
