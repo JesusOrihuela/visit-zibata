@@ -141,7 +141,7 @@ export function PlazaPanel({
         </EmptyState>
       ) : (
         <>
-          <PlaceList places={places} onOpen={onOpenPlace} label={t('plaza.places')} />
+          <PlaceList places={places} onOpen={onOpenPlace} label={t('plaza.places')} byOpenNow />
           {filtersActive && (
             <button type="button" className={styles.textButton} onClick={onClearFilters}>
               {t('plaza.showAll')}

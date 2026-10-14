@@ -118,6 +118,10 @@ export const es = {
   'favorites.add': 'Guardar en favoritos',
   'favorites.remove': 'Quitar de favoritos',
   'favorites.filter': 'Favoritos',
+  'places.groupOpen': 'Abiertos ahora',
+  'places.groupClosed': 'Cerrados ahora',
+  'places.groupTemporary': 'Cerrados temporalmente',
+  'places.groupUnknown': 'Sin horario publicado',
   'filters.openNow': 'Abierto ahora',
   // Nombre del grupo de interruptores para quien lo escucha; a la vista no lleva título.
   'filters.switches': 'Filtros rápidos',
@@ -296,7 +300,7 @@ export const es = {
   /* Etiqueta del campo trampa: solo la oyen los lectores de pantalla, y les dice que lo dejen. */
   'suggest.trap': 'No rellenes este campo',
   'suggest.note':
-    'Al enviar, tu mensaje se guarda en el servidor de la guía para poder atenderlo, sin pasar por ningún servicio de terceros. No se guarda nada más de ti: ni cuenta, ni dirección, ni de qué navegador escribes.',
+    'Tu mensaje se guarda en el servidor de la guía para poder atenderlo. Nada más: ni cuenta, ni dirección.',
 
   'about.credits': 'Datos y créditos',
   'about.creditsBody':

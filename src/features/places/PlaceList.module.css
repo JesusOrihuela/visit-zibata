@@ -8,3 +8,45 @@
  * `.item` ya no existe: la fila no lleva estilo propio. Aquí vivía la animación de entrada
  * escalonada, retirada porque la lista se redibuja en cada filtro (ver PlaceList.tsx).
  */
+
+/*
+ * Los grupos del índice de una zona: abiertos primero, y el rótulo dice cuántos.
+ *
+ * El corte se dice en vez de insinuarse. Atenuar los cerrados y ya está deja al que mira
+ * adivinando dónde termina una cosa y empieza la otra, y la cuenta es además el mismo dato que el
+ * interruptor de la barra enseña arriba: aquí sale al lado de la lista que cuenta.
+ */
+.grupos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.rotulo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-1);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-500);
+}
+
+.rotulo span {
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * Sin atenuar los grupos cerrados, y no es un olvido.
+ *
+ * Llevaron `opacity: .62` para que pesaran menos, y axe lo cazó en CI: el nombre del lugar es
+ * `--ink-900` y a esa opacidad se queda por debajo del 4,5:1 que pide un texto. Atenuar es siempre
+ * una resta de contraste, aunque no se escriba como un color.
+ *
+ * El rótulo del grupo ya hace ese trabajo, y lo hace mejor: dice cuántos hay y dónde empieza cada
+ * cosa, en vez de dejarlo a que el ojo note una diferencia de brillo.
+ */

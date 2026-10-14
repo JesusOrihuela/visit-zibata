@@ -56,7 +56,27 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
   Es lo único de la guía que está ahí solo por carácter, y por eso aparece una vez por panel y nunca
   en una fila.
 
+- **El índice de una zona va en grupos por horario**, cada uno con su rótulo y su cuenta: abiertos
+  ahora, cerrados ahora, cerrados temporalmente y sin horario publicado. Un grupo vacío no se dibuja.
+
+  Son cuatro grupos y no dos porque meter en "cerrados" a un local que no publica horario sería
+  afirmar algo que no se sabe. Y tiene una consecuencia que conviene dejar escrita: **el orden
+  personal ordena ahora dentro de cada grupo**, así que un favorito cerrado ya no puede ponerse por
+  encima de los que sí están abiertos.
+
+- **El botón de compartir de la ficha** era el único de los tres de cromo que seguía siendo un
+  círculo. Toma la esquina corta como los otros dos.
+
+- **El aviso de privacidad de "Sugiere un cambio"** pasa de tres líneas a una. Decía lo mismo tres
+  veces y empujaba el botón de enviar fuera de la vista en un teléfono.
+
 ### Arreglado
+
+- **Horarios a medias en once locales.** Los Tarascos, Rometta y Tortas Fifthy Fifthy no tenían casi
+  ningún día; los otros ocho tenían sin declarar los días que no abren, y la guía no puede decir
+  "cerrado" de un día que nadie comprobó, así que salían sin estado. Ahora el build **avisa** cuando
+  un local tiene horario de unos días y no de otros: el caso lo encontró una persona mirando una
+  ficha, no una comprobación.
 
 - **Pulsar el nombre de una plaza podía abrir otra.** El mapa escucha los clics sobre los polígonos
   de las zonas, y un marcador es un elemento del DOM encima del lienzo, así que el clic llegaba a los

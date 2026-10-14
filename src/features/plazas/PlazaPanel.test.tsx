@@ -36,8 +36,10 @@ describe('PlazaPanel', () => {
     expect(screen.getByText(/Zona · 3 lugares/)).toBeInTheDocument()
     const categories = screen.getByRole('list', { name: 'Categorías' })
     expect(within(categories).getAllByRole('button')).toHaveLength(4)
-    const list = screen.getByRole('list', { name: 'Lugares en esta zona' })
-    expect(within(list).getAllByRole('listitem')).toHaveLength(3)
+    // El índice va en grupos por horario, así que la lista es una por grupo y cada una lleva su
+    // rótulo. Lo que se fija aquí es que estén los tres lugares, repartidos como estén.
+    const grupos = screen.getAllByRole('list').filter((lista) => lista.dataset.estado !== undefined)
+    expect(grupos.flatMap((lista) => within(lista).getAllByRole('listitem'))).toHaveLength(3)
   })
 
   it('mueve el foco al título para lectores de pantalla', async () => {

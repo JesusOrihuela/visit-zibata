@@ -113,6 +113,10 @@ export const en = {
   'favorites.add': 'Save to favourites',
   'favorites.remove': 'Remove from favourites',
   'favorites.filter': 'Favourites',
+  'places.groupOpen': 'Open now',
+  'places.groupClosed': 'Closed now',
+  'places.groupTemporary': 'Temporarily closed',
+  'places.groupUnknown': 'No opening hours published',
   'filters.openNow': 'Open now',
   'filters.switches': 'Quick filters',
   'filters.openNowLabel': 'Open now: {name}',
@@ -261,7 +265,7 @@ export const en = {
   'suggest.required': 'Write your message.',
   'suggest.trap': 'Leave this field empty',
   'suggest.note':
-    'On sending, your message is stored on the guide’s own server so it can be acted on, with no third-party service in between. Nothing else about you is stored: no account, no address, no browser details.',
+    'Your message is stored on the guide’s own server so it can be acted on. Nothing else: no account, no address.',
 
   'about.credits': 'Data and credits',
   'about.creditsBody':

@@ -7,7 +7,8 @@
   width: 2.25rem;
   height: 2.25rem;
   border: 0;
-  border-radius: 50%;
+  /* Botón de cromo, como el de guardar y el de cerrar: esquina corta, no círculo. */
+  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--ink-500);
   transition:
