@@ -1,10 +1,18 @@
+/*
+ * `inset: 0` mide el viewport grande, el de la página con la barra del navegador retraída. En un
+ * teléfono con la barra a la vista eso es más alto que lo que se ve, así que la hoja se centraba en
+ * una caja más alta que la pantalla y su cabecera quedaba por encima del borde: el título salía
+ * cortado y no había forma de subir hasta él. `dvh` mide lo que de verdad se ve.
+ */
 .veil {
   position: fixed;
   inset: 0;
+  height: 100dvh;
   z-index: var(--z-modal);
   display: grid;
   place-items: center;
   padding: var(--space-4);
+  padding-top: calc(var(--space-4) + var(--safe-top));
   padding-bottom: calc(var(--space-4) + var(--safe-bottom));
   background: rgb(31 36 25 / 0.32);
   backdrop-filter: blur(2px);
@@ -22,7 +30,8 @@
 .sheet {
   position: relative;
   width: min(32rem, 100%);
-  max-height: 85vh;
+  /* Lo que quepa dentro del velo ya descontados su relleno y las zonas seguras. */
+  max-height: 100%;
   overflow-y: auto;
   display: flex;
   flex-direction: column;

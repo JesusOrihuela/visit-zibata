@@ -155,6 +155,16 @@
   box-shadow: 0 0 0 3px var(--sand-25);
 }
 
+/* El aro se come 3 px hacia la cinta, así que el nombre se aparta otros tantos para no rozarlo. */
+.marker[data-state="selected"] .name {
+  padding-left: calc(1.375rem + 4px);
+}
+
+.marker[data-mode="left"][data-state="selected"] .name {
+  padding-left: 0.875rem;
+  padding-right: calc(1.375rem + 4px);
+}
+
 .marker[data-state="selected"] .label {
   filter: drop-shadow(0 6px 14px rgb(31 36 25 / 0.45));
 }
