@@ -12,6 +12,24 @@
   inset: 0;
 }
 
+/*
+ * Los marcadores son parte del mapa, no flotan sobre la interfaz.
+ *
+ * MapLibre cuelga cada marcador de este contenedor, y el solucionador de colisiones les pone un
+ * z-index por cercanía que llega a ~11 000. Sin un contexto de apilamiento aquí, esos numeros
+ * competían con los controles de zoom, brújula y mi ubicacion (--z-map-ui: 10) y los tapaban: una
+ * gota caía encima del botón de más y se quedaba con el clic. Con el contexto, todo el orden por
+ * cercanía se resuelve dentro de esta capa y la capa entera queda debajo de los controles, que es
+ * lo que --z-map-ui ya prometía.
+ *
+ * Va en el contenedor del lienzo y no en `.canvas` a propósito: la atribución de MapLibre es otra
+ * hermana, y bajarla con los marcadores la metia debajo de la viñeta, que le resta contraste a un
+ * texto que la licencia obliga a mantener legible.
+ */
+.root :global(.maplibregl-canvas-container) {
+  isolation: isolate;
+}
+
 /* Viñeta muy suave: sensación de maqueta sobre una mesa, sin bloquear la interacción. */
 .root::after {
   content: "";

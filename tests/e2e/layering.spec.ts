@@ -39,6 +39,47 @@ test.describe('capas y alineación', () => {
     expect(covered.leaks).toEqual([])
   })
 
+  test('ningún marcador puede taparle el clic a los controles del mapa', async ({ page }) => {
+    await openApp(page)
+    await waitForMap(page)
+    await expect(page.getByRole('button', { name: 'Volver a la vista de Zibatá' })).toBeVisible()
+
+    /*
+     * Los marcadores se ordenan entre sí con un z-index por cercanía que llega a ~11 000, y los
+     * controles valen 10. Mientras la capa de marcadores no sea un contexto de apilamiento propio,
+     * esos números compiten con los del resto de la interfaz y ganan: una gota caía sobre el botón
+     * de acercar y se quedaba con el clic.
+     *
+     * Se comprueba metiendo en esa capa una pieza que pide el z-index más alto que puede pedir y
+     * que cubre el mapa entero. Si la capa está aislada, no llega a ningún control. Con una pieza de
+     * prueba y no arrastrando el mapa hasta que una gota real caiga encima, porque dónde cae depende
+     * de la cámara, del zoom y del solucionador de colisiones: el mismo arrastre la deja en sitios
+     * distintos en cada uno de los cuatro proyectos, y la prueba quedaría o frágil o vacía.
+     */
+    const tapados = await page.evaluate(() => {
+      const capa = document.querySelector('.maplibregl-canvas-container')
+      const controles = document.querySelector('fieldset')
+      if (!capa || !controles) return ['sin capa de marcadores o sin controles']
+      const intruso = document.createElement('div')
+      intruso.style.cssText = 'position:absolute;inset:0;z-index:99999'
+      capa.append(intruso)
+      const perdidos: string[] = []
+      for (const boton of controles.querySelectorAll<HTMLElement>('button')) {
+        const caja = boton.getBoundingClientRect()
+        if (caja.width === 0) continue
+        const encima = document.elementFromPoint(
+          caja.left + caja.width / 2,
+          caja.top + caja.height / 2,
+        )
+        if (encima?.closest('button') !== boton)
+          perdidos.push(boton.getAttribute('aria-label') ?? '?')
+      }
+      intruso.remove()
+      return perdidos
+    })
+    expect(tapados).toEqual([])
+  })
+
   test('las pastillas de categoría del panel arrancan alineadas con el resto del contenido', async ({
     page,
   }) => {
