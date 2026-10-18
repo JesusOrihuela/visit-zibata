@@ -210,6 +210,20 @@
   background: color-mix(in srgb, var(--plaza-accent, var(--olive-600)) 85%, transparent);
 }
 
+/*
+ * Y la punta mira hacia arriba, que es donde está su punto.
+ *
+ * La punta de una gota no es adorno: es la parte que señala, y es lo único del marcador que dice
+ * cuál de los dos extremos del tallo es el local. Colgada por debajo seguía apuntando hacia abajo,
+ * o sea justo al lado contrario del sitio que marca, y el tallo nacía del lomo redondo.
+ *
+ * Es la esquina sin redondear la que hace la punta, así que basta moverla de abajo a la izquierda
+ * (que el giro de -45 grados lleva abajo) a arriba a la derecha (que el mismo giro lleva arriba).
+ */
+.anchor[data-abajo="true"] .gota {
+  border-radius: 50% 0 50% 50%;
+}
+
 .marker[data-mode="left"] .name {
   margin-left: 0;
   margin-right: -17px;

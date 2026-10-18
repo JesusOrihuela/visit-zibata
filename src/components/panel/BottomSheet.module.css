@@ -7,6 +7,9 @@
   display: flex;
   flex-direction: column;
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  /* Recorta con la curva lo que haya dentro, incluida la barra de desplazamiento del contenido: sin
+     esto la barra se dibujaba recta contra la esquina redonda y parecía ir por fuera de la hoja. */
+  overflow: hidden;
   background: var(--color-surface-solid);
   box-shadow:
     0 -1px 0 var(--color-border),
@@ -66,4 +69,17 @@
   /* Con 0 arriba, el botón redondo de cerrar queda a ras del borde que recorta y se ve cortado. */
   padding: var(--space-1) var(--space-4) calc(var(--space-6) + var(--safe-bottom));
   touch-action: pan-y;
+  /* La misma barra fina y en arena que el panel de escritorio. Sin esto la hoja del teléfono se
+     quedaba con la del sistema: ancha, con flechas y gris, un widget prestado encima del papel. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--sand-300) transparent;
+}
+
+.content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.content::-webkit-scrollbar-thumb {
+  border-radius: var(--radius-pill);
+  background: var(--sand-300);
 }

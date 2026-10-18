@@ -27,20 +27,62 @@
   background: none;
 }
 
+/*
+ * La hoja recorta y no se desplaza; lo que se desplaza es `.scroller`, dentro.
+ *
+ * Con el `overflow-y` en la propia hoja, el texto llegaba hasta el borde y quedaba cortado en seco
+ * justo donde empieza la curva, y la barra de desplazamiento del navegador se dibujaba recta contra
+ * una esquina redonda. Separar las dos funciones arregla las dos cosas: `overflow: hidden` aquí
+ * recorta con la curva todo lo que haya debajo, barra incluida.
+ */
 .sheet {
   position: relative;
   width: min(32rem, 100%);
   /* Lo que quepa dentro del velo ya descontados su relleno y las zonas seguras. */
   max-height: 100%;
-  overflow-y: auto;
   display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  padding: var(--space-5);
+  overflow: hidden;
   border-radius: var(--radius-lg);
   background: var(--color-surface-solid);
   box-shadow: var(--shadow-lg);
   animation: sheet-in var(--duration-slow) var(--ease-out);
+}
+
+.scroller {
+  flex: 1;
+  /* Sin esto un hijo flex nunca encoge por debajo de su contenido y la hoja crece hasta desbordar. */
+  min-height: 0;
+  overflow-y: auto;
+  /*
+   * El gesto se queda dentro. En un teléfono, al llegar al final del texto el desplazamiento
+   * continuaba en la página de detrás y se llevaba el mapa consigo, que es lo que se siente como
+   * que la ventana "se sale" de su sitio.
+   */
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  /*
+   * El texto se desvanece contra los dos bordes en vez de quedar guillotinado. Los 14 px caen
+   * dentro del relleno, así que en reposo no difumina nada: solo actúa sobre lo que está pasando.
+   */
+  /* Con prefijo también: sin él, en un iPhone anterior a iOS 15.4 no hay desvanecido, solo el corte
+     en seco de antes. No se rompe nada, pero el arreglo no llegaría justo a quien peor lo tiene. */
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 14px,
+    #000 calc(100% - 14px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 14px,
+    #000 calc(100% - 14px),
+    transparent 100%
+  );
 }
 
 .head {
@@ -93,8 +135,13 @@
   color: var(--olive-600);
 }
 
+/*
+ * Un escalón por encima del resto de textos secundarios de la guía, y a propósito: esto no se
+ * ojea, se lee entero y en el teléfono. A 13 px la política de privacidad obligaba a acercar la
+ * pantalla con los dedos, y una página que hay que ampliar para leer no está cumpliendo su papel.
+ */
 .body {
-  font-size: var(--text-sm);
+  font-size: var(--text-base);
   color: var(--color-text-muted);
 }
 

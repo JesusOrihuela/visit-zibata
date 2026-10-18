@@ -126,75 +126,85 @@ export function InfoDialog({ topic, onClose, onGoTo }: InfoDialogProps) {
         aria-modal="true"
         aria-labelledby="info-title"
       >
-        <div className={styles.head}>
-          <h2 id="info-title" className={styles.title}>
-            {t(page.title)}
-          </h2>
-          <button
-            ref={closeRef}
-            type="button"
-            className={styles.close}
-            onClick={onClose}
-            aria-label={t('about.close')}
-          >
-            <X aria-hidden="true" />
-          </button>
-        </div>
-
-        <p className={styles.lead}>{t(page.lead)}</p>
-        <p className={styles.body}>{t(page.body)}</p>
         {/*
-         * En "Sugiere un cambio" el formulario ocupa el sitio del detalle. Desde la v4.18 siempre
-         * está: ya no depende de una clave de terceros que podía faltar, así que no hay caso en el
-         * que la página tenga que explicar que el canal no existe.
+         * Lo que se desplaza es esto y no la hoja. La hoja lleva el borde redondeado y recorta, así
+         * que al llegar al final del texto el gesto se queda aquí dentro en vez de arrastrar la
+         * página de detrás, y el texto se desvanece en el borde en vez de quedar cortado en seco
+         * contra la curva.
          */}
-        {key === 'contribute' ? (
-          <Suspense fallback={null}>
-            <SuggestForm />
-          </Suspense>
-        ) : (
-          <p className={styles.body}>{t(page.detail)}</p>
-        )}
-        {page.extra && <p className={styles.body}>{t(page.extra)}</p>}
-
-        {/*
-         * Los términos, en la misma página y debajo de la privacidad. Se leen en el mismo orden en
-         * que importan: qué es esta guía, qué tan fiable es el dato, cómo pedir que se corrija o se
-         * quite, y de quién es cada cosa.
-         */}
-        {key === 'privacy' && (
-          <>
-            <h3 className={styles.blockTitle}>{t('about.termsTitle')}</h3>
-            <p className={styles.body}>{t('about.termsWhat')}</p>
-            <p className={styles.body}>{t('about.termsData')}</p>
-            <p className={styles.body}>{t('about.termsFix')}</p>
-            <p className={styles.body}>{t('about.termsContent')}</p>
-          </>
-        )}
-
-        {key === 'about' && (
-          <>
-            <h3 className={styles.blockTitle}>{t('about.credits')}</h3>
-            <p className={styles.body}>{t('about.creditsBody')}</p>
-            <p className={styles.colophon}>
-              <Signature />
-              <span className={styles.version}>{t('about.version', { version: APP_VERSION })}</span>
-            </p>
-          </>
-        )}
-
-        <nav className={styles.more} aria-label={t('about.moreLabel')}>
-          {INFO_TOPICS.filter((other) => other !== topic).map((other) => (
+        <div className={styles.scroller}>
+          <div className={styles.head}>
+            <h2 id="info-title" className={styles.title}>
+              {t(page.title)}
+            </h2>
             <button
-              key={other}
+              ref={closeRef}
               type="button"
-              className={styles.moreLink}
-              onClick={() => onGoTo(other)}
+              className={styles.close}
+              onClick={onClose}
+              aria-label={t('about.close')}
             >
-              {t(ENLACE[other])}
+              <X aria-hidden="true" />
             </button>
-          ))}
-        </nav>
+          </div>
+
+          <p className={styles.lead}>{t(page.lead)}</p>
+          <p className={styles.body}>{t(page.body)}</p>
+          {/*
+           * En "Sugiere un cambio" el formulario ocupa el sitio del detalle. Desde la v4.18 siempre
+           * está: ya no depende de una clave de terceros que podía faltar, así que no hay caso en el
+           * que la página tenga que explicar que el canal no existe.
+           */}
+          {key === 'contribute' ? (
+            <Suspense fallback={null}>
+              <SuggestForm />
+            </Suspense>
+          ) : (
+            <p className={styles.body}>{t(page.detail)}</p>
+          )}
+          {page.extra && <p className={styles.body}>{t(page.extra)}</p>}
+
+          {/*
+           * Los términos, en la misma página y debajo de la privacidad. Se leen en el mismo orden en
+           * que importan: qué es esta guía, qué tan fiable es el dato, cómo pedir que se corrija o se
+           * quite, y de quién es cada cosa.
+           */}
+          {key === 'privacy' && (
+            <>
+              <h3 className={styles.blockTitle}>{t('about.termsTitle')}</h3>
+              <p className={styles.body}>{t('about.termsWhat')}</p>
+              <p className={styles.body}>{t('about.termsData')}</p>
+              <p className={styles.body}>{t('about.termsFix')}</p>
+              <p className={styles.body}>{t('about.termsContent')}</p>
+            </>
+          )}
+
+          {key === 'about' && (
+            <>
+              <h3 className={styles.blockTitle}>{t('about.credits')}</h3>
+              <p className={styles.body}>{t('about.creditsBody')}</p>
+              <p className={styles.colophon}>
+                <Signature />
+                <span className={styles.version}>
+                  {t('about.version', { version: APP_VERSION })}
+                </span>
+              </p>
+            </>
+          )}
+
+          <nav className={styles.more} aria-label={t('about.moreLabel')}>
+            {INFO_TOPICS.filter((other) => other !== topic).map((other) => (
+              <button
+                key={other}
+                type="button"
+                className={styles.moreLink}
+                onClick={() => onGoTo(other)}
+              >
+                {t(ENLACE[other])}
+              </button>
+            ))}
+          </nav>
+        </div>
       </div>
     </div>,
     document.body,

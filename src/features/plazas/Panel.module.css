@@ -56,9 +56,14 @@
     0 0 0 7px transparent,
     0 0 0 10px currentColor;
   color: var(--plaza-accent, var(--olive-600));
-  opacity: 0.1;
+  /*
+   * Un matasellos tiene que leerse como tinta gastada, no como una marca de agua. A 0.1 y 15 px se
+   * adivinaba el arco pero no el nombre, y entonces no es un sello de nada: es una textura. Sube a
+   * donde el nombre se lee sin esfuerzo y sigue quedando claro que está debajo del titular.
+   */
+  opacity: 0.16;
   font-family: var(--font-mono);
-  font-size: 0.9375rem;
+  font-size: 1.0625rem;
   font-weight: 700;
   line-height: 1.18;
   letter-spacing: 0.03em;

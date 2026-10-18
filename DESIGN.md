@@ -243,6 +243,17 @@ De ahí salen dos cuentas que hay que mantener a la vez: el `translate` del bot�
 rectángulo que el solucionador calcula en `PlazaMarkers.tsx`. Si se separan, el mapa se coloca mal
 sin que ninguna prueba lo note.
 
+Y de ahí sale también que la punta siga al punto. Cuando el solucionador cuelga una etiqueta por
+debajo de su sitio (`data-abajo`), la gota invierte su esquina sin redondear para que la punta mire
+hacia arriba. Una gota que cuelga apuntando hacia abajo señala el lado contrario del local que
+marca, que es exactamente lo que esta regla prohíbe.
+
+La misma regla manda en el apilado: los marcadores se ordenan entre sí por cercanía con números que
+llegan a ~11 000, y esa escala solo tiene sentido dentro de su capa. El contenedor del lienzo es un
+contexto de apilamiento propio (`MapView.module.css`) para que esos números no compitan con los de
+la interfaz, donde los controles del mapa valen 10 (`--z-map-ui`). Sin eso una gota tapaba el botón
+de acercar y se quedaba con su clic.
+
 **La regla de la caja que pinta.** Girar un elemento no mueve su centro, pero sí cambia lo que ocupa.
 Un cuadrado girado 45 grados pinta su diagonal, no su lado: 13 px pasan a 18,4 y 30 a 41. Hay que
 medir sobre lo que se pinta, no sobre lo que se dispone. Centrar por la caja dejaba el alfiler
