@@ -41,7 +41,10 @@
   gap: 0.2rem;
   min-width: 0;
   max-width: 70%;
-  padding: 0.4rem 0.75rem 0.4rem 0.4rem;
+  /* El mismo alto que el corazón y la cruz: tres controles en una fila a dos alturas distintas se
+     leen como un descuido, por mucho que uno lleve texto y los otros no. */
+  height: 2.5rem;
+  padding: 0 0.75rem 0 0.4rem;
   border: 0;
   border-radius: var(--radius-sm);
   background: var(--color-surface-muted);
@@ -431,4 +434,47 @@
   margin: 0 0 0.15rem;
   font-size: var(--text-sm);
   font-weight: 700;
+}
+
+/*
+ * La fila de salidas: lo que manda el lugar fuera de la guía.
+ *
+ * Envuelve en pantallas estrechas en vez de encoger los dos controles, porque "Cómo llegar" es la
+ * acción más usada de la ficha y no puede quedarse sin su ancho.
+ */
+.salidas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: var(--space-2);
+}
+
+.salidas .directions {
+  flex: 1 1 12rem;
+}
+
+/*
+ * Y el bloque de lo que no sale. Un filete arriba y nada de superficie dentro: la diferencia con
+ * la fila de salidas no la marca la esquina de sus controles sino que aquí no hay ninguna caja.
+ */
+/*
+ * Sin filete. Lo llevaba y sobraba: es la única división de toda la ficha, y una línea que aparece
+ * una vez no se lee como estructura, se lee como un corte. Lo que agrupa aquí es el rótulo, que
+ * además dice algo que no se podía suponer (que nada de esto se publica). El aire del contenedor ya
+ * separa este bloque de los de al lado igual que separa a todos los demás entre sí.
+ */
+.personal {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.personalTitle {
+  margin: 0;
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
 }

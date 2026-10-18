@@ -76,3 +76,37 @@
   font-size: var(--text-xs);
   color: var(--color-text-muted);
 }
+
+/*
+ * Sin superficie: el control de la familia que no sale de la guía.
+ *
+ * Mismo alto y mismo icono, cero relleno y cero borde. La diferencia con "Cómo llegar" deja de ser
+ * la esquina (que ya comparten media docena de controles de la ficha) y pasa a ser la materia, que
+ * es lo que de verdad distingue una acción que te manda fuera de una que solo anota algo tuyo.
+ */
+.visit[data-plano="true"] .button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--olive-700);
+  text-decoration: underline;
+  text-decoration-color: var(--sand-400);
+  text-underline-offset: 0.2em;
+}
+
+.visit[data-plano="true"] .button:hover {
+  color: var(--olive-600);
+  text-decoration-color: var(--olive-600);
+}
+
+/* La cuenta deja de ser pastilla: al lado de un texto subrayado, una pastilla vuelve a ser caja. */
+.visit[data-plano="true"] .count {
+  min-width: 0;
+  padding: 0;
+  background: none;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  line-height: inherit;
+  text-decoration: none;
+}

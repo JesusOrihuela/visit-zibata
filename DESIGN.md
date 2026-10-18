@@ -229,6 +229,27 @@ Esto corrige dos errores seguidos. El primero: dar a cada control una forma prop
 siluetas para cuatro controles y una fila sin gramática. El segundo: dar una esquina distinta a uno
 solo, que lo convierte en el raro. **Una silueta solo informa cuando la lleva una familia entera.**
 
+**La regla de las dos direcciones.** En la ficha de un lugar, los controles se agrupan por hacia
+dónde apuntan y no por cuándo se usan. *Hacia fuera* (Cómo llegar, Compartir) entregan el lugar a
+algo que no es esta guía: comparten silueta con todo el derecho, porque hacen lo mismo, y lo que
+los separa es el relleno. *Hacia dentro* (calificar, visita) solo cambian tu relación con el lugar
+y no se publican nunca: pierden la superficie entera, que es más diferencia que cualquier esquina
+nueva. El rótulo "Solo para ti" lo dice en palabras en vez de dejar que se suponga, y va sin filete:
+una línea que aparece una sola vez en toda la ficha no se lee como estructura, se lee como un corte.
+
+**La regla de la línea que no es caja.** El buscador es lo único de la guía dibujado con un filete
+inferior y no con un contorno. Un contorno dice "aquí hay un objeto" y un renglón dice "aquí se
+escribe". En reposo no tiene superficie ninguna, porque vive dentro de la franja de arriba y una
+caja dentro de una caja no agrupa nada; la superficie aparece al enfocar, que es cuando el campo
+deja de ser un sitio donde se puede escribir y pasa a ser el sitio donde se está escribiendo.
+
+**La regla de la barra heredada.** La barra de desplazamiento se declara una sola vez, en
+`global.css`, y la hereda todo lo que se desplace. Van los dos juegos de propiedades y el reparto
+importa: `::-webkit-scrollbar` controla Chromium y WebKit, flechas incluidas, y `scrollbar-width`
+queda detrás de `@supports not selector(::-webkit-scrollbar)` para quien no entiende el otro. Al
+revés no funciona: en cuanto `scrollbar-width` se declara, Chromium pasa a su barra moderna, ignora
+las reglas de arriba y en Windows devuelve las dos flechas de los extremos.
+
 **La regla de la forma por el dato.** Dentro de una misma silueta, un control enseña lo que decide.
 Un binario de efecto inmediato lleva vía y perilla. Un desplegable de once nombres enseña el nombre
 elegido y el color de esa zona. Información es texto. Lo que no vale es que cuatro funciones
@@ -248,11 +269,26 @@ debajo de su sitio (`data-abajo`), la gota invierte su esquina sin redondear par
 hacia arriba. Una gota que cuelga apuntando hacia abajo señala el lado contrario del local que
 marca, que es exactamente lo que esta regla prohíbe.
 
+Y la gota manda sobre la línea. Todos los tallos viven en una banda de apilamiento por debajo de
+todas las gotas (`CAPA_TALLOS` y `CAPA_ETIQUETAS`), porque una línea cruzando la gota de otra plaza
+tapa justo el objeto que señala. Por eso cada plaza tiene **dos** marcadores de MapLibre, uno para
+el tallo y otro para la etiqueta: MapLibre coloca cada marcador con un `transform`, que crea
+contexto de apilamiento, así que dos piezas del mismo marcador no se pueden ordenar por separado. El
+tallo que queda dentro del marcador de la etiqueta no desaparece, se queda de separador, porque es
+su alto el que sube la etiqueta sobre el punto y así el alto no se calcula en dos sitios.
+
 La misma regla manda en el apilado: los marcadores se ordenan entre sí por cercanía con números que
 llegan a ~11 000, y esa escala solo tiene sentido dentro de su capa. El contenedor del lienzo es un
 contexto de apilamiento propio (`MapView.module.css`) para que esos números no compitan con los de
 la interfaz, donde los controles del mapa valen 10 (`--z-map-ui`). Sin eso una gota tapaba el botón
 de acercar y se quedaba con su clic.
+
+**La regla de la leyenda.** El índice de zonas usa las piezas del mapa, no las suyas. Cada renglón
+lo encabeza la misma gota con su cifra que marca esa zona arriba, en miniatura, y no un adorno de
+color: así el índice deja de ser una lista aparte y pasa a ser la leyenda de lo que estás viendo.
+Lo que acompaña al nombre son las categorías que más abundan **en esa zona**, en palabras y
+ordenadas por conteo. En el orden del catálogo las once líneas empiezan igual y la línea ocupa el
+ancho sin distinguir nada, que era el defecto de la fila de iconos que vino a sustituir.
 
 **La regla de la caja que pinta.** Girar un elemento no mueve su centro, pero sí cambia lo que ocupa.
 Un cuadrado girado 45 grados pinta su diagonal, no su lado: 13 px pasan a 18,4 y 30 a 41. Hay que

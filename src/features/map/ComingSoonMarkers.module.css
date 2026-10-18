@@ -68,6 +68,11 @@
   display: none;
 }
 
+/* El de dentro del marcador de la gota solo ocupa sitio: el que se ve vive en la capa de tallos. */
+.stem[data-fantasma="true"] {
+  background: none;
+}
+
 /* El tallo, punteado como todo lo demás, para que la gota no flote sobre su obra. */
 .stem {
   width: 2px;

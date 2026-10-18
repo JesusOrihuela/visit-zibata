@@ -1,7 +1,6 @@
 /** Vista de exploración: resumen de Zibatá y plazas ordenadas por número de lugares. */
 import { ChevronRight, Construction, X } from 'lucide-react'
 import type { CSSProperties } from 'react'
-import { CategoryIcon } from '../../components/icons/CategoryIcon.tsx'
 import { DEFAULT_PLAZA_TONE, plazaTones } from '../../config/palette.ts'
 import { useCatalog } from '../../data/CatalogContext.tsx'
 import { localized, t } from '../../i18n/index.ts'
@@ -22,6 +21,33 @@ export function ExplorePanel({
   onExpand,
 }: ExplorePanelProps) {
   const catalog = useCatalog()
+  /**
+   * Lo que hay en una zona, en palabras y por lo que de verdad abunda.
+   *
+   * El orden lo decide el conteo de locales de cada categoría dentro de esa zona, no el del
+   * catálogo. Con el orden del catálogo las once líneas empezaban por "Desayunos y Café, Tacos y
+   * Antojitos" y se leían todas iguales: la línea ocupaba el ancho sin distinguir una zona de otra,
+   * que era exactamente el defecto de la fila de iconos que vino a sustituir.
+   *
+   * Dos nombres y no tres: los de este catálogo son largos ("Panadería y Repostería"), y con tres
+   * la línea se cortaba a media palabra en cualquier teléfono. El resto se cuenta.
+   */
+  const queHay = (plazaId: string) => {
+    const porCategoria = new Map<string, number>()
+    for (const place of catalog.placesByPlaza.get(plazaId) ?? []) {
+      // Solo el giro principal: contar todos infla las zonas con locales de carta ancha.
+      const categoria = catalog.categoryOfGiro.get(place.giros[0] ?? '')
+      if (categoria) porCategoria.set(categoria.id, (porCategoria.get(categoria.id) ?? 0) + 1)
+    }
+    const nombres = [...porCategoria.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([id]) => catalog.categoryById.get(id))
+      .filter((categoria) => categoria !== undefined)
+      .map((categoria) => localized(categoria.label))
+    const restantes = nombres.length - 2
+    const primeros = nombres.slice(0, 2).join(', ')
+    return restantes > 0 ? t('explore.andMore', { list: primeros, count: restantes }) : primeros
+  }
   const tones = plazaTones(catalog.plazas.filter((plaza) => plaza.active).map((plaza) => plaza.id))
   const comingSoon = catalog.plazas.filter((plaza) => plaza.comingSoon === true)
   const plazas = catalog.plazas
@@ -98,30 +124,33 @@ export function ExplorePanel({
                   })
                   .join(', ')}`}
               >
-                {/* El color identifica la plaza (el mismo del mapa); la cifra va como texto: una
-                    insignia numerada se leía como un puesto en un ranking. */}
+                {/*
+                 * La misma gota que marca esta zona en el mapa, en miniatura y con su cifra dentro.
+                 * Antes era un rombo de color: una forma que no existe en ningún otro sitio de la
+                 * guía y que solo llevaba el tono. Con la gota, el índice deja de ser una lista
+                 * aparte y pasa a ser la leyenda de lo que estás viendo arriba.
+                 */}
                 <span
-                  className={styles.plazaDot}
+                  className={styles.plazaGota}
                   style={
                     {
                       '--plaza-accent': (tones.get(plaza.id) ?? DEFAULT_PLAZA_TONE).accent,
                     } as CSSProperties
                   }
                   aria-hidden="true"
-                />
+                >
+                  <span>{count}</span>
+                </span>
                 <span className={styles.plazaInfo}>
                   <span className={styles.plazaName}>{plaza.name}</span>
+                  {/*
+                   * Lo que hay, en palabras. Antes era una fila de hasta seis iconos de 15 px que
+                   * ocupaban el sitio de la respuesta sin darla: a ese tamaño no se distinguen, y
+                   * "25 lugares" nunca fue lo que querías saber, querías saber si hay dónde
+                   * desayunar. Ocupa lo mismo y se lee.
+                   */}
                   <span className={styles.plazaMeta} aria-hidden="true">
-                    <span className={styles.plazaCount}>{t('places.count', { count })}</span>
-                    <span className={styles.plazaIcons}>
-                      {plaza.categories.slice(0, 6).map((id) => (
-                        <CategoryIcon
-                          key={id}
-                          name={catalog.categoryById.get(id)?.icon ?? ''}
-                          size={15}
-                        />
-                      ))}
-                    </span>
+                    {queHay(plaza.id)}
                   </span>
                 </span>
                 <ChevronRight className={styles.chevron} aria-hidden="true" />

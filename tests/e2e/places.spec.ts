@@ -205,13 +205,21 @@ test.describe('Plazas y lugares', () => {
       return {
         bloques: entre(ficha),
         cabecera: entre(document.querySelector('[class*="header_"]')),
+        personal: entre(document.querySelector('[class*="personal_"]')),
       }
     })
     expect(huecos.bloques.length).toBeGreaterThan(2)
-    expect(huecos.cabecera.length).toBeGreaterThan(1)
     expect(new Set(huecos.bloques).size, `bloques: ${huecos.bloques}`).toBe(1)
+    // La cabecera encoge cuando un lugar no tiene corazones que enseñar, así que puede quedarse en
+    // un solo hueco; lo que se vigila es que los que haya sean todos iguales.
+    expect(huecos.cabecera.length).toBeGreaterThan(0)
     expect(new Set(huecos.cabecera).size, `cabecera: ${huecos.cabecera}`).toBe(1)
+    // El bloque personal es el otro grupo con ritmo propio desde que las estrellas y la visita
+    // viven ahí en vez de en la cabecera.
+    expect(huecos.personal.length).toBeGreaterThan(0)
+    expect(new Set(huecos.personal).size, `personal: ${huecos.personal}`).toBe(1)
     // El paso de dentro es menor que el de fuera: son dos niveles, no uno con ruido.
     expect(huecos.cabecera[0]).toBeLessThan(huecos.bloques[0] as number)
+    expect(huecos.personal[0]).toBeLessThan(huecos.bloques[0] as number)
   })
 })

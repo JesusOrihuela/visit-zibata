@@ -112,6 +112,18 @@
     opacity var(--duration-base) var(--ease-out);
 }
 
+/* El que vive dentro del marcador de la etiqueta solo ocupa sitio: lo que se ve es su gemelo, que
+   está en la capa de los tallos para quedar siempre por debajo de cualquier gota. */
+.stem[data-fantasma="true"] {
+  background: none;
+}
+
+/* Sin etiqueta no hay nada que conectar. Antes lo decía el hermano (`.marker[data-mode="hidden"] +
+   .stem`), que ya no son hermanos desde que cada uno vive en su marcador. */
+.stem[data-mode="hidden"] {
+  opacity: 0;
+}
+
 /* Etiqueta elevada para no chocar con otra: el tallo se alarga 48 px por nivel (LIFT_STEP) y sigue
    señalando la plaza. */
 .stem[data-lift="1"] {

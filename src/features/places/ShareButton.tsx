@@ -14,6 +14,11 @@ interface ShareButtonProps {
   giros: string
   plazaName: string
   size?: 'sm' | 'md'
+  /**
+   * Con nombre a la vista, para la fila de salidas de la ficha. Sin esto es solo el icono, que es
+   * lo que quiere la barra de herramientas y lo que quiere una tarjeta.
+   */
+  conNombre?: boolean
 }
 
 /**
@@ -25,7 +30,14 @@ interface ShareButtonProps {
  * acuse donde estaba el dedo es donde se busca. Se anuncia con `role="status"`, que el lector de
  * pantalla lee sin robar el foco.
  */
-export function ShareButton({ name, slug, giros, plazaName, size = 'md' }: ShareButtonProps) {
+export function ShareButton({
+  name,
+  slug,
+  giros,
+  plazaName,
+  size = 'md',
+  conNombre = false,
+}: ShareButtonProps) {
   const [resultado, setResultado] = useState<ShareOutcome | null>(null)
   const temporizador = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -51,6 +63,7 @@ export function ShareButton({ name, slug, giros, plazaName, size = 'md' }: Share
         type="button"
         className={styles.button}
         data-size={size}
+        data-nombre={conNombre}
         data-done={copiado}
         aria-label={etiqueta}
         title={copiado ? t('share.copied') : t('share.action')}
@@ -64,6 +77,7 @@ export function ShareButton({ name, slug, giros, plazaName, size = 'md' }: Share
         }}
       >
         {copiado ? <Check aria-hidden="true" /> : <Share2 aria-hidden="true" />}
+        {conNombre && <span>{copiado ? t('share.copied') : t('share.action')}</span>}
       </button>
       <span role="status" className="visually-hidden">
         {resultado === 'copied' && t('share.copied')}

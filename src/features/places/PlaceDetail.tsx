@@ -259,12 +259,12 @@ export function PlaceDetail({ place, plaza, backLabel, onBack, onClose }: PlaceD
           <span>{backLabel}</span>
         </button>
         <div className={styles.toolbarActions}>
-          <ShareButton
-            name={place.name}
-            slug={place.slug}
-            giros={giroLabels.join(' · ')}
-            plazaName={plaza.name}
-          />
+          {/*
+           * Compartir ya no vive aquí: se fue a la fila de salidas, junto a "Cómo llegar". Las dos
+           * entregan el lugar a algo que no es esta guía, y separadas una arriba y otra abajo no se
+           * leían como la misma clase de cosa. El favorito se queda: es de un toque y está también
+           * en la tarjeta, así que su sitio es el mismo en los dos lados.
+           */}
           <FavoriteButton placeId={place.id} placeName={place.name} />
           <button
             type="button"
@@ -313,8 +313,6 @@ export function PlaceDetail({ place, plaza, backLabel, onBack, onClose }: PlaceD
           </div>
         </div>
         <SocialStats placeId={place.id} />
-        <RatingStars placeId={place.id} placeName={place.name} />
-        <VisitButton placeId={place.id} placeName={place.name} />
         <p className={styles.location}>
           <MapPin aria-hidden="true" />
           <span>
@@ -330,26 +328,60 @@ export function PlaceDetail({ place, plaza, backLabel, onBack, onClose }: PlaceD
        */}
       {place.cierre && <AvisoDeCierre cierre={place.cierre} />}
 
-      <a
-        className={styles.directions}
-        href={directions.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-describedby="directions-hint"
-        aria-label={
-          directions.toPlace
-            ? t('place.directionsToPlace', { name: place.name })
-            : t('place.directionsToPlaza', { plaza: plaza.name })
-        }
-      >
-        <Navigation aria-hidden="true" />
-        {/* Corto a la vista, completo para quien lo escucha: el nombre largo partía el botón en dos. */}
-        {directions.toPlace ? t('place.directions') : t('plaza.directions')}
-        <ArrowUpRight aria-hidden="true" className={styles.external} />
-      </a>
-      <span id="directions-hint" className="visually-hidden">
-        {t('place.directionsHint')}
-      </span>
+      {/*
+       * Las dos salidas, juntas: las dos entregan el lugar a algo que no es esta guía. Comparten
+       * alto y esquina porque hacen lo mismo; lo que las separa es el relleno, que dice cuál es la
+       * principal. "Cómo llegar" lleva la flecha de enlace externo y "Compartir" no: la primera
+       * abre una página y la segunda la hoja del sistema, y una flecha que promete una página
+       * donde no la hay miente.
+       */}
+      <div className={styles.salidas}>
+        <a
+          className={styles.directions}
+          href={directions.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-describedby="directions-hint"
+          aria-label={
+            directions.toPlace
+              ? t('place.directionsToPlace', { name: place.name })
+              : t('place.directionsToPlaza', { plaza: plaza.name })
+          }
+        >
+          <Navigation aria-hidden="true" />
+          {/*
+           * Siempre "Cómo llegar", también cuando el destino es la zona porque el local no publicó
+           * su punto. "Cómo llegar a la zona" no cabe en un renglón y partía el botón en dos, que
+           * al lado de "Compartir" se lee como un error. Lo que se quita de la vista no se pierde:
+           * el destino completo sigue en la etiqueta accesible, de donde nunca se fue.
+           */}
+          {t('place.directions')}
+          <ArrowUpRight aria-hidden="true" className={styles.external} />
+        </a>
+        <span id="directions-hint" className="visually-hidden">
+          {t('place.directionsHint')}
+        </span>
+        <ShareButton
+          name={place.name}
+          slug={place.slug}
+          giros={giroLabels.join(' · ')}
+          plazaName={plaza.name}
+          conNombre
+        />
+      </div>
+
+      {/*
+       * Y lo que no sale de aquí. Calificar y registrar una visita solo cambian tu relación con el
+       * lugar: ninguna de las dos se publica, ni siquiera como media. El rótulo lo dice en vez de
+       * dejar que se suponga, que es el trabajo que hasta ahora no hacía nadie en esta pantalla.
+       */}
+      <section className={styles.personal} aria-labelledby="place-personal-title">
+        <p id="place-personal-title" className={styles.personalTitle}>
+          {t('place.onlyYou')}
+        </p>
+        <RatingStars placeId={place.id} placeName={place.name} />
+        <VisitButton placeId={place.id} placeName={place.name} sinSuperficie />
+      </section>
 
       {place.description && <Description text={place.description} />}
 

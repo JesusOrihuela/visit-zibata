@@ -12,7 +12,19 @@ import { t } from '../../i18n/index.ts'
 import { formatVisitDate, useVisits } from './useVisits.ts'
 import styles from './VisitButton.module.css'
 
-export function VisitButton({ placeId, placeName }: { placeId: string; placeName: string }) {
+export function VisitButton({
+  placeId,
+  placeName,
+  sinSuperficie = false,
+}: {
+  placeId: string
+  placeName: string
+  /**
+   * Sin caja, para el bloque personal de la ficha. Ahí lo que separa este control de "Cómo llegar"
+   * no es su esquina sino que no tiene superficie: una no sale de la guía y la otra sí.
+   */
+  sinSuperficie?: boolean
+}) {
   const { toggleToday, datesOf, visitedToday } = useVisits()
   const dates = datesOf(placeId)
   const count = dates.length
@@ -28,7 +40,7 @@ export function VisitButton({ placeId, placeName }: { placeId: string; placeName
   const label = marked ? t('visit.undo', { name: placeName }) : t('visit.mark', { name: placeName })
 
   return (
-    <div className={styles.visit}>
+    <div className={styles.visit} data-plano={sinSuperficie}>
       <button
         type="button"
         className={styles.button}

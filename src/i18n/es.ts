@@ -27,6 +27,7 @@ export const es = {
   'explore.title': 'Explora Zibatá',
   'explore.summary': '{plazas} con {places} en el mapa',
   'explore.hint': 'Toca una zona en el mapa o elige una de la lista.',
+  'explore.andMore': '{list} y {count} más',
   'explore.list': 'Zonas',
   'explore.openList': 'Explora Zibatá',
 
@@ -50,6 +51,7 @@ export const es = {
   'place.directionsToPlaza': 'Cómo llegar a {plaza}',
   'place.directionsToPlace': 'Cómo llegar a {name}',
   'place.directions': 'Cómo llegar',
+  'place.onlyYou': 'Solo para ti',
   'place.directionsHint': 'Abre Google Maps en una pestaña nueva',
   'place.machineTranslation': 'Traducción automática',
   'place.showOriginal': 'Ver original en español',
@@ -118,10 +120,6 @@ export const es = {
   'favorites.add': 'Guardar en favoritos',
   'favorites.remove': 'Quitar de favoritos',
   'favorites.filter': 'Favoritos',
-  'places.groupOpen': 'Abiertos ahora',
-  'places.groupClosed': 'Cerrados ahora',
-  'places.groupTemporary': 'Cerrados temporalmente',
-  'places.groupUnknown': 'Sin horario publicado',
   'filters.openNow': 'Abierto ahora',
   // Nombre del grupo de interruptores para quien lo escucha; a la vista no lleva título.
   'filters.switches': 'Filtros rápidos',

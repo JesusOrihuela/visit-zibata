@@ -15,6 +15,50 @@ html {
   text-size-adjust: 100%;
 }
 
+/*
+ * La barra de desplazamiento, una sola para toda la guía.
+ *
+ * Estaba puesta superficie por superficie y se notaba: el panel de escritorio llevaba la suya fina
+ * y en arena, y la hoja del teléfono y los diálogos se quedaban con la del sistema. Dos barras
+ * distintas en la misma pantalla delatan que nadie decidió ninguna.
+ *
+ * Van los dos juegos de propiedades, y el reparto importa. Chromium y WebKit entienden
+ * `::-webkit-scrollbar` y con él se controla todo, flechas incluidas. `scrollbar-width` es lo
+ * estándar, pero en cuanto se declara Chromium pasa a su barra moderna e ignora las reglas de
+ * arriba: en Windows eso devuelve las dos flechas de los extremos, que a 8 px salen recortadas. Por
+ * eso lo estándar queda reservado a quien no entiende lo otro, que en la práctica es Firefox.
+ *
+ * Quien quiera otra cosa la declara y gana por cercanía, como hace el carril de categorías, que
+ * esconde la suya del todo con los dos juegos a la vez.
+ */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: var(--radius-pill);
+  background: var(--sand-300);
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Nadie pulsa las flechas de los extremos, y el pulgar ya dice todo lo que hay que saber. */
+::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: var(--sand-300) transparent;
+  }
+}
+
 body {
   margin: 0;
   overflow: hidden;

@@ -265,16 +265,22 @@
   gap: var(--space-2);
 }
 
+/*
+ * Sin tarjeta. Eran once cajas iguales, una debajo de otra, en un panel que ya vive dentro de otra
+ * caja y debajo de una fila de filtros con superficie: la tarjeta no agrupaba nada que el renglón
+ * no agrupara solo. Lo que queda es la gota, el nombre y lo que hay, que es toda la información
+ * que la tarjeta envolvía. El fondo aparece al pasar por encima, que es cuando hace falta saber
+ * cuál se va a pulsar.
+ */
 .plazaCard {
   display: flex;
   align-items: center;
   gap: var(--space-3);
   width: 100%;
-  padding: var(--space-3);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-1);
   border: 0;
-  border-radius: var(--radius-md);
-  background: var(--color-surface-muted);
-  box-shadow: inset 0 0 0 1px var(--color-border);
+  border-radius: var(--radius-sm);
+  background: transparent;
   text-align: left;
   transition:
     background-color var(--duration-fast) var(--ease-out),
@@ -289,26 +295,49 @@
   transform: scale(0.99);
 }
 
-.plazaDot {
+/*
+ * La gota del mapa, en miniatura y con su cifra dentro.
+ *
+ * Es la misma construcción que en `PlazaMarkers`: esquina sin redondear abajo a la izquierda y giro
+ * de -45 grados, que deja la punta mirando hacia abajo. La cifra se desgira para quedar derecha.
+ * A este tamaño la punta cae fuera del cuadro que mide el elemento, así que el renglón reserva su
+ * sitio con el ancho de la columna y no con el de la pieza (la regla de la caja que pinta).
+ */
+.plazaGota {
   flex-shrink: 0;
-  width: 0.6rem;
-  height: 0.6rem;
-  border-radius: 2px;
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50% 50% 50% 0;
+  rotate: -45deg;
   background: var(--plaza-accent, var(--lime-500));
-  transform: rotate(45deg);
 }
 
+.plazaGota span {
+  rotate: 45deg;
+  display: grid;
+  place-items: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 50%;
+  background: var(--sand-25);
+  color: var(--plaza-accent, var(--olive-700));
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Lo que hay, en un renglón y sin envolver: si no cabe se recorta, que es mejor que un segundo
+   renglón que descuadra el ritmo de la lista entera. */
 .plazaMeta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.35rem 0.6rem;
-}
-
-.plazaCount {
+  display: block;
+  overflow: hidden;
   color: var(--color-text-muted);
   font-size: var(--text-sm);
-  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .plazaInfo {
@@ -322,13 +351,6 @@
 .plazaName {
   font-weight: 600;
   color: var(--ink-900);
-}
-
-.plazaIcons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  color: var(--olive-600);
 }
 
 .chevron {

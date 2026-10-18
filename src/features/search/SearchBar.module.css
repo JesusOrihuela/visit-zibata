@@ -21,14 +21,25 @@
   pointer-events: none;
 }
 
+/*
+ * En reposo, cero superficie; al escribir, la caja se gana.
+ *
+ * El buscador vivía dentro de la franja blanca de arriba con su propia pastilla y su propio filete:
+ * una caja dentro de una caja, en la pantalla que más cajas tiene de la guía. Lo que queda en
+ * reposo es la lupa, el texto y un renglón debajo, como un campo de papel. Es la única pieza de la
+ * guía que es una línea y no un contorno, así que no se parece a nada más de la pantalla.
+ *
+ * El filete va abajo y no alrededor a propósito: un contorno dice "aquí hay un objeto" y un renglón
+ * dice "aquí se escribe", que es lo que hace falta saber.
+ */
 .input {
   width: 100%;
   height: 2.75rem;
   padding: 0 0.9rem 0 2.5rem;
   border: 0;
-  border-radius: var(--radius-pill);
-  background: var(--color-surface-muted);
-  box-shadow: inset 0 0 0 1px var(--color-border);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  background: transparent;
+  box-shadow: inset 0 -1.5px 0 var(--sand-400);
   font-size: 1rem;
   text-overflow: ellipsis;
   transition:
@@ -51,14 +62,16 @@
 }
 
 .input:hover {
-  box-shadow: inset 0 0 0 1px var(--color-border-strong);
+  box-shadow: inset 0 -1.5px 0 var(--ink-600);
 }
 
+/* Enfocado sí hay superficie: es cuando el campo deja de ser un sitio donde se puede escribir y
+   pasa a ser el sitio donde se está escribiendo. */
 .input:focus {
   outline: none;
   background: var(--sand-25);
   box-shadow:
-    inset 0 0 0 1.5px var(--olive-600),
+    inset 0 -2px 0 var(--olive-600),
     0 0 0 4px rgb(140 186 55 / 0.25);
 }
 

@@ -11,6 +11,7 @@ import { createPortal } from 'react-dom'
 import { t } from '../../i18n/index.ts'
 import type { Plaza } from '../../types/domain.ts'
 import styles from './ComingSoonMarkers.module.css'
+import { CAPA_ETIQUETAS, CAPA_TALLOS } from './PlazaMarkers.tsx'
 
 /**
  * Por debajo de este zoom solo se ve la insignia redonda: con la vista general, dos obras vecinas se
@@ -22,6 +23,7 @@ const NAME_MIN_ZOOM = 15.4
 export function ComingSoonMarkers({ map, plazas }: { map: MapLibreMap; plazas: readonly Plaza[] }) {
   const soon = useMemo(() => plazas.filter((plaza) => plaza.comingSoon === true), [plazas])
   const [elements, setElements] = useState<Map<string, HTMLElement>>(new Map())
+  const [stemElements, setStemElements] = useState<Map<string, HTMLElement>>(new Map())
   const [showNames, setShowNames] = useState(() => map.getZoom() >= NAME_MIN_ZOOM)
 
   useEffect(() => {
@@ -34,15 +36,26 @@ export function ComingSoonMarkers({ map, plazas }: { map: MapLibreMap; plazas: r
 
   useEffect(() => {
     const created = new Map<string, HTMLElement>()
-    const markers = soon.map((plaza) => {
+    const createdStems = new Map<string, HTMLElement>()
+    const markers = soon.flatMap((plaza) => {
       const element = document.createElement('div')
       element.className = styles.anchor ?? ''
+      // Las dos bandas de PlazaMarkers: el tallo por debajo de cualquier gota, la gota por encima
+      // de cualquier tallo. Sin reparto por cercanía, que estas no se mueven ni se seleccionan.
+      element.style.zIndex = String(CAPA_ETIQUETAS)
       created.set(plaza.id, element)
-      return new Marker({ element, anchor: 'bottom' })
-        .setLngLat([plaza.coordinates.lng, plaza.coordinates.lat])
-        .addTo(map)
+      const stem = document.createElement('div')
+      stem.className = styles.anchor ?? ''
+      stem.style.zIndex = String(CAPA_TALLOS)
+      createdStems.set(plaza.id, stem)
+      const punto: [number, number] = [plaza.coordinates.lng, plaza.coordinates.lat]
+      return [
+        new Marker({ element: stem, anchor: 'bottom' }).setLngLat(punto).addTo(map),
+        new Marker({ element, anchor: 'bottom' }).setLngLat(punto).addTo(map),
+      ]
     })
     setElements(created)
+    setStemElements(createdStems)
     return () => {
       for (const marker of markers) marker.remove()
     }
@@ -53,7 +66,7 @@ export function ComingSoonMarkers({ map, plazas }: { map: MapLibreMap; plazas: r
       {soon.map((plaza) => {
         const element = elements.get(plaza.id)
         if (!element) return null
-        return createPortal(
+        const etiqueta = createPortal(
           <>
             {/* Igual que una plaza abierta: la gota primero y el nombre a su lado, no al revés. */}
             <p className={styles.label} data-compact={!showNames}>
@@ -65,11 +78,23 @@ export function ComingSoonMarkers({ map, plazas }: { map: MapLibreMap; plazas: r
               </span>
               <span className={showNames ? styles.name : 'visually-hidden'}>{plaza.name}</span>
             </p>
-            <span className={styles.stem} aria-hidden="true" />
+            {/* Separador: lo que sube la gota sobre el punto. El que se ve va en su propio marcador. */}
+            <span className={styles.stem} data-fantasma="true" aria-hidden="true" />
           </>,
           element,
           plaza.id,
         )
+        const tallo = stemElements.get(plaza.id)
+        return tallo
+          ? [
+              etiqueta,
+              createPortal(
+                <span className={styles.stem} aria-hidden="true" />,
+                tallo,
+                `${plaza.id}-tallo`,
+              ),
+            ]
+          : etiqueta
       })}
     </>
   )
