@@ -122,3 +122,84 @@
   line-height: inherit;
   text-decoration: none;
 }
+
+/*
+ * El campo de fecha vive debajo del botón y transparente, no oculto: en los navegadores sin
+ * `showPicker` es el que recibe el clic y abre el calendario del sistema. Oculto del todo
+ * (`display: none`) no recibiría nada y el control no abriría nada en ellos.
+ */
+.control {
+  position: relative;
+  display: inline-flex;
+}
+
+.calendario {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  padding: 0;
+  background: none;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* El acceso a la lista, dentro de la frase: no es otro control, es una palabra que se pulsa. */
+.verTodas {
+  border: 0;
+  padding: 0;
+  background: none;
+  font: inherit;
+  color: var(--olive-700);
+  text-decoration: underline;
+  text-decoration-color: var(--sand-400);
+  text-underline-offset: 0.2em;
+}
+
+.verTodas:hover {
+  color: var(--olive-600);
+}
+
+/* El historial: una fecha por renglón y su aspa, que es lo que lo convierte en una herramienta. */
+.lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lista li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.1rem 0.15rem 0.1rem 0.5rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-muted);
+  font-size: var(--text-2xs);
+  color: var(--ink-700);
+  font-variant-numeric: tabular-nums;
+}
+
+.lista button {
+  display: grid;
+  place-items: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--ink-500);
+}
+
+.lista button:hover {
+  background: var(--sand-200);
+  color: var(--ink-900);
+}
+
+.lista svg {
+  width: 0.8rem;
+  height: 0.8rem;
+}

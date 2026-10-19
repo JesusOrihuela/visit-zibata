@@ -2,14 +2,18 @@
  * Registrar una visita a un lugar. Es la señal más honesta que puede dar la guía sin cuentas ni
  * servidores, porque la pone la persona a propósito: abrir una ficha no es haber ido.
  *
- * Una sola pieza: la cuenta va dentro del botón, como la cifra de las pastillas de categoría, para
- * que se lea como parte de la misma acción y no como un dato suelto al lado. A la derecha, en letra
- * pequeña, la fecha de la última visita, el aviso de que hoy todavía se puede deshacer, o la
- * invitación a registrar la primera.
+ * Un solo control y un solo gesto, lo registres hoy o lo registres tarde. El botón abre el
+ * calendario del sistema con hoy puesto; eliges el día y queda guardado. Antes solo se podía
+ * marcar el día en curso, así que quien llegaba tarde a casa y se acordaba a la mañana siguiente
+ * ya no podía registrarlo: el dato se perdía por un detalle de implementación, no por una decisión.
+ *
+ * El calendario es `<input type="date">` y no uno dibujado aquí: lo pone el sistema operativo, con
+ * su teclado, su accesibilidad y su idea del año, que es justo lo que no conviene reinventar.
  */
-import { CalendarCheck, CalendarPlus } from 'lucide-react'
+import { CalendarPlus, X } from 'lucide-react'
+import { useId, useRef, useState } from 'react'
 import { t } from '../../i18n/index.ts'
-import { formatVisitDate, useVisits } from './useVisits.ts'
+import { formatVisitDate, formatVisitDateLong, today, useVisits } from './useVisits.ts'
 import styles from './VisitButton.module.css'
 
 export function VisitButton({
@@ -25,41 +29,94 @@ export function VisitButton({
    */
   sinSuperficie?: boolean
 }) {
-  const { toggleToday, datesOf, visitedToday } = useVisits()
-  const dates = datesOf(placeId)
-  const count = dates.length
-  const marked = visitedToday(placeId)
-  const last = dates.at(-1)
+  const { registrar, quitar, datesOf } = useVisits()
+  const fechas = datesOf(placeId)
+  const ultima = fechas.at(-1)
+  const [abierto, setAbierto] = useState(false)
+  const calendario = useRef<HTMLInputElement>(null)
+  const listaId = useId()
 
-  const hint = marked
-    ? t('visit.undoHint')
-    : count === 0
-      ? t('visit.first')
-      : t('visit.last', { date: formatVisitDate(last ?? '') })
-
-  const label = marked ? t('visit.undo', { name: placeName }) : t('visit.mark', { name: placeName })
+  /*
+   * `showPicker` abre el calendario del sistema sin que el campo tenga que verse. Donde no exista
+   * (navegadores anteriores a 2022), el campo sigue ahí debajo del botón y recibe el clic, así que
+   * el calendario se abre igual: la pieza funciona sin este atajo, solo con un toque más.
+   */
+  const abrirCalendario = () => {
+    const campo = calendario.current
+    if (!campo) return
+    try {
+      campo.showPicker()
+    } catch {
+      campo.focus()
+    }
+  }
 
   return (
     <div className={styles.visit} data-plano={sinSuperficie}>
-      <button
-        type="button"
-        className={styles.button}
-        data-marked={marked}
-        aria-pressed={marked}
-        onClick={() => toggleToday(placeId)}
-        aria-label={label}
-        title={label}
-      >
-        {marked ? <CalendarCheck aria-hidden="true" /> : <CalendarPlus aria-hidden="true" />}
-        <span>{marked ? t('visit.registered') : t('visit.action')}</span>
-        {count > 0 && (
-          <span className={styles.count}>
-            <span aria-hidden="true">{count}</span>
-            <span className="visually-hidden">{t('visit.count', { count })}</span>
-          </span>
-        )}
-      </button>
-      <p className={styles.hint}>{hint}</p>
+      <span className={styles.control}>
+        <button
+          type="button"
+          className={styles.button}
+          onClick={abrirCalendario}
+          aria-label={t('visit.mark', { name: placeName })}
+        >
+          <CalendarPlus aria-hidden="true" />
+          <span>{t('visit.action')}</span>
+        </button>
+        {/*
+         * Debajo del botón y transparente, no oculto: oculto no recibiría el clic en los
+         * navegadores sin `showPicker`, y entonces el control no abriría nada en ellos.
+         */}
+        <input
+          ref={calendario}
+          type="date"
+          className={styles.calendario}
+          max={today()}
+          aria-label={t('visit.pickDay')}
+          onChange={(event) => {
+            if (event.target.value) registrar(placeId, event.target.value)
+            event.target.value = ''
+          }}
+        />
+      </span>
+
+      {fechas.length > 0 && (
+        <p className={styles.hint}>
+          <span>
+            {t('visit.been', { count: fechas.length })}
+            {ultima && t('visit.lastOne', { date: formatVisitDateLong(ultima) })}
+          </span>{' '}
+          <button
+            type="button"
+            className={styles.verTodas}
+            aria-expanded={abierto}
+            aria-controls={listaId}
+            onClick={() => setAbierto((previo) => !previo)}
+          >
+            {abierto ? t('visit.hideAll') : t('visit.seeAll')}
+          </button>
+        </p>
+      )}
+
+      {fechas.length === 0 && <p className={styles.hint}>{t('visit.first')}</p>}
+
+      {abierto && fechas.length > 0 && (
+        <ul id={listaId} className={styles.lista}>
+          {/* De la más reciente a la más antigua: lo último que hiciste es lo que buscas. */}
+          {[...fechas].reverse().map((fecha) => (
+            <li key={fecha}>
+              <span>{formatVisitDate(fecha)}</span>
+              <button
+                type="button"
+                onClick={() => quitar(placeId, fecha)}
+                aria-label={t('visit.remove', { date: formatVisitDate(fecha) })}
+              >
+                <X aria-hidden="true" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   )
 }

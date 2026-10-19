@@ -59,6 +59,13 @@ const coveredBySheet = (page: Page) =>
 const activePlazaCount = async (page: Page) =>
   (await page.getByRole('combobox', { name: 'Filtrar por zona' }).locator('option').count()) - 1
 
+/** Los grados de giro de un elemento, leídos de su matriz de transformación. */
+const anguloDe = async (locator: import('@playwright/test').Locator): Promise<number> =>
+  locator.evaluate((element) => {
+    const matriz = new DOMMatrix(getComputedStyle(element).transform)
+    return (Math.atan2(matriz.b, matriz.a) * 180) / Math.PI
+  })
+
 test.describe('Mapa', () => {
   test('abre directamente en el mapa 3D con plazas y atribución', async ({ page }) => {
     await openApp(page)
@@ -118,7 +125,20 @@ test.describe('Mapa', () => {
     await expect(
       page.getByRole('button', { name: 'Cambiar entre vista 3D y vista cenital' }),
     ).toHaveCount(0)
-    await page.getByRole('button', { name: 'Orientar al norte' }).click()
+    /*
+     * La brújula gira arrastrando y endereza al soltarla sin mover, así que un clic limpio tiene
+     * que enderezar. Se comprueba por el giro del propio dibujo, que sigue al rumbo del mapa: la
+     * vista arranca a -10 grados y enderezada marca 0.
+     */
+    const brujula = page.getByRole('button', { name: /^Girar el mapa/ })
+    const dibujo = brujula.locator('svg')
+    await expect(dibujo).not.toHaveCSS('transform', 'none')
+    await brujula.click()
+    await expect
+      .poll(async () => Math.round(await anguloDe(dibujo)))
+      // El icono lleva 45 grados propios de dibujo, así que enderezado marca -45.
+      .toBe(-45)
+
     await page.getByRole('button', { name: 'Volver a la vista de Zibatá' }).click()
     await expect(page.getByRole('button', { name: /^Ver Xentric Anáhuac/ })).toBeVisible()
   })

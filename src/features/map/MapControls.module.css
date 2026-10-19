@@ -100,17 +100,17 @@
 }
 
 /*
- * Un control deshabilitado se apaga, no desaparece. La brújula se queda sin nada que hacer cuando
- * el mapa ya está enderezado, y quitarla de la columna movería los otros dos botones bajo el dedo
- * cada vez que giras el mapa, que es peor que un botón apagado.
+ * La brújula se arrastra para girar el mapa, así que el cursor lo anuncia antes de tocarla: es la
+ * única pista de que ahí hay un gesto y no solo un botón.
  */
-.button:disabled {
-  opacity: 0.4;
-  cursor: default;
+.button[data-girando] {
+  cursor: grab;
+  touch-action: none;
 }
 
-.button:disabled:hover {
-  background: transparent;
+.button[data-girando="true"] {
+  cursor: grabbing;
+  background: var(--color-surface-muted);
 }
 
 /* Punto de "mi ubicación": solo en memoria, nunca se guarda ni se envía. */
