@@ -71,7 +71,7 @@ describe('PlazaPanel', () => {
 
   it('abre la ficha de un lugar', async () => {
     const props = await setup()
-    await userEvent.click(screen.getByRole('button', { name: 'Ver detalles de Café Aurora' }))
+    await userEvent.click(screen.getByRole('link', { name: 'Ver detalles de Café Aurora' }))
     expect(props.onOpenPlace).toHaveBeenCalledWith(expect.objectContaining({ id: 'cafe-aurora' }))
   })
 

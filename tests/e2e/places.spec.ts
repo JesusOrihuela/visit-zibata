@@ -27,7 +27,7 @@ test.describe('Plazas y lugares', () => {
     const region = panel(page)
     await expect(region.getByRole('heading', { level: 2, name: 'Plaza Condesa' })).toBeVisible()
 
-    await region.getByRole('button', { name: 'Ver detalles de Bendito Bocado' }).click()
+    await region.getByRole('link', { name: 'Ver detalles de Bendito Bocado' }).click()
     await expect(region.getByRole('heading', { level: 2, name: 'Bendito Bocado' })).toBeVisible()
     await expect(page).toHaveURL(/\/lugar\/bendito-bocado$/)
     // Enlace oficial verificado en la investigación (research/business-audit.json).
@@ -151,7 +151,7 @@ test.describe('Plazas y lugares', () => {
     await region.getByRole('button', { name: 'Cerrar panel' }).click()
     await page.getByRole('button', { name: /Favoritos/ }).click()
     await expect(region.getByRole('heading', { name: 'Resultados' })).toBeVisible()
-    await expect(region.getByRole('button', { name: /^Ver detalles de/ })).toHaveCount(1)
+    await expect(region.getByRole('link', { name: /^Ver detalles de/ })).toHaveCount(1)
     await page.reload()
     await expect(page.getByRole('button', { name: /Favoritos/ })).toContainText('1')
   })

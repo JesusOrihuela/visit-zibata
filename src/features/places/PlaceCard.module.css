@@ -29,6 +29,10 @@
   border-radius: var(--radius-md);
   background: transparent;
   text-align: left;
+  /* Desde que es un enlace y no un botón: un enlace trae subrayado y color propios, y aquí lo que
+     manda es la tipografía de la tarjeta. */
+  color: inherit;
+  text-decoration: none;
 }
 
 .main:focus-visible {

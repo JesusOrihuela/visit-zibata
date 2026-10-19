@@ -87,10 +87,19 @@ test.describe('Información de la guía', () => {
 
   test('el idioma se cambia desde la barra y se recuerda', async ({ page }) => {
     await openApp(page)
-    await page.getByRole('button', { name: 'View the guide in English' }).click()
+    /*
+     * El idioma es navegación: cada opción es un enlace a la misma página en el otro árbol de
+     * direcciones. Se comprueba eso además del cambio, porque es lo que lo hace compartible y
+     * abrible en otra pestaña, que es lo que un botón no podía dar.
+     */
+    const aIngles = page.getByRole('link', { name: 'English View the guide in English' })
+    await expect(aIngles).toHaveAttribute('hreflang', 'en')
+    await expect(aIngles).toHaveAttribute('href', /\/en$/)
+    await aIngles.click()
+
     // El cambio alcanza a toda la interfaz, no solo a una hoja.
     await expect(page.getByRole('searchbox', { name: 'Search places' })).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Ver la guía en Español' })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Español Ver la guía en Español' })).toBeVisible()
     await page.reload()
     await expect(page.getByRole('searchbox', { name: 'Search places' })).toBeVisible()
   })

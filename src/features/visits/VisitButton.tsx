@@ -2,19 +2,31 @@
  * Registrar una visita a un lugar. Es la señal más honesta que puede dar la guía sin cuentas ni
  * servidores, porque la pone la persona a propósito: abrir una ficha no es haber ido.
  *
- * Un solo control y un solo gesto, lo registres hoy o lo registres tarde. El botón abre el
- * calendario del sistema con hoy puesto; eliges el día y queda guardado. Antes solo se podía
- * marcar el día en curso, así que quien llegaba tarde a casa y se acordaba a la mañana siguiente
- * ya no podía registrarlo: el dato se perdía por un detalle de implementación, no por una decisión.
+ * Un solo control y un solo gesto, lo registres hoy o lo registres tarde. El botón despliega el
+ * calendario y ahí se marca el día. Antes solo se podía marcar el día en curso, así que quien
+ * llegaba tarde a casa y se acordaba a la mañana siguiente ya no podía registrarlo: el dato se
+ * perdía por un detalle de implementación, no por una decisión.
  *
- * El calendario es `<input type="date">` y no uno dibujado aquí: lo pone el sistema operativo, con
- * su teclado, su accesibilidad y su idea del año, que es justo lo que no conviene reinventar.
+ * El calendario es propio (`VisitCalendar`) y no el del sistema, que es lo que había. El del
+ * sistema sale gratis y trae su accesibilidad puesta, pero no sabe nada de tus visitas: abría un
+ * mes en blanco donde no se veía si ya habías venido ese día. Y sale en el idioma del teléfono, no
+ * en el de la guía. Ver lo que ya marcaste es justo lo que esta función tiene que dar.
  */
 import { CalendarPlus, X } from 'lucide-react'
-import { useId, useRef, useState } from 'react'
+import { lazy, Suspense, useId, useState } from 'react'
 import { t } from '../../i18n/index.ts'
-import { formatVisitDate, formatVisitDateLong, today, useVisits } from './useVisits.ts'
+import { formatVisitDate, formatVisitDateLong, useVisits } from './useVisits.ts'
 import styles from './VisitButton.module.css'
+
+/*
+ * Diferido: un calendario que casi nadie abre no tiene por qué viajar en la primera carga. Son
+ * unos 2 KB que solo bajan cuando alguien pulsa, y el presupuesto del paquete inicial iba al
+ * límite (122 de 122 KB), así que esto no es una optimización opcional sino la condición para que
+ * la función quepa.
+ */
+const VisitCalendar = lazy(() =>
+  import('./VisitCalendar.tsx').then((module) => ({ default: module.VisitCalendar })),
+)
 
 export function VisitButton({
   placeId,
@@ -33,62 +45,35 @@ export function VisitButton({
   const fechas = datesOf(placeId)
   const ultima = fechas.at(-1)
   const [abierto, setAbierto] = useState(false)
-  const [mostrarCampo, setMostrarCampo] = useState(false)
-  const calendario = useRef<HTMLInputElement>(null)
+  const [calendarioAbierto, setCalendarioAbierto] = useState(false)
   const listaId = useId()
-
-  /*
-   * `showPicker` abre el calendario del sistema sin que el campo tenga que verse.
-   *
-   * El campo va detrás y sin recibir punteros. Estuvo delante y transparente, pensando que así
-   * recibiría el clic en los navegadores sin `showPicker`, y el resultado fue que se lo comía
-   * siempre: el clic no llegaba al botón, y pulsar el texto de un campo de fecha no abre ningún
-   * calendario en Chrome. El botón no hacía nada.
-   *
-   * Donde `showPicker` no exista, el campo se enseña y se usa tal cual, que es feo pero funciona.
-   * Vale más una pieza que se ve rara en un navegador viejo que una que no responde en el actual.
-   */
-  const abrirCalendario = () => {
-    const campo = calendario.current
-    if (!campo) return
-    if (typeof campo.showPicker !== 'function') {
-      setMostrarCampo(true)
-      return
-    }
-    try {
-      campo.showPicker()
-    } catch {
-      setMostrarCampo(true)
-    }
-  }
 
   return (
     <div className={styles.visit} data-plano={sinSuperficie}>
-      <span className={styles.control} data-campo={mostrarCampo}>
-        {!mostrarCampo && (
-          <button
-            type="button"
-            className={styles.button}
-            onClick={abrirCalendario}
-            aria-label={t('visit.mark', { name: placeName })}
-          >
-            <CalendarPlus aria-hidden="true" />
-            <span>{t('visit.action')}</span>
-          </button>
-        )}
-        <input
-          ref={calendario}
-          type="date"
-          className={styles.calendario}
-          max={today()}
-          aria-label={t('visit.pickDay')}
-          onChange={(event) => {
-            if (event.target.value) registrar(placeId, event.target.value)
-            event.target.value = ''
-            setMostrarCampo(false)
-          }}
-        />
+      <span className={styles.control}>
+        <button
+          type="button"
+          className={styles.button}
+          aria-expanded={calendarioAbierto}
+          onClick={() => setCalendarioAbierto((previo) => !previo)}
+          aria-label={t('visit.mark', { name: placeName })}
+        >
+          <CalendarPlus aria-hidden="true" />
+          <span>{t('visit.action')}</span>
+        </button>
       </span>
+
+      {calendarioAbierto && (
+        <Suspense fallback={null}>
+          <VisitCalendar
+            fechas={fechas}
+            onToggle={(fecha: string) =>
+              fechas.includes(fecha) ? quitar(placeId, fecha) : registrar(placeId, fecha)
+            }
+            onClose={() => setCalendarioAbierto(false)}
+          />
+        </Suspense>
+      )}
 
       {fechas.length > 0 && (
         <p className={styles.hint}>

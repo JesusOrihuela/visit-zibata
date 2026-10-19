@@ -77,7 +77,18 @@ export function ShareButton({
         }}
       >
         {copiado ? <Check aria-hidden="true" /> : <Share2 aria-hidden="true" />}
-        {conNombre && <span>{copiado ? t('share.copied') : t('share.action')}</span>}
+        {conNombre && (
+          /*
+           * Las dos palabras ocupan la misma celda, y la que no toca se esconde pero sigue
+           * midiendo. Así el botón vale siempre lo que la más larga y no crece ni encoge al
+           * acusar: un control que cambia de tamaño al pulsarlo empuja a su vecino y se siente
+           * como un error, no como una confirmación.
+           */
+          <span className={styles.acuse}>
+            <span data-visible={!copiado}>{t('share.action')}</span>
+            <span data-visible={copiado}>{t('share.copied')}</span>
+          </span>
+        )}
       </button>
       <span role="status" className="visually-hidden">
         {resultado === 'copied' && t('share.copied')}

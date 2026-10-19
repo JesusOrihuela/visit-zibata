@@ -96,6 +96,22 @@
     var(--shadow-md);
 }
 
+/*
+ * El aire de las piezas de los extremos, medido y no supuesto.
+ *
+ * Con el relleno igual por los cuatro lados quedaban centradas geométricamente y descentradas a la
+ * vista: la marca tenía 5,6 px hasta el borde izquierdo y 12,6 hasta el de arriba, porque la altura
+ * de la barra la marca el buscador (44 px) y la marca mide 30. Así que el hueco de arriba es el
+ * relleno **más** lo que sobra al centrarla, y el de la izquierda solo el relleno.
+ *
+ * Esto les devuelve por los lados lo que les sobra por arriba. No es una cifra elegida a ojo: es la
+ * mitad de la diferencia entre el alto de la fila y el de la pieza.
+ */
+.searchCard > :first-child,
+.searchCard > :last-child {
+  margin-inline: 0.45rem;
+}
+
 .listButton {
   display: inline-flex;
   align-items: center;

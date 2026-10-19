@@ -94,3 +94,16 @@
     white-space: nowrap;
   }
 }
+
+/* Las dos palabras en la misma celda: el ancho lo fija la más larga y el botón no se mueve. */
+.acuse {
+  display: grid;
+}
+
+.acuse > span {
+  grid-area: 1 / 1;
+}
+
+.acuse > span[data-visible="false"] {
+  visibility: hidden;
+}

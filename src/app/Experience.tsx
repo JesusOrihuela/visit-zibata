@@ -30,7 +30,6 @@ import { FilterBar } from '../features/filters/FilterBar.tsx'
 import { MapErrorBoundary } from '../features/map/MapErrorBoundary.tsx'
 import type { MapStatus } from '../features/map/types.ts'
 import { hasSeenOnboarding } from '../features/onboarding/seen.ts'
-import { PlaceDetail } from '../features/places/PlaceDetail.tsx'
 import { ExplorePanel } from '../features/plazas/ExplorePanel.tsx'
 import { PlazaPanel } from '../features/plazas/PlazaPanel.tsx'
 import { ResultsPanel } from '../features/plazas/ResultsPanel.tsx'
@@ -64,6 +63,21 @@ const MapDebugPanel = DEBUG_ENABLED
  * abren ninguna. Viajan en su propio trozo: el paquete inicial estaba a 0,1 KB de su límite y lo
  * que toca cuando eso pasa es partir, no subir el número (ver scripts/perf/check-bundle.ts).
  */
+/*
+ * La ficha de un lugar, diferida.
+ *
+ * No se ve hasta que alguien abre un lugar, y arrastra consigo las estrellas, el registro de
+ * visitas, la tabla de horarios y el botón de compartir: todo eso viajaba en la primera carga para
+ * una pantalla que no es la primera. El paquete inicial estaba en 122,0 de 122 KB, o sea sin
+ * margen, y la regla del presupuesto dice que cuando eso pasa toca partir y no renumerar.
+ *
+ * La portada ya pinta la lista; lo que se aplaza es el detalle, que llega mientras se abre el
+ * panel.
+ */
+const PlaceDetail = lazy(() =>
+  import('../features/places/PlaceDetail.tsx').then((module) => ({ default: module.PlaceDetail })),
+)
+
 const InfoDialog = lazy(() =>
   import('../features/about/InfoDialog.tsx').then((module) => ({ default: module.InfoDialog })),
 )
@@ -345,17 +359,19 @@ function ReadyExperience({ catalog }: { catalog: Catalog }) {
     case 'place':
       contentKey = `place-${panel.place.id}`
       content = (
-        <PlaceDetail
-          place={panel.place}
-          plaza={panel.plaza}
-          backLabel={
-            panel.fromResults
-              ? t('place.backToResults')
-              : t('place.backToPlaza', { plaza: panel.plaza.name })
-          }
-          onBack={() => dispatch({ type: 'closePlace' })}
-          onClose={closePanel}
-        />
+        <Suspense fallback={null}>
+          <PlaceDetail
+            place={panel.place}
+            plaza={panel.plaza}
+            backLabel={
+              panel.fromResults
+                ? t('place.backToResults')
+                : t('place.backToPlaza', { plaza: panel.plaza.name })
+            }
+            onBack={() => dispatch({ type: 'closePlace' })}
+            onClose={closePanel}
+          />
+        </Suspense>
       )
       break
     case 'plaza':

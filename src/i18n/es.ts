@@ -116,6 +116,9 @@ export const es = {
   'visit.seeAll': 'Ver todas',
   'visit.hideAll': 'Ocultar',
   'visit.remove': 'Quitar la visita del {date}',
+  'visit.prevMonth': 'Mes anterior',
+  'visit.nextMonth': 'Mes siguiente',
+  'visit.closeCalendar': 'Cerrar el calendario',
   'visit.first': 'Registra tu primera visita',
   'favorites.add': 'Guardar en favoritos',
   'favorites.remove': 'Quitar de favoritos',
@@ -167,7 +170,7 @@ export const es = {
   'share.place': 'Compartir {name}',
   /* Etiqueta, no frase: lleva el nombre, los giros y la zona, que es lo que la guía ya publica. */
   'share.text': '{name} · {giros} · {plaza}',
-  'share.copied': 'Enlace copiado',
+  'share.copied': 'Copiado',
   'share.failed': 'No se pudo copiar el enlace',
 
   'panel.close': 'Cerrar panel',
@@ -326,6 +329,7 @@ export const es = {
     'Registra una visita, guarda un lugar con el corazón o califícalo, y aquí verás tu paso por Zibatá.',
   'profile.storage': 'Todo esto se queda en este navegador.',
 
+  'locale.label': 'Idioma',
   'locale.shortEs': 'ES',
   'locale.shortEn': 'EN',
   'locale.switchTo': 'Ver la guía en {language}',

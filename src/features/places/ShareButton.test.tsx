@@ -41,8 +41,8 @@ describe('ShareButton', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Compartir Tomassa' }))
     // El acuse es el propio botón, y se anuncia sin robar el foco.
-    expect(await screen.findByRole('button', { name: 'Enlace copiado' })).toBeInTheDocument()
-    expect(screen.getByRole('status')).toHaveTextContent('Enlace copiado')
+    expect(await screen.findByRole('button', { name: 'Copiado' })).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent('Copiado')
   })
 
   it('no se dibuja si el navegador no puede ni compartir ni copiar', () => {

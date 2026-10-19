@@ -111,6 +111,9 @@ export const en = {
   'visit.seeAll': 'See all',
   'visit.hideAll': 'Hide',
   'visit.remove': 'Remove the visit on {date}',
+  'visit.prevMonth': 'Previous month',
+  'visit.nextMonth': 'Next month',
+  'visit.closeCalendar': 'Close the calendar',
   'visit.first': 'Log your first visit',
   'favorites.add': 'Save to favourites',
   'favorites.remove': 'Remove from favourites',
@@ -146,7 +149,7 @@ export const en = {
   'share.action': 'Share',
   'share.place': 'Share {name}',
   'share.text': '{name} · {giros} · {plaza}',
-  'share.copied': 'Link copied',
+  'share.copied': 'Copied',
   'share.failed': 'Could not copy the link',
 
   'panel.close': 'Close panel',
@@ -291,6 +294,7 @@ export const en = {
     'Log a visit, save a place with the heart or rate it, and your time in Zibatá will show up here.',
   'profile.storage': 'All of this stays in this browser.',
 
+  'locale.label': 'Language',
   'locale.shortEs': 'ES',
   'locale.shortEn': 'EN',
   'locale.switchTo': 'View the guide in {language}',

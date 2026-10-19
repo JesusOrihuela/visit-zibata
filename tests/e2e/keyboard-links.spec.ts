@@ -86,11 +86,9 @@ test.describe('Teclado, enlaces y favoritos', () => {
     await expect(toggle).toContainText('1')
     await toggle.click()
     if (isMobile(page)) {
-      await expect(panel(page).getByRole('button', { name: /^Ver detalles de/ })).toHaveCount(1)
+      await expect(panel(page).getByRole('link', { name: /^Ver detalles de/ })).toHaveCount(1)
     } else {
-      await expect(
-        panel(page).getByRole('button', { name: 'Ver detalles de Tomassa' }),
-      ).toBeVisible()
+      await expect(panel(page).getByRole('link', { name: 'Ver detalles de Tomassa' })).toBeVisible()
     }
   })
 

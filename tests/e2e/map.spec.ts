@@ -255,7 +255,7 @@ test.describe('Mapa', () => {
     ).toBeVisible()
     // El índice va repartido en grupos por horario, así que se cuentan las tarjetas y no los
     // elementos de una lista: lo que se fija es que estén todos los lugares de la zona.
-    await expect(region.getByRole('button', { name: /^Ver detalles de/ })).toHaveCount(
+    await expect(region.getByRole('link', { name: /^Ver detalles de/ })).toHaveCount(
       placesInPlaza('Xentric Anáhuac'),
     )
     await expect(page).toHaveURL(/\/zona\/xentric-anahuac$/)

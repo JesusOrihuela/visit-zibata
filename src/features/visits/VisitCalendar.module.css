@@ -1,0 +1,124 @@
+/*
+ * El calendario de visitas. Vive dentro del bloque personal de la ficha, así que se apoya en el
+ * papel y no flota: no es una ventana encima de nada, es la parte de la ficha que se despliega.
+ */
+.calendario {
+  display: grid;
+  gap: var(--space-2);
+  width: 100%;
+  max-width: 19rem;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-muted);
+}
+
+.cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.cabecera h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  font-weight: 600;
+}
+
+/* Solo la primera letra: `capitalize` pone en mayúscula cada palabra y dejaba "Octubre De 2026". */
+.cabecera h3::first-letter {
+  text-transform: uppercase;
+}
+
+.cabecera button {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--ink-700);
+}
+
+.cabecera button:hover {
+  background: var(--sand-200);
+}
+
+.cabecera svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.semana,
+.rejilla {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.semana span {
+  padding-bottom: 0.2rem;
+  color: var(--color-text-muted);
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.rejilla button {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--ink-800);
+  font: 600 var(--text-sm) / 1 var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.rejilla button:hover:not(:disabled) {
+  background: var(--sand-200);
+}
+
+/* Un día que todavía no ha llegado no se puede haber visitado: se apaga, no se esconde, para que
+   el mes conserve su forma y se entienda por qué no se puede pulsar. */
+.rejilla button:disabled {
+  color: var(--sand-400);
+  cursor: default;
+}
+
+/* Hoy, con un filete: dice dónde estás sin gastar el relleno, que significa otra cosa. */
+.rejilla button[data-hoy="true"] {
+  box-shadow: inset 0 0 0 1.5px var(--sand-400);
+}
+
+/*
+ * Un día visitado va lleno, que es la misma gramática que el resto de la guía: lleno es puesto.
+ * Y no se marca solo con color, que no todo el mundo distingue: el día pasa además a negrita.
+ */
+.rejilla button[aria-pressed="true"] {
+  background: var(--olive-600);
+  box-shadow: none;
+  color: var(--sand-25);
+  font-weight: 700;
+}
+
+.rejilla button[aria-pressed="true"][data-hoy="true"] {
+  box-shadow: inset 0 0 0 1.5px var(--olive-700);
+}
+
+.cerrar {
+  justify-self: start;
+  padding: 0.35rem 0;
+  border: 0;
+  background: none;
+  color: var(--olive-700);
+  font: 600 var(--text-xs) / 1.4 var(--font-sans);
+  text-decoration: underline;
+  text-decoration-color: var(--sand-400);
+  text-underline-offset: 0.2em;
+}

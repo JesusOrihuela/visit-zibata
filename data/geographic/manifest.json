@@ -84,12 +84,12 @@
   ],
   "outputs": {
     "public/map/zibata.pmtiles": {
-      "bytes": 2426496,
-      "sha256": "ddab16d85d788c7cbdfff237484223263cc90959febc167ac4a1c5d5171b6c46",
+      "bytes": 2358630,
+      "sha256": "909eff43483fd141b8ce824d9050d6c176437c01d978252f616cec9f2f01041a",
       "tiles": 259,
       "bytesByZoom": {
         "12": 46060,
-        "13": 299018,
+        "13": 231147,
         "14": 484875,
         "15": 682350,
         "16": 912933
@@ -97,8 +97,8 @@
       "largestTile": {
         "z": 13,
         "x": 1812,
-        "y": 3614,
-        "bytes": 115330
+        "y": 3615,
+        "bytes": 95276
       },
       "features": {
         "roads": 4023,

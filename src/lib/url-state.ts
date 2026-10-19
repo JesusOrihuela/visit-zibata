@@ -158,3 +158,21 @@ export function pathFromLegacyHash(hash: string, base: string): string | null {
   if (!state.plazaSlug && !state.placeSlug && !state.infoTopic) return null
   return buildPath(state, base)
 }
+
+/**
+ * La dirección de un lugar o de una zona, para ponerla en un enlace de verdad.
+ *
+ * Abrir un lugar es navegar: la ruta existe, se puede compartir y funciona sin JavaScript porque
+ * la guía la pinta también en el servidor. Mientras eso se abría con un botón, el navegador no
+ * podía ofrecer lo que ofrece con cualquier enlace (abrir en otra pestaña, copiar la dirección,
+ * ver el destino antes de pulsar) y un lector de pantalla anunciaba "botón" donde tocaba "enlace".
+ *
+ * El W3C lo dice sin rodeos: añadir el rol de enlace a otro elemento no hace que el navegador
+ * añada el comportamiento de un enlace, y entonces proveerlo es responsabilidad de quien escribe.
+ * Sale más barato usar el elemento que lo trae puesto.
+ */
+export const rutaDeLugar = (slug: string, locale: Locale, base: string): string =>
+  buildPath({ locale, placeSlug: slug, plazaSlug: null, categorySlug: null, infoTopic: null }, base)
+
+export const rutaDeZona = (slug: string, locale: Locale, base: string): string =>
+  buildPath({ locale, placeSlug: null, plazaSlug: slug, categorySlug: null, infoTopic: null }, base)

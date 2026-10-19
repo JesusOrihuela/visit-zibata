@@ -97,7 +97,7 @@ describe('PlaceCard', () => {
     const onOpen = vi.fn()
     const place = makePlace({ id: 'x', plazaId: 'plaza-norte', name: 'Pizzería Norte' })
     await renderWithCatalog(<PlaceCard place={place} onOpen={onOpen} />)
-    await userEvent.click(screen.getByRole('button', { name: 'Ver detalles de Pizzería Norte' }))
+    await userEvent.click(screen.getByRole('link', { name: 'Ver detalles de Pizzería Norte' }))
     expect(onOpen).toHaveBeenCalledWith(place)
   })
 

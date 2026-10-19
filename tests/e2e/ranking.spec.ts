@@ -7,7 +7,7 @@ test.describe('Orden personal', () => {
   }) => {
     await openApp(page, { path: 'zona/paseo-zibata' })
     await waitForSheet(page)
-    const cards = panel(page).getByRole('button', { name: /^Ver detalles de/ })
+    const cards = panel(page).getByRole('link', { name: /^Ver detalles de/ })
     await expect(cards.first()).toBeVisible()
     const curated = await cards.allTextContents()
     expect(curated[0]).not.toContain('Luka')
@@ -28,11 +28,11 @@ test.describe('Orden personal', () => {
     const porEstado = await page.evaluate(() => {
       // La lista de lugares, no la de categorías: la que contiene tarjetas que abren una ficha.
       const lista = [...document.querySelectorAll('[data-panel] ul')].find((candidata) =>
-        candidata.querySelector('button[aria-label^="Ver detalles de"]'),
+        candidata.querySelector('a[aria-label^="Ver detalles de"]'),
       )
       if (!lista) return []
       return [...lista.querySelectorAll('li')].map((item) => ({
-        nombre: item.querySelector('button')?.getAttribute('aria-label') ?? '',
+        nombre: item.querySelector('a')?.getAttribute('aria-label') ?? '',
         estado: item.querySelector('[data-estado]')?.getAttribute('data-estado') ?? '?',
       }))
     })
@@ -48,7 +48,7 @@ test.describe('Orden personal', () => {
     await openApp(page, { path: 'zona/paseo-zibata' })
     await waitForSheet(page)
     const region = panel(page)
-    const cards = region.getByRole('button', { name: /^Ver detalles de/ })
+    const cards = region.getByRole('link', { name: /^Ver detalles de/ })
     await expect(cards.first()).toBeVisible()
     const before = await cards.allTextContents()
     await region

@@ -15,7 +15,7 @@ test.describe('Interacción táctil', () => {
     await marker.tap()
     const region = panel(page)
     await expect(region.getByRole('heading', { level: 2, name: 'Plaza Condesa' })).toBeVisible()
-    await region.getByRole('button', { name: 'Ver detalles de Bendito Bocado' }).tap()
+    await region.getByRole('link', { name: 'Ver detalles de Bendito Bocado' }).tap()
     await expect(region.getByRole('heading', { level: 2, name: 'Bendito Bocado' })).toBeVisible()
     await region.getByRole('button', { name: 'Volver a Plaza Condesa' }).tap()
     await expect(region.getByRole('heading', { level: 2, name: 'Plaza Condesa' })).toBeVisible()
@@ -35,7 +35,7 @@ test.describe('Interacción táctil', () => {
     await search.fill('helado')
     await expect(
       panel(page)
-        .getByRole('button', { name: /^Ver detalles de/ })
+        .getByRole('link', { name: /^Ver detalles de/ })
         .first(),
     ).toBeVisible()
   })

@@ -126,11 +126,13 @@ export function FilterBar({
         </div>
 
         {/*
-         * Las dos condiciones: interruptores, no pastillas.
+         * Las dos condiciones: pastillas con su palabra, no interruptores.
          *
-         * El nombre va oculto a la vista y presente para quien escucha, así que el nombre accesible
-         * sigue siendo "Abierto ahora 8". A la vista queda el icono dentro de la perilla y la cifra
-         * en el hueco que la perilla deja libre: cero texto, 62 px por control.
+         * Fueron interruptores con el icono dentro de la perilla y ningún texto a la vista, y eso
+         * falla por dos sitios. Uno: un interruptor es para una fila de lista, y estos flotan
+         * sobre el mapa; fuera de una lista, lo que toca es un control que alterna y se rellena.
+         * Dos: sin palabra, el único que explicaba qué filtra era un reloj, y un reloj dice tiempo,
+         * no "abierto". Con la palabra puesta, el problema del icono desaparece solo.
          *
          * Cada uno solo aparece si puede dar resultados: a las cuatro de la mañana no hay abiertos y
          * la fila se queda con una sola condición, que sigue leyéndose bien.
@@ -138,36 +140,28 @@ export function FilterBar({
         {(openNowCount > 0 || openNowOnly) && (
           <button
             type="button"
-            className={styles.toggle}
+            className={styles.filtro}
             data-tono="abierto"
             aria-pressed={openNowOnly}
             onClick={onToggleOpenNow}
           >
-            <span className="visually-hidden">{t('filters.openNow')}</span>
-            <span className={styles.track}>
-              <span className={styles.knob}>
-                <Clock aria-hidden="true" />
-              </span>
-              <span className={styles.count}>{openNowCount}</span>
-            </span>
+            <Clock aria-hidden="true" />
+            <span>{t('filters.openNow')}</span>
+            <span className={styles.count}>{openNowCount}</span>
           </button>
         )}
 
         {(favoritesCount > 0 || favoritesOnly) && (
           <button
             type="button"
-            className={styles.toggle}
+            className={styles.filtro}
             data-tono="favorito"
             aria-pressed={favoritesOnly}
             onClick={onToggleFavorites}
           >
-            <span className="visually-hidden">{t('favorites.filter')}</span>
-            <span className={styles.track}>
-              <span className={styles.knob}>
-                <Heart aria-hidden="true" fill={favoritesOnly ? 'currentColor' : 'none'} />
-              </span>
-              <span className={styles.count}>{favoritesCount}</span>
-            </span>
+            <Heart aria-hidden="true" fill={favoritesOnly ? 'currentColor' : 'none'} />
+            <span>{t('favorites.filter')}</span>
+            <span className={styles.count}>{favoritesCount}</span>
           </button>
         )}
 
