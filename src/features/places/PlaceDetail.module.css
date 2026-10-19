@@ -439,18 +439,24 @@
 /*
  * La fila de salidas: lo que manda el lugar fuera de la guía.
  *
- * Envuelve en pantallas estrechas en vez de encoger los dos controles, porque "Cómo llegar" es la
- * acción más usada de la ficha y no puede quedarse sin su ancho.
+ * Los dos a mitades y nunca en dos renglones. Envolvía, y en un teléfono estrecho eso dejaba "Cómo
+ * llegar" a lo ancho y "Compartir" debajo a su ancho de contenido: tres medidas distintas en dos
+ * controles que son de la misma familia. En partes iguales se leen como el par que son, y la
+ * jerarquía la sigue marcando el relleno, que para eso está.
  */
 .salidas {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: stretch;
   gap: var(--space-2);
 }
 
-.salidas .directions {
-  flex: 1 1 12rem;
+.salidas > a,
+.salidas > button {
+  /* `min-width: 0` para que puedan encoger por debajo de su contenido en la pantalla más estrecha
+     en vez de desbordar la ficha. */
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 /*

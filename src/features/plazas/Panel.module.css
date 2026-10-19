@@ -103,6 +103,10 @@
   width: 0.6rem;
   height: 0.6rem;
   border-radius: 50% 50% 50% 0;
+  /* Girada, la pieza mide 13,6 px de alto aunque su caja mida 9,6: la punta sobresale 2 px por
+     debajo del redondel. Centrar la caja deja el conjunto 1 px bajo respecto al texto, así que se
+     sube ese píxel. Es la regla de la caja que pinta otra vez, en pequeño. */
+  translate: 0 -1px;
   rotate: -45deg;
   background: var(--plaza-accent, var(--lime-500));
 }

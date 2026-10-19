@@ -99,7 +99,7 @@ export const en = {
     one: 'Rate {name} with {value} star',
     other: 'Rate {name} with {value} stars',
   },
-  'rating.hint': 'Rate this place, just for you',
+  'rating.hint': 'Rate this place',
   'rating.yours': { one: 'Rated {value} star', other: 'Rated {value} stars' },
   'rating.preview': { one: 'Rate {value} star', other: 'Rate {value} stars' },
 

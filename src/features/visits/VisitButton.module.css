@@ -1,9 +1,20 @@
-/* Botón y aviso en una fila; la cuenta vive dentro del botón, no al lado. */
+/*
+ * Botón arriba y aviso debajo, siempre; la cuenta vive dentro del botón, no al lado.
+ *
+ * Iban en una fila y el aviso envolvía cuando no cabía. Como su texto cambia (registra tu primera,
+ * la fecha de la última, el aviso de que hoy se puede deshacer), saltaba de sitio según lo que
+ * dijera. Lo mismo que le pasaba a la nota de las estrellas, y con el mismo arreglo, para que las
+ * dos piezas del bloque personal se comporten igual.
+ */
 .visit {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2) var(--space-3);
+}
+
+.visit > .hint {
+  flex: 1 0 100%;
 }
 
 /* Pastilla, como el resto de acciones de la ficha: verde apagado hasta que la persona registra. */

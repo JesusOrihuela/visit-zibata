@@ -125,9 +125,13 @@ export function PlazaMarkers({
     const markers = activePlazas.flatMap((plaza) => {
       const element = document.createElement('div')
       element.className = styles.anchor ?? ''
+      // La banda se pone ya aquí y no solo al repartir: hasta la primera pasada del solucionador,
+      // un marcador recién creado se quedaba sin z-index y podía pintarse por debajo de un tallo.
+      element.style.zIndex = String(CAPA_ETIQUETAS)
       created.set(plaza.id, element)
       const stem = document.createElement('div')
       stem.className = styles.anchor ?? ''
+      stem.style.zIndex = String(CAPA_TALLOS)
       createdStems.set(plaza.id, stem)
       const punto: [number, number] = [plaza.coordinates.lng, plaza.coordinates.lat]
       // El del tallo primero: con la misma z gana el último, y aquí el último tiene que ser la gota.
