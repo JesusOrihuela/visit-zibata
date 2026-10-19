@@ -50,6 +50,10 @@
  */
 .button[data-nombre="true"] {
   display: inline-flex;
+  align-items: center;
+  /* Con `display: grid` el contenido se centraba solo; en fila hay que pedirlo, y sin esto el
+     icono y la palabra quedaban pegados a la izquierda de un botón más ancho que ellos. */
+  justify-content: center;
   gap: var(--space-2);
   width: auto;
   height: auto;
@@ -68,4 +72,25 @@
 .button[data-nombre="true"] svg {
   width: 1rem;
   height: 1rem;
+}
+
+/*
+ * En una ficha muy estrecha, el botón se queda en su icono. Es lo primero que puede ceder de la
+ * fila: "Cómo llegar" es la acción principal y tiene que conservar su palabra entera, y un icono
+ * de compartir sin texto es de los pocos que se reconocen solos. El nombre sigue completo en la
+ * etiqueta accesible, que es de donde lo toma quien no ve el icono.
+ */
+@container ficha (max-width: 20rem) {
+  .button[data-nombre="true"] {
+    padding: 0.7rem;
+  }
+
+  .button[data-nombre="true"] span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
 }

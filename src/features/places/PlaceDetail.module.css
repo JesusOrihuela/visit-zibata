@@ -9,7 +9,14 @@
  * repite la misma relación. La proporción entre el paso de dentro y el de fuera (3 a 5) es lo que
  * hace que se lean como dos niveles y no como un descuido.
  */
+/*
+ * La ficha es un contenedor de consulta, y tiene que serlo: vive en una hoja inferior en el
+ * teléfono y en un panel lateral de ancho propio en el escritorio, así que una media query sobre
+ * la ventana se equivocaría la mitad de las veces. Lo que decide cómo se colocan sus piezas es el
+ * ancho que la ficha tiene de verdad.
+ */
 .detail {
+  container: ficha / inline-size;
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
@@ -437,12 +444,12 @@
 }
 
 /*
- * La fila de salidas: lo que manda el lugar fuera de la guía.
+ * La fila de salidas: lo que manda el lugar fuera de la guía. Siempre en un renglón.
  *
- * Los dos a mitades y nunca en dos renglones. Envolvía, y en un teléfono estrecho eso dejaba "Cómo
- * llegar" a lo ancho y "Compartir" debajo a su ancho de contenido: tres medidas distintas en dos
- * controles que son de la misma familia. En partes iguales se leen como el par que son, y la
- * jerarquía la sigue marcando el relleno, que para eso está.
+ * "Cómo llegar" se queda con el hueco que sobre y "Compartir" con el ancho de su contenido: son
+ * de la misma familia pero no de la misma importancia, y repartir a mitades les daba el mismo
+ * peso. Ninguno de los dos parte su texto en dos líneas, que es lo que se veía mal en la pantalla
+ * más estrecha; lo que cede en ese caso es la palabra "Compartir", abajo.
  */
 .salidas {
   display: flex;
@@ -451,12 +458,15 @@
   gap: var(--space-2);
 }
 
-.salidas > a,
-.salidas > button {
-  /* `min-width: 0` para que puedan encoger por debajo de su contenido en la pantalla más estrecha
-     en vez de desbordar la ficha. */
-  flex: 1 1 0;
+.salidas > a {
+  flex: 1 1 auto;
   min-width: 0;
+  white-space: nowrap;
+}
+
+.salidas > button {
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 /*

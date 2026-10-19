@@ -1,10 +1,11 @@
 /*
- * La nota va siempre debajo, nunca al lado.
+ * La nota al lado, y debajo solo cuando la ficha es estrecha.
  *
- * Estaba al lado y envolvía cuando no cabía, y como el texto cambia (la invitación, la vista
- * previa al pasar por encima, la calificación puesta) cada uno tenía un ancho distinto: la nota
- * saltaba de debajo a al lado según lo que dijera, delante de los ojos y mientras se usaba. Un
- * elemento que cambia de sitio al interactuar con él es peor que uno que ocupa un renglón más.
+ * Lo que decide es el ancho del contenedor, no el largo del texto. Antes envolvía por sí sola, y
+ * como el texto cambia (la invitación, la vista previa al pasar por encima, la calificación
+ * puesta) cada uno tenía un ancho distinto: la nota saltaba de debajo a al lado según lo que
+ * dijera, delante de los ojos y mientras se usaba. Con el umbral en el contenedor, en una pantalla
+ * dada la nota está siempre en el mismo sitio, diga lo que diga.
  */
 .rating {
   display: flex;
@@ -13,8 +14,10 @@
   gap: 0.25rem var(--space-3);
 }
 
-.rating > .note {
-  flex: 1 0 100%;
+@container ficha (max-width: 20rem) {
+  .rating > .note {
+    flex: 1 0 100%;
+  }
 }
 
 .scale {

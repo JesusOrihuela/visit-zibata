@@ -47,7 +47,13 @@
  */
 .zone,
 .clear {
-  height: 2.25rem;
+  /*
+   * 40 px, el mismo alto que los controles de la ficha. Estaban a 36 y la diferencia se notaba sin
+   * saber por qué: dos familias que comparten esquina y se ven a la vez (la fila flota sobre el
+   * panel abierto) pero no comparten alto. Los 40 siguen por debajo de los 44 que recomiendan iOS
+   * y Android para el dedo; subir hasta ahí cuesta 8 px más de franja y está sin decidir.
+   */
+  height: 2.5rem;
   border: 0;
   border-radius: var(--radius-sm);
   background: var(--color-surface);
@@ -167,11 +173,12 @@
   background: none;
 }
 
-/* 68 px y no 62: con 62 la perilla y la cifra se rozaban y el control se sentía apretado. */
+/* 68 px y no 62: con 62 la perilla y la cifra se rozaban y el control se sentía apretado. El alto
+   sigue al del resto de la fila. */
 .track {
   position: relative;
   width: 4.25rem;
-  height: 2.25rem;
+  height: 2.5rem;
   border-radius: var(--radius-sm);
   background: var(--sand-200);
   box-shadow: inset 0 0 0 1px var(--color-border-strong);
@@ -184,8 +191,8 @@
   left: 3px;
   display: grid;
   place-items: center;
-  width: 1.875rem;
-  height: 1.875rem;
+  width: 2.125rem;
+  height: 2.125rem;
   border-radius: 6px;
   background: var(--sand-25);
   box-shadow: 0 1px 3px rgb(31 36 25 / 0.3);
@@ -216,7 +223,8 @@
 }
 
 .toggle[aria-pressed="true"] .knob {
-  translate: 2rem 0;
+  /* El recorrido es el ancho de la vía menos la perilla y sus dos márgenes de 3 px. */
+  translate: 1.75rem 0;
 }
 
 .toggle[aria-pressed="true"] .count {
@@ -262,7 +270,7 @@
 .clear {
   display: grid;
   place-items: center;
-  width: 2.25rem;
+  width: 2.5rem;
   padding: 0;
   background: var(--ink-800);
   box-shadow: var(--shadow-sm);

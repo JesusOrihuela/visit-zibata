@@ -90,6 +90,22 @@
     var(--shadow-md);
 }
 
+/*
+ * El filete que separa dentro de la tarjeta de arriba.
+ *
+ * Es lo que sustituye a las superficies que cada pieza llevaba: la tarjeta es la superficie y lo
+ * de dentro se separa con una línea, no con una caja propia. Se recorta por arriba y por abajo
+ * para no tocar los bordes de la tarjeta, que es lo que lo convertiría en una división y no en una
+ * separación.
+ */
+.divisor {
+  flex: none;
+  align-self: stretch;
+  width: 1px;
+  margin-block: 0.45rem;
+  background: var(--color-border);
+}
+
 .listButton {
   display: inline-flex;
   align-items: center;

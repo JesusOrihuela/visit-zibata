@@ -5,9 +5,15 @@
   gap: 0.3rem;
   height: 2.5rem;
   padding: 0 0.7rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-pill);
-  background: var(--color-surface);
+  border: 0;
+  /*
+   * Sin pastilla. Vive dentro de la tarjeta de arriba, que ya es la superficie: una caja con su
+   * borde dentro de otra caja con su borde no agrupa nada, solo añade un contorno a una fila que
+   * ya tenía tres. Lo que lo separa del buscador es un filete, no un contenedor. El fondo vuelve
+   * al pasar por encima, que es cuando hace falta ver qué se va a pulsar.
+   */
+  border-radius: var(--radius-sm);
+  background: transparent;
   color: var(--ink-700);
   font: 700 var(--text-xs) / 1 var(--font-sans);
   letter-spacing: 0.04em;
