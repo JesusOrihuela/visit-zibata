@@ -459,14 +459,12 @@ function ReadyExperience({ catalog }: { catalog: Catalog }) {
               {/* Sobre el mapa, solo el símbolo: el nombre lo lleva el <h1> para quien
                   escucha, y la barra superior ya va justa de ancho con el buscador. */}
               <Brand compact />
-              <span className={styles.divisor} aria-hidden="true" />
               <SearchBar
                 value={state.searchQuery}
                 onChange={(query) => dispatch({ type: 'setQuery', query })}
                 inputRef={searchInputRef}
               />
               {/* El idioma se cambia de un toque y desde cualquier vista, no escondido en una hoja. */}
-              <span className={styles.divisor} aria-hidden="true" />
               <LocaleSwitch />
               {isDesktop && !desktopPanelOpen && (
                 <button

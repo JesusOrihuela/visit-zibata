@@ -411,8 +411,8 @@
   },
   "trees": {
     "$comment": "Árboles del mapa: dentro de la cobertura arbórea real (ESA WorldCover, npm run map:fetch:trees) y de las áreas verdes de OSM. spacing* = separación media entre árboles; roadClearanceM = distancia mínima entre la copa y el eje de cada clase de vía.",
-    "spacingM": 19,
-    "greenSpacingM": 32,
+    "spacingM": 15,
+    "greenSpacingM": 25,
     "roadClearanceM": {
       "highway": 14,
       "primary": 10,

@@ -63,7 +63,12 @@ const BUDGET = {
   mapJs: 320,
   mapCss: 15,
   dataJs: 34,
-  tiles: 2100,
+  // 2450 y no 2100 desde que la arboleda subió de densidad (v4.27): la separación media entre
+  // árboles bajó de 19 a 15 metros, de 6 800 a 11 580 árboles, y el juego entero pasó de 2 095 a
+  // 2 373 KB. Se sube este tope y **no** el de `largestTile`, que es el que mide lo que el
+  // navegador descarga de verdad y que se queda en 113 de 140: el conjunto solo cuida el peso del
+  // despliegue. Si alguna vez hay que recortar, el primer sitio son los árboles, no el código.
+  tiles: 2450,
   largestTile: 140,
 }
 

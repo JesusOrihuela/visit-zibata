@@ -5,7 +5,7 @@ import { type PointerEvent as ReactPointerEvent, useEffect, useRef, useState } f
 import { insideCenterBounds } from '../../config/map.ts'
 import { t } from '../../i18n/index.ts'
 import type { Plaza } from '../../types/domain.ts'
-import { initialCamera, resetCamera } from './camera.ts'
+import { resetCamera } from './camera.ts'
 import styles from './MapControls.module.css'
 import { prefersReducedMotion } from './mapRuntime.ts'
 
@@ -14,6 +14,9 @@ interface MapControlsProps {
   plazas: readonly Plaza[]
   compact: boolean
 }
+
+/** Un octavo de vuelta: ocho pulsaciones dan la vuelta entera y cada parada es un punto cardinal. */
+const PASO_DE_GIRO = 45
 
 export function MapControls({ map, plazas, compact }: MapControlsProps) {
   const [bearing, setBearing] = useState(map.getBearing())
@@ -28,7 +31,6 @@ export function MapControls({ map, plazas, compact }: MapControlsProps) {
    * casa, que además mueve el centro y el zoom. Enderezar incluye volver a ver el volumen, que es
    * de lo que trata este mapa.
    */
-  const inclinacionBase = initialCamera(compact).pitch
   const [girando, setGirando] = useState(false)
   const giro = useRef<{ desde: number; bearing: number; movio: boolean } | null>(null)
 
@@ -64,7 +66,19 @@ export function MapControls({ map, plazas, compact }: MapControlsProps) {
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId)
     }
-    if (actual && !actual.movio) map.easeTo({ bearing: 0, pitch: inclinacionBase, duration })
+    /*
+     * Pulsarla sin arrastrar gira un octavo de vuelta, al siguiente punto cardinal.
+     *
+     * Antes enderezaba al norte, y eso la dejaba atascada: una vez en el norte, pulsarla no movía
+     * nada, y encima cada pulsación devolvía la inclinación aunque no la hubieras tocado. Girando
+     * por pasos siempre hace algo, ocho pulsaciones dan la vuelta entera, y la primera después de
+     * un arrastre cuadra el rumbo a un múltiplo de 45, así que el mapa nunca se queda en un ángulo
+     * sucio por accidente.
+     */
+    if (actual && !actual.movio) {
+      const siguiente = (Math.floor(map.getBearing() / PASO_DE_GIRO) + 1) * PASO_DE_GIRO
+      map.easeTo({ bearing: siguiente, duration })
+    }
   }
 
   useEffect(() => {
@@ -164,10 +178,8 @@ export function MapControls({ map, plazas, compact }: MapControlsProps) {
          *
          * Giraba solo con el botón derecho del ratón, que no lo descubre nadie, así que en
          * escritorio la única pieza que habla de orientación servía para deshacer un giro que no
-         * había forma evidente de hacer. Arrastrarla gira; soltarla sin haberla movido endereza y
-         * devuelve la inclinación de salida. Con el teclado, las flechas giran de 15 en 15.
-         *
-         * Y ya no se deshabilita: enderezada sigue sirviendo para girar, que es su otro trabajo.
+         * había forma evidente de hacer. Arrastrarla gira sin saltos; pulsarla gira un octavo de
+         * vuelta. Con el teclado, las flechas hacen lo mismo que una pulsación.
          */}
         <button
           type="button"
@@ -178,7 +190,12 @@ export function MapControls({ map, plazas, compact }: MapControlsProps) {
           onPointerUp={terminarGiro}
           onPointerCancel={terminarGiro}
           onKeyDown={(event) => {
-            const paso = event.key === 'ArrowLeft' ? -15 : event.key === 'ArrowRight' ? 15 : 0
+            const paso =
+              event.key === 'ArrowLeft'
+                ? -PASO_DE_GIRO
+                : event.key === 'ArrowRight'
+                  ? PASO_DE_GIRO
+                  : 0
             if (paso === 0) return
             event.preventDefault()
             map.setBearing(map.getBearing() + paso)

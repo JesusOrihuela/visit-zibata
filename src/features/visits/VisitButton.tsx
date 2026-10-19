@@ -33,40 +33,49 @@ export function VisitButton({
   const fechas = datesOf(placeId)
   const ultima = fechas.at(-1)
   const [abierto, setAbierto] = useState(false)
+  const [mostrarCampo, setMostrarCampo] = useState(false)
   const calendario = useRef<HTMLInputElement>(null)
   const listaId = useId()
 
   /*
-   * `showPicker` abre el calendario del sistema sin que el campo tenga que verse. Donde no exista
-   * (navegadores anteriores a 2022), el campo sigue ahí debajo del botón y recibe el clic, así que
-   * el calendario se abre igual: la pieza funciona sin este atajo, solo con un toque más.
+   * `showPicker` abre el calendario del sistema sin que el campo tenga que verse.
+   *
+   * El campo va detrás y sin recibir punteros. Estuvo delante y transparente, pensando que así
+   * recibiría el clic en los navegadores sin `showPicker`, y el resultado fue que se lo comía
+   * siempre: el clic no llegaba al botón, y pulsar el texto de un campo de fecha no abre ningún
+   * calendario en Chrome. El botón no hacía nada.
+   *
+   * Donde `showPicker` no exista, el campo se enseña y se usa tal cual, que es feo pero funciona.
+   * Vale más una pieza que se ve rara en un navegador viejo que una que no responde en el actual.
    */
   const abrirCalendario = () => {
     const campo = calendario.current
     if (!campo) return
+    if (typeof campo.showPicker !== 'function') {
+      setMostrarCampo(true)
+      return
+    }
     try {
       campo.showPicker()
     } catch {
-      campo.focus()
+      setMostrarCampo(true)
     }
   }
 
   return (
     <div className={styles.visit} data-plano={sinSuperficie}>
-      <span className={styles.control}>
-        <button
-          type="button"
-          className={styles.button}
-          onClick={abrirCalendario}
-          aria-label={t('visit.mark', { name: placeName })}
-        >
-          <CalendarPlus aria-hidden="true" />
-          <span>{t('visit.action')}</span>
-        </button>
-        {/*
-         * Debajo del botón y transparente, no oculto: oculto no recibiría el clic en los
-         * navegadores sin `showPicker`, y entonces el control no abriría nada en ellos.
-         */}
+      <span className={styles.control} data-campo={mostrarCampo}>
+        {!mostrarCampo && (
+          <button
+            type="button"
+            className={styles.button}
+            onClick={abrirCalendario}
+            aria-label={t('visit.mark', { name: placeName })}
+          >
+            <CalendarPlus aria-hidden="true" />
+            <span>{t('visit.action')}</span>
+          </button>
+        )}
         <input
           ref={calendario}
           type="date"
@@ -76,6 +85,7 @@ export function VisitButton({
           onChange={(event) => {
             if (event.target.value) registrar(placeId, event.target.value)
             event.target.value = ''
+            setMostrarCampo(false)
           }}
         />
       </span>

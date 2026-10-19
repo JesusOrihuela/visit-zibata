@@ -142,7 +142,24 @@
   padding: 0;
   background: none;
   opacity: 0;
-  cursor: pointer;
+  /* Detrás y sin punteros: su único trabajo es abrir el calendario del sistema cuando el botón se
+     lo pide. Delante se comía el clic que iba al botón, y el control no hacía nada. */
+  pointer-events: none;
+}
+
+/* El respaldo: donde no hay `showPicker`, el campo se enseña y se usa tal cual. */
+.control[data-campo="true"] .calendario {
+  position: static;
+  width: auto;
+  height: 2.25rem;
+  padding: 0 0.6rem;
+  border-radius: var(--radius-sm);
+  box-shadow: inset 0 0 0 1px var(--color-border-strong);
+  opacity: 1;
+  pointer-events: auto;
+  font: inherit;
+  font-size: var(--text-sm);
+  color: var(--ink-900);
 }
 
 /* El acceso a la lista, dentro de la frase: no es otro control, es una palabra que se pulsa. */

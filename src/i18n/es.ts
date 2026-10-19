@@ -181,7 +181,7 @@ export const es = {
 
   'map.zoomIn': 'Acercar',
   'map.zoomOut': 'Alejar',
-  'map.rotate': 'Girar el mapa, o soltar sin mover para enderezarlo',
+  'map.rotate': 'Girar el mapa: arrastra, o pulsa para girar un octavo de vuelta',
   'map.resetNorth': 'Orientar al norte',
   'map.reset': 'Volver a la vista de Zibatá',
   'map.locate': 'Mostrar mi ubicación',

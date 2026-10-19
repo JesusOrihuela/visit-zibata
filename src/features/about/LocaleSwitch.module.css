@@ -12,7 +12,13 @@
    * ya tenía tres. Lo que lo separa del buscador es un filete, no un contenedor. El fondo vuelve
    * al pasar por encima, que es cuando hace falta ver qué se va a pulsar.
    */
-  border-radius: var(--radius-sm);
+  /*
+   * El radio de una esquina metida dentro de otra es el de fuera menos el hueco que las separa.
+   * Con los 8 px de siempre, el fondo que aparece al pasar por encima dibujaba un rectángulo
+   * contra la curva de 20 de la tarjeta, y eso se ve como un error aunque no lo sea: en la esquina
+   * derecha de la barra, el botón es lo último antes del borde.
+   */
+  border-radius: calc(var(--radius-lg) - var(--card-pad, 0.45rem));
   background: transparent;
   color: var(--ink-700);
   font: 700 var(--text-xs) / 1 var(--font-sans);

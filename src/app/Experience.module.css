@@ -76,7 +76,13 @@
   align-items: center;
   gap: var(--space-3);
   max-width: 46rem;
-  padding: var(--card-pad) 0.5rem var(--card-pad) 0.6rem;
+  /*
+   * Relleno igual por los cuatro lados. Era mayor a la izquierda que a la derecha, pensado para un
+   * símbolo que ya no está en un disco, y con eso la marca quedaba descentrada respecto al borde.
+   * Y da sitio para que el fondo del idioma, al pasar por encima, no monte sobre la esquina
+   * redondeada de la tarjeta: un rectángulo contra una curva siempre se ve como un error.
+   */
+  padding: var(--card-pad);
   /*
    * Contenedor, no control. Con `xl` el radio quedaba en la mitad de su alto y se leía como una
    * cápsula gigante con dos cápsulas dentro: tres formas de control anidadas para una barra que no
@@ -88,22 +94,6 @@
   box-shadow:
     0 0 0 1px var(--color-border),
     var(--shadow-md);
-}
-
-/*
- * El filete que separa dentro de la tarjeta de arriba.
- *
- * Es lo que sustituye a las superficies que cada pieza llevaba: la tarjeta es la superficie y lo
- * de dentro se separa con una línea, no con una caja propia. Se recorta por arriba y por abajo
- * para no tocar los bordes de la tarjeta, que es lo que lo convertiría en una división y no en una
- * separación.
- */
-.divisor {
-  flex: none;
-  align-self: stretch;
-  width: 1px;
-  margin-block: 0.45rem;
-  background: var(--color-border);
 }
 
 .listButton {

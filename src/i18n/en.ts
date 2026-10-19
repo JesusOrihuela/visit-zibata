@@ -160,7 +160,7 @@ export const en = {
 
   'map.zoomIn': 'Zoom in',
   'map.zoomOut': 'Zoom out',
-  'map.rotate': 'Drag to rotate the map, release without moving to reset it',
+  'map.rotate': 'Rotate the map: drag, or press to turn an eighth of a turn',
   'map.resetNorth': 'Face north',
   'map.reset': 'Back to the Zibatá view',
   'map.locate': 'Show my location',

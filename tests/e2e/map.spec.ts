@@ -126,18 +126,32 @@ test.describe('Mapa', () => {
       page.getByRole('button', { name: 'Cambiar entre vista 3D y vista cenital' }),
     ).toHaveCount(0)
     /*
-     * La brújula gira arrastrando y endereza al soltarla sin mover, así que un clic limpio tiene
-     * que enderezar. Se comprueba por el giro del propio dibujo, que sigue al rumbo del mapa: la
-     * vista arranca a -10 grados y enderezada marca 0.
+     * Pulsar la brújula gira un octavo de vuelta, y eso es lo que se comprueba: que el dibujo, que
+     * sigue al rumbo del mapa, se mueve exactamente 45 grados. Antes enderezaba al norte, y la
+     * prueba de entonces solo miraba que el botón se pudiera pulsar: por eso no vio que una vez en
+     * el norte dejaba de hacer nada.
      */
     const brujula = page.getByRole('button', { name: /^Girar el mapa/ })
     const dibujo = brujula.locator('svg')
-    await expect(dibujo).not.toHaveCSS('transform', 'none')
+
+    // La primera cuadra: la vista arranca a -10 grados, así que el primer salto lleva al 0 y es
+    // más corto que un octavo. Lo que se fija es que acabe en un múltiplo de 45.
+    await brujula.click()
+    await expect.poll(async () => Math.abs(Math.round(await anguloDe(dibujo)) % 45)).toBe(0)
+
+    /*
+     * Y desde un múltiplo, cada pulsación mueve exactamente un octavo de vuelta. Se mide el valor
+     * absoluto porque el dibujo gira al revés que el mapa: la aguja apunta al norte mientras el
+     * terreno gira debajo, así que un rumbo que sube 45 se ve como un icono que baja 45.
+     */
+    const cuadrada = await anguloDe(dibujo)
     await brujula.click()
     await expect
-      .poll(async () => Math.round(await anguloDe(dibujo)))
-      // El icono lleva 45 grados propios de dibujo, así que enderezado marca -45.
-      .toBe(-45)
+      .poll(async () => {
+        const vuelta = (((await anguloDe(dibujo)) - cuadrada + 540) % 360) - 180
+        return Math.abs(Math.round(vuelta))
+      })
+      .toBe(45)
 
     await page.getByRole('button', { name: 'Volver a la vista de Zibatá' }).click()
     await expect(page.getByRole('button', { name: /^Ver Xentric Anáhuac/ })).toBeVisible()
