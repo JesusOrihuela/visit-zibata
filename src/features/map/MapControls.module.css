@@ -99,6 +99,20 @@
   font-size: var(--text-sm);
 }
 
+/*
+ * Un control deshabilitado se apaga, no desaparece. La brújula se queda sin nada que hacer cuando
+ * el mapa ya está enderezado, y quitarla de la columna movería los otros dos botones bajo el dedo
+ * cada vez que giras el mapa, que es peor que un botón apagado.
+ */
+.button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.button:disabled:hover {
+  background: transparent;
+}
+
 /* Punto de "mi ubicación": solo en memoria, nunca se guarda ni se envía. */
 .userDot {
   /* Va por debajo de los marcadores de plaza (que llevan z-index por cercanía) y no intercepta clics:

@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import { insideCenterBounds } from '../../config/map.ts'
 import { t } from '../../i18n/index.ts'
 import type { Plaza } from '../../types/domain.ts'
-import { resetCamera } from './camera.ts'
+import { initialCamera, resetCamera } from './camera.ts'
 import styles from './MapControls.module.css'
 import { prefersReducedMotion } from './mapRuntime.ts'
 
@@ -17,15 +17,31 @@ interface MapControlsProps {
 
 export function MapControls({ map, plazas, compact }: MapControlsProps) {
   const [bearing, setBearing] = useState(map.getBearing())
+  const [pitch, setPitch] = useState(map.getPitch())
   const [locating, setLocating] = useState(false)
   const [locateMessage, setLocateMessage] = useState<string | null>(null)
   const userMarker = useRef<Marker | null>(null)
+  /*
+   * La brújula endereza el norte **y** devuelve la inclinación de salida.
+   *
+   * Solo enderezaba el norte, así que con el norte ya arriba pulsarla no hacía nada aunque el mapa
+   * estuviera tumbado hasta el horizonte: la única forma de recuperar la vista era el botón de
+   * casa, que además mueve el centro y el zoom. Enderezar incluye volver a ver el volumen, que es
+   * de lo que trata este mapa.
+   */
+  const inclinacionBase = initialCamera(compact).pitch
+  const enSuSitio = Math.abs(bearing) < 0.5 && Math.abs(pitch - inclinacionBase) < 0.5
 
   useEffect(() => {
-    const sync = () => setBearing(map.getBearing())
+    const sync = () => {
+      setBearing(map.getBearing())
+      setPitch(map.getPitch())
+    }
     map.on('rotate', sync)
+    map.on('pitch', sync)
     return () => {
       map.off('rotate', sync)
+      map.off('pitch', sync)
     }
   }, [map])
 
@@ -116,9 +132,15 @@ export function MapControls({ map, plazas, compact }: MapControlsProps) {
         <button
           type="button"
           className={styles.button}
-          onClick={() => map.easeTo({ bearing: 0, duration })}
+          onClick={() => map.easeTo({ bearing: 0, pitch: inclinacionBase, duration })}
           aria-label={t('map.resetNorth')}
           title={t('map.resetNorth')}
+          /*
+           * Deshabilitada cuando ya no hay nada que enderezar. Con el norte arriba y la inclinación
+           * de salida, pulsarla no hacía absolutamente nada: un control que se ve igual de pulsable
+           * siempre y a veces no responde enseña que la interfaz no es de fiar.
+           */
+          disabled={enSuSitio}
         >
           <Compass aria-hidden="true" style={{ transform: `rotate(${-bearing - 45}deg)` }} />
         </button>
