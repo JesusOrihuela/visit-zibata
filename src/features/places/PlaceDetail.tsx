@@ -372,13 +372,15 @@ export function PlaceDetail({ place, plaza, backLabel, onBack, onClose }: PlaceD
 
       {/*
        * Y lo que no sale de aquí. Calificar y registrar una visita solo cambian tu relación con el
-       * lugar: ninguna de las dos se publica, ni siquiera como media. El rótulo lo dice en vez de
-       * dejar que se suponga, que es el trabajo que hasta ahora no hacía nadie en esta pantalla.
+       * lugar: ninguna de las dos se publica, ni siquiera como media.
+       *
+       * Sin rótulo a la vista. Llevó uno ("SOLO PARA TI") y desentonaba: los otros rótulos en
+       * mayúsculas de la ficha nombran una sección de contenido (Horario, Contacto) y este era un
+       * aviso encima de dos controles, así que se leía como una etiqueta puesta donde no tocaba.
+       * Lo que decía no se pierde: pasa al texto de ayuda de las estrellas, que es donde ya se
+       * estaba mirando, y sigue nombrando el bloque para quien lo escucha.
        */}
-      <section className={styles.personal} aria-labelledby="place-personal-title">
-        <p id="place-personal-title" className={styles.personalTitle}>
-          {t('place.onlyYou')}
-        </p>
+      <section className={styles.personal} aria-label={t('place.onlyYou')}>
         <RatingStars placeId={place.id} placeName={place.name} />
         <VisitButton placeId={place.id} placeName={place.name} sinSuperficie />
       </section>

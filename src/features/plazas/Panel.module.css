@@ -92,12 +92,19 @@
   color: var(--plaza-accent, var(--olive-600));
 }
 
+/*
+ * El punto del antetítulo es la misma gota del mapa, en miniatura y sin cifra.
+ *
+ * Era un rombo: un cuadrado girado 45 grados que no existe en ningún otro sitio de la guía y que
+ * solo llevaba el tono. Con la gota, el encabezado de una zona empieza por la pieza que esa zona
+ * tiene puesta en el mapa, igual que cada renglón del índice.
+ */
 .eyebrowDot {
-  width: 0.45rem;
-  height: 0.45rem;
-  border-radius: 2px;
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50% 50% 50% 0;
+  rotate: -45deg;
   background: var(--plaza-accent, var(--lime-500));
-  transform: rotate(45deg);
 }
 
 .title {
@@ -277,7 +284,9 @@
   align-items: center;
   gap: var(--space-3);
   width: 100%;
-  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-1);
+  /* Aire igual a los dos lados: con --space-1 a la izquierda el fondo del hover quedaba pegado a la
+     gota y parecía recortarla, porque la punta de la gota llega más allá de su propia caja. */
+  padding: var(--space-2);
   border: 0;
   border-radius: var(--radius-sm);
   background: transparent;

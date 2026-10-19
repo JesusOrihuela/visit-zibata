@@ -22,28 +22,32 @@ export function ExplorePanel({
 }: ExplorePanelProps) {
   const catalog = useCatalog()
   /**
-   * Lo que hay en una zona, en palabras y por lo que de verdad abunda.
+   * Lo que hay en una zona: sus giros, los que más se repiten primero.
    *
-   * El orden lo decide el conteo de locales de cada categoría dentro de esa zona, no el del
-   * catálogo. Con el orden del catálogo las once líneas empezaban por "Desayunos y Café, Tacos y
-   * Antojitos" y se leían todas iguales: la línea ocupaba el ancho sin distinguir una zona de otra,
-   * que era exactamente el defecto de la fila de iconos que vino a sustituir.
+   * Giros y no categorías, y la diferencia se ve. Zibatá Golf tiene un solo local, que la tarjeta
+   * presenta como "Restaurante Bar" y "Desayunos"; contando categorías el renglón decía "Bar", que
+   * es el cajón al que pertenece el primero de sus giros y un nombre que no aparece en ningún otro
+   * sitio de esa zona. La guía enseña giros en todas partes (en la tarjeta, en la ficha), así que
+   * el índice también.
    *
-   * Dos nombres y no tres: los de este catálogo son largos ("Panadería y Repostería"), y con tres
-   * la línea se cortaba a media palabra en cualquier teléfono. El resto se cuenta.
+   * Cuentan todos los giros de cada local y no solo el principal: son lo que ese local ofrece, y
+   * dejar fuera el segundo es justo lo que hacía desaparecer "Desayunos" de Zibatá Golf.
+   *
+   * El orden lo decide ese conteo y no el del catálogo. Con el orden del catálogo las once líneas
+   * empezaban por lo mismo y se leían todas iguales, que era el defecto de la fila de iconos que
+   * vino a sustituir. Dos nombres y no tres: los de este catálogo son largos y con tres la línea se
+   * cortaba a media palabra en cualquier teléfono.
    */
   const queHay = (plazaId: string) => {
-    const porCategoria = new Map<string, number>()
+    const porGiro = new Map<string, number>()
     for (const place of catalog.placesByPlaza.get(plazaId) ?? []) {
-      // Solo el giro principal: contar todos infla las zonas con locales de carta ancha.
-      const categoria = catalog.categoryOfGiro.get(place.giros[0] ?? '')
-      if (categoria) porCategoria.set(categoria.id, (porCategoria.get(categoria.id) ?? 0) + 1)
+      for (const giro of place.giros) porGiro.set(giro, (porGiro.get(giro) ?? 0) + 1)
     }
-    const nombres = [...porCategoria.entries()]
+    const nombres = [...porGiro.entries()]
       .sort((a, b) => b[1] - a[1])
-      .map(([id]) => catalog.categoryById.get(id))
-      .filter((categoria) => categoria !== undefined)
-      .map((categoria) => localized(categoria.label))
+      .map(([id]) => catalog.giroById.get(id))
+      .filter((giro) => giro !== undefined)
+      .map((giro) => localized(giro.label))
     const restantes = nombres.length - 2
     const primeros = nombres.slice(0, 2).join(', ')
     return restantes > 0 ? t('explore.andMore', { list: primeros, count: restantes }) : primeros

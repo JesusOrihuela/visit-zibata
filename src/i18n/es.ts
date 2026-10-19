@@ -98,7 +98,7 @@ export const es = {
     one: 'Calificar {name} con {value} estrella',
     other: 'Calificar {name} con {value} estrellas',
   },
-  'rating.hint': 'Califica este lugar',
+  'rating.hint': 'Califica este lugar, solo para ti',
   'rating.yours': {
     one: 'Calificado con {value} estrella',
     other: 'Calificado con {value} estrellas',

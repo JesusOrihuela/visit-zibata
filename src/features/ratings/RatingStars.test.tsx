@@ -16,7 +16,7 @@ describe('RatingStars', () => {
 
   it('guarda la calificación en este dispositivo', async () => {
     render(<RatingStars placeId="cafe-aurora" placeName="Café Aurora" />)
-    expect(screen.getByText('Califica este lugar')).toBeInTheDocument()
+    expect(screen.getByText('Califica este lugar, solo para ti')).toBeInTheDocument()
     await userEvent.click(
       screen.getByRole('radio', { name: 'Calificar Café Aurora con 4 estrellas' }),
     )

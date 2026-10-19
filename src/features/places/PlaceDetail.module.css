@@ -469,12 +469,3 @@
   align-items: flex-start;
   gap: var(--space-2);
 }
-
-.personalTitle {
-  margin: 0;
-  font-size: var(--text-2xs);
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--color-text-muted);
-}
