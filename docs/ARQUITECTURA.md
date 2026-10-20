@@ -287,6 +287,26 @@ tarjeta usa el tono de su categoría; el día que haya fotos esa misma mitad las
 escrita. Se renderiza con el navegador de Playwright, que ya es dependencia de desarrollo, en una sola
 página con las 101 tarjetas, y se pasa por `sharp` a JPEG: en PNG pesaban 20 MB, en JPEG 1,9 MB.
 
+### Texto que no debe salir en un fragmento de búsqueda
+
+Google compone el fragmento de un resultado con el texto de la página **ya renderizada**, y eso
+incluye los controles. Una ficha llegó a abrirse con "Cómo llegar Abre Google Maps en una pestaña
+nueva" en lugar de con lo que dice el local. Lo que es de interfaz y no del local va dentro de un
+elemento con `data-nosnippet` (Google solo lo reconoce en `span`, `div` y `section`, y pide que esté
+puesto cuando el elemento se inserta, que es lo que hace React):
+
+| Dónde | Qué excluye |
+|---|---|
+| `PlaceDetail`: el `div` de las salidas | "Cómo llegar", su ayuda para lectores de pantalla y el botón de compartir |
+| `PlaceDetail`: la `section` personal | La calificación y el registro de visitas |
+| `PlazaPanel`: un `span` alrededor del enlace | "Cómo llegar a la zona" (un `<a>` no admite el atributo; el `span` es `display: contents` y no genera caja) |
+| `PlaceCard`: el estado oculto de cada tarjeta | "Abierto ahora: {nombre}", que repite el nombre |
+
+Nombre, giros, zona, dirección y descripción **no** llevan el atributo: son lo que el local dice de sí
+mismo. No cambia nada visible ni lo que lee un lector de pantalla. Que Google haga caso no está
+garantizado y solo se ve en producción; lo que se puede comprobar aquí, y comprueba
+`tests/e2e/fragmentos.spec.ts`, es que el atributo esté en lo que toca y en nada más.
+
 ### Datos estructurados
 
 Cada ficha lleva un bloque JSON-LD (`scripts/build/structured-data.ts`) con lo mismo que ya dice la

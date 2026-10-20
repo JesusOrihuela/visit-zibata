@@ -335,7 +335,13 @@ export function PlaceDetail({ place, plaza, backLabel, onBack, onClose }: PlaceD
        * abre una página y la segunda la hoja del sistema, y una flecha que promete una página
        * donde no la hay miente.
        */}
-      <div className={styles.salidas}>
+      {/*
+       * `data-nosnippet`: texto de interfaz que Google no debe usar como fragmento. Sin esto, el
+       * resultado de una ficha llegó a abrirse con "Cómo llegar Abre Google Maps en una pestaña
+       * nueva" en lugar de con lo que dice el local. El atributo solo vale en `div`, `span` y
+       * `section`, y no cambia nada de lo que se ve ni de lo que lee un lector de pantalla.
+       */}
+      <div className={styles.salidas} data-nosnippet="">
         <a
           className={styles.directions}
           href={directions.url}
@@ -380,7 +386,7 @@ export function PlaceDetail({ place, plaza, backLabel, onBack, onClose }: PlaceD
        * Lo que decía no se pierde: pasa al texto de ayuda de las estrellas, que es donde ya se
        * estaba mirando, y sigue nombrando el bloque para quien lo escucha.
        */}
-      <section className={styles.personal} aria-label={t('place.onlyYou')}>
+      <section className={styles.personal} aria-label={t('place.onlyYou')} data-nosnippet="">
         <RatingStars placeId={place.id} placeName={place.name} />
         <VisitButton placeId={place.id} placeName={place.name} sinSuperficie />
       </section>

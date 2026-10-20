@@ -93,15 +93,18 @@ export function PlazaPanel({
               {plaza.address}
             </span>
           )}
-          <a
-            className={styles.inlineLink}
-            href={plazaDirectionsUrl(plaza)}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {t('plaza.directions')}
-            <ArrowUpRight aria-hidden="true" />
-          </a>
+          {/* `data-nosnippet` no vale en un `<a>`: se envuelve, y el envoltorio no genera caja. */}
+          <span className={styles.sinFragmento} data-nosnippet="">
+            <a
+              className={styles.inlineLink}
+              href={plazaDirectionsUrl(plaza)}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {t('plaza.directions')}
+              <ArrowUpRight aria-hidden="true" />
+            </a>
+          </span>
         </p>
       </header>
 

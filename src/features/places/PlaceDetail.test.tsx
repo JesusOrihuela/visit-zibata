@@ -47,6 +47,33 @@ describe('PlaceDetail', () => {
     expect(directions).toHaveAttribute('rel', 'noopener noreferrer')
   })
 
+  it('excluye de los fragmentos de búsqueda el texto de interfaz, no lo que dice el local', async () => {
+    const { container } = await renderWithCatalog(
+      <PlaceDetail
+        place={makePlace({
+          id: 'cafe-aurora',
+          plazaId: plaza.id,
+          name: 'Café Aurora',
+          giros: ['cafeteria'],
+          description: { es: 'Café de especialidad.', en: 'Specialty coffee.' },
+        })}
+        plaza={plaza}
+        backLabel="Volver a Plaza Norte"
+        onBack={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    )
+    // Google solo reconoce `data-nosnippet` en span, div y section. (El botón de compartir no se
+    // dibuja en jsdom, que no trae hoja del sistema ni portapapeles; lo cubre la prueba E2E.)
+    const excluidos = [...container.querySelectorAll('[data-nosnippet]')]
+    expect(excluidos.map((el) => el.tagName.toLowerCase()).sort()).toEqual(['div', 'section'])
+    const dentro = (elemento: HTMLElement) => Boolean(elemento.closest('[data-nosnippet]'))
+    expect(dentro(screen.getByText('Abre Google Maps en una pestaña nueva'))).toBe(true)
+    expect(dentro(screen.getByRole('region', { name: 'Solo para ti' }))).toBe(true)
+    expect(dentro(screen.getByText('Café de especialidad.'))).toBe(false)
+    expect(dentro(screen.getByText('Plaza Norte'))).toBe(false)
+  })
+
   it('sin datos adicionales no muestra botones vacíos y lo indica', async () => {
     await setup(makePlace({ id: 'x', plazaId: plaza.id, name: 'Sin datos' }))
     expect(screen.queryByRole('heading', { name: 'Contacto y redes' })).not.toBeInTheDocument()

@@ -54,6 +54,11 @@ así que encontraba cero siempre: la prueba no fallaba nunca porque no se ejecut
 `test.skip` que depende de encontrar el objetivo no distingue "no aplica" de "ya no existe". Si una
 prueba puede saltarse, la condición tiene que mirar el dato (hay o no hay abiertos), no el DOM.
 
+`fragmentos.spec.ts` mide el DOM renderizado, no a Google: que el texto de interfaz de una ficha y de
+una zona ("Cómo llegar", su ayuda, compartir, calificar, el estado oculto de las tarjetas) esté dentro
+de un `data-nosnippet` válido (`span`, `div` o `section`) y que el nombre, la zona, la dirección y la
+descripción no. Se comprobó que **falla** sin el cambio. Ver [ARQUITECTURA](ARQUITECTURA.md).
+
 `catalogo.spec.ts` es distinto del resto y conviene saber por qué: no comprueba una función, sino el
 sistema de diseño ([docs/CATALOGO.md](CATALOGO.md)). Son ocho casos: las cinco formas de lo que se
 pulsa, los altos, la letra por papel, el contraste entre los dos estados del interruptor, el alto
