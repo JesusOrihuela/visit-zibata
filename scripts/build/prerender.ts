@@ -26,6 +26,7 @@ import type { Category, Place, Plaza } from '../../src/types/domain.ts'
 import { contenidoDeLista, contenidoDeLugar } from './contenido.ts'
 import { descripcionDeFicha, lugarDe, repetidos } from './metadatos.ts'
 import { bloque, listado, negocio } from './structured-data.ts'
+import { repartirVecinos } from './vecinos.ts'
 
 type Locale = 'es' | 'en'
 const LOCALES: Locale[] = ['es', 'en']
@@ -271,6 +272,23 @@ export function pagesFor(
     mismaDescripcion.has(indice) ? componer(ficha, true) : (primeras[indice] ?? ''),
   )
 
+  // A qué locales enlaza cada ficha: el mismo bloque de siempre, repartido entre todos (ver vecinos.ts).
+  const placeById = new Map(data.places.map((place) => [place.id, place]))
+  const vecinosDe = repartirVecinos(
+    data.places.map((place) => ({
+      id: place.id,
+      plazaId: place.plazaId,
+      categorias: [
+        ...new Set(
+          [...place.giros, ...(place.secundarios ?? [])].flatMap((giro) => {
+            const categoria = categoryOfGiro.get(giro)
+            return categoria ? [categoria.id] : []
+          }),
+        ),
+      ],
+    })),
+  )
+
   fichas.forEach(({ place, plaza, giros }, indice) => {
     const image = `${ogDir}${place.slug}.jpg`
     pages.push({
@@ -317,10 +335,10 @@ export function pagesFor(
         tituloHorario: copy['place.hours'],
         contacto: contactoDe(place),
         tituloContacto: copy['place.contact'],
-        vecinos: data.places
-          .filter((otro) => otro.plazaId === place.plazaId && otro.id !== place.id)
-          .slice(0, 8)
-          .map((otro) => ({ texto: otro.name, href: route({ placeSlug: otro.slug }) })),
+        vecinos: (vecinosDe.get(place.id) ?? []).flatMap((id) => {
+          const otro = placeById.get(id)
+          return otro ? [{ texto: otro.name, href: route({ placeSlug: otro.slug }) }] : []
+        }),
         tituloVecinos: fill(copy['seo.nearby'], {
           plaza: plaza ? text(plaza.name, locale) : 'Zibatá',
         }),

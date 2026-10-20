@@ -276,6 +276,20 @@ español, que es el idioma por omisión del sitio). Las dos listas de páginas s
 recorrido, así que la gemela en el otro idioma ocupa la misma posición y las `hreflang` salen sin
 emparejar por ruta.
 
+### A qué locales enlaza cada ficha
+
+Cada ficha servida termina con "Más en {zona}": una lista de hasta **8** locales de su misma zona.
+Antes eran los 8 primeros del dataset para todos, así que en las zonas grandes (Xentric Anáhuac 25
+locales, Paseo Zibatá 24, Anáhuac Querétaro 12, Plaza Zielo 10) los mismos ocho recibían el enlace de
+todos y 37 de las 101 fichas tenían **un único enlace entrante**. `scripts/build/vecinos.ts` reparte
+la lista: cada ficha elige primero al vecino que menos enlaces lleva hasta ese momento, después al
+de su misma categoría y después al primero del dataset. Es determinista y no depende del idioma.
+
+En las zonas donde caben todos (hasta 9 locales) la lista es la de siempre. Este bloque **solo existe en
+el HTML servido**: la interfaz no tiene uno equivalente, así que el reparto no añade enlaces ni toca la
+interfaz, solo cambia cuáles. Resultado medido: mediana de enlaces entrantes 8 a 9, máximo 25 a 10 y
+fichas con un solo enlace 37 a 2 (las dos que están solas en su zona: MOL Pitahaya y Zibatá Golf).
+
 ### Título y descripción de una ficha
 
 `scripts/build/metadatos.ts` decide el título y la descripción de las 101 fichas **juntas**, porque

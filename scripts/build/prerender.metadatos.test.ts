@@ -226,3 +226,41 @@ describe('las zonas y la información no cambian de plantilla', () => {
     )
   })
 })
+
+describe('los enlaces entre fichas del HTML servido', () => {
+  const hrefs = (contenido: string | undefined) =>
+    [...(contenido ?? '').matchAll(/<a href="(\/lugar\/[a-z0-9-]+)"/g)].map((m) => m[1] ?? '')
+
+  it('casi ninguna ficha queda con un único enlace entrante: solo las que están solas en su zona', () => {
+    const entrantes = new Map<string, number>()
+    for (const pagina of paginas.es) {
+      if (pagina.href.startsWith('/zona/') || pagina.href.startsWith('/lugar/')) {
+        for (const destino of new Set(hrefs(pagina.contenido))) {
+          entrantes.set(destino, (entrantes.get(destino) ?? 0) + 1)
+        }
+      }
+    }
+    const solas = data.plazas
+      .map((plaza) => data.places.filter((place) => place.plazaId === plaza.id))
+      .filter((locales) => locales.length === 1)
+      .flat()
+      .map((place) => `/lugar/${place.slug}`)
+    const conUno = data.places
+      .map((place) => `/lugar/${place.slug}`)
+      .filter((href) => (entrantes.get(href) ?? 0) <= 1)
+    // Antes del reparto eran 37: los ocho primeros de cada zona grande recibían todos los enlaces.
+    expect(conUno.sort()).toEqual(solas.sort())
+  })
+
+  it('la ficha en español y la inglesa enlazan a los mismos locales', () => {
+    for (const place of data.places) {
+      const es = hrefs(ficha('es', place.slug).contenido).map((h) => h.replace('/lugar/', ''))
+      const en = [
+        ...(ficha('en', place.slug).contenido ?? '').matchAll(
+          /<a href="\/en\/place\/([a-z0-9-]+)"/g,
+        ),
+      ].map((m) => m[1])
+      expect(en, place.slug).toEqual(es)
+    }
+  })
+})

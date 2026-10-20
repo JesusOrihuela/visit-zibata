@@ -60,6 +60,12 @@ WhatsApp, los caracteres especiales y, sobre las 234 páginas del sitemap, que n
 descripción se repita dentro de un idioma). La lógica está en `scripts/build/metadatos.test.ts` y
 `scripts/build/prerender.metadatos.test.ts`, que se comprobó que **fallan** con el generador anterior.
 
+`scripts/build/vecinos.test.ts` y el último bloque de `prerender.metadatos.test.ts` comprueban el
+reparto de enlaces entre fichas con el dataset real (se comprobó que **falla** con el reparto anterior),
+y `scripts/build/crecimiento.test.ts` recorre el generador con una categoría que no es de comida
+(una peluquería, en memoria y sin tocar `data/`): ficha, `LocalBusiness` sin `servesCuisine`,
+descripción con su giro y zona, y la zona que la lista.
+
 `fragmentos.spec.ts` mide el DOM renderizado, no a Google: que el texto de interfaz de una ficha y de
 una zona ("Cómo llegar", su ayuda, compartir, calificar, el estado oculto de las tarjetas) esté dentro
 de un `data-nosnippet` válido (`span`, `div` o `section`) y que el nombre, la zona, la dirección y la
