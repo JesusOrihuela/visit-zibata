@@ -43,8 +43,26 @@ de pasar por casualidad.
 
 Cubren: mapa 3D y marcadores, plazas y fichas, búsqueda y filtros, favoritos, enlaces profundos y botón
 atrás, teclado (salto al buscador, Escape), 404 propio, región viva única, táctil (toques
-y arrastre de la hoja), responsive en 9 tamaños, seguridad (CSP, enlaces externos, 404) y degradación
-(sin WebGL2, sin datos, sin chunk del mapa, sin cartografía base, sin conexión, registro inválido).
+y arrastre de la hoja), responsive en 9 tamaños, seguridad (CSP, enlaces externos, 404), el catálogo
+de interactuables y degradación (sin WebGL2, sin datos, sin chunk del mapa, sin cartografía base,
+sin conexión, registro inválido).
+
+**Cuidado con `test.skip` condicional.** `abierto-ahora.spec.ts` buscaba el filtro con
+`getByRole('button')` y se saltaba sola cuando no encontraba nada, con el pretexto razonable de que
+a ciertas horas no hay ningún local abierto. El filtro había pasado a `role="switch"` tiempo atrás,
+así que encontraba cero siempre: la prueba no fallaba nunca porque no se ejecutaba nunca. Un
+`test.skip` que depende de encontrar el objetivo no distingue "no aplica" de "ya no existe". Si una
+prueba puede saltarse, la condición tiene que mirar el dato (hay o no hay abiertos), no el DOM.
+
+`catalogo.spec.ts` es distinto del resto y conviene saber por qué: no comprueba una función, sino el
+sistema de diseño ([docs/CATALOGO.md](CATALOGO.md)). Son ocho casos: las cinco formas de lo que se
+pulsa, los altos, la letra por papel, el contraste entre los dos estados del interruptor, el alto
+del avatar contra su barra, que lo que tiene dirección propia sea un enlace, la concentricidad de
+las superficies anidadas y que nada de lo que flota sobre el mapa sea transparente. Mira lo que el navegador **calcula**, no lo que
+el CSS dice, que es la única forma de atrapar una regla compartida ganándole a la del módulo por el
+orden en que el empaquetador junta los archivos. Encontró tres cosas que no se veían leyendo el CSS:
+un `select` nativo colando su esquina de 6,5 px, cuatro píxeles de desnivel entre el avatar y la
+tarjeta de búsqueda, y la vía del interruptor a 1,66:1 contra su perilla cuando WCAG pide 3:1.
 
 Los enlaces profundos se abren con el ayudante `openApp(page, { path })`, que navega a la ruta real
 (`lugar/tomassa`) en vez de a un hash. Es el mismo camino que recorre quien pega el enlace en la barra

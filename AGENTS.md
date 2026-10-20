@@ -43,10 +43,32 @@ El sistema vive en [DESIGN.md](DESIGN.md): los tokens con su porqué, las reglas
 el build carga como defecto sin que sea regla. La fuente de verdad de los valores sigue siendo
 `src/styles/tokens.css`.
 
-Cuatro herramientas y un hueco cada una, para que no se pisen:
+**La fuente única es [docs/CATALOGO.md](docs/CATALOGO.md)**: el catálogo de interfaz. Tres reglas,
+y las tres dicen lo mismo de tres maneras (lo que decide es la función, nunca el sitio):
+
+- **la forma** la decide el tipo de acción, en cinco familias;
+- **el tamaño de letra**, el papel del texto, en nueve escalones;
+- **la esquina de una superficie**, dónde está apoyada.
+
+Están ahí también el color, los hovers, los estados y las 75 piezas una por una. Los valores viven
+en `src/styles/controls.module.css` y `src/styles/tokens.css`. Un módulo no vuelve a dibujar un
+botón: lo compone.
+
+```css
+.enviar {
+  composes: base boton principal from "../../styles/controls.module.css";
+}
+```
+
+Antes de añadir nada, mirar de qué familia es. Si no es de ninguna, se escribe por
+qué en el catálogo; lo que no vale es inventarle una forma. `node scripts/inventario-interactuables.mjs`
+lista todas y `tests/e2e/catalogo.spec.ts` fija las reglas.
+
+Cinco herramientas y un hueco cada una, para que no se pisen:
 
 | Capa | Herramienta | Cuándo |
 |---|---|---|
+| Formas, letra y superficies | [docs/CATALOGO.md](docs/CATALOGO.md) + `inventario-interactuables.mjs` | antes de añadir cualquier pieza |
 | Conformidad, automática | `impeccable` (hook en cada edición, y `detect <url>`) | sola |
 | Estructura y tipografía | `/hallmark audit` | antes de un cambio grande de UI |
 | Movimiento | `review-animations` | si tocas una transición |
@@ -59,12 +81,37 @@ apagadas y su evidencia están en DESIGN.md; no se apaga una regla para que el c
 ## Antes de terminar un cambio
 
 ```bash
-npm run check          # lint + tipos + tests + build
-npm run test:e2e       # si tocaste UI o mapa
+npm run check                                 # lint + tipos + tests + build
+npx playwright test <spec> --project=desktop  # mientras iteras: un spec, un proyecto
+node scripts/inventario-interactuables.mjs    # si añadiste algo que se pulse
+npm run test:e2e                              # la matriz entera, UNA vez antes de cerrar
 ```
+
+La matriz completa son cuatro proyectos y unos diez minutos. Mientras iteras no aporta nada que no
+dé el spec que estás tocando en escritorio; déjala para el final. Una sesión de este repositorio
+llegó a correrla diez veces, y nueve sobraban.
+
+El inventario tiene que terminar diciendo *"Todas componen una familia del catálogo"*. Si nombra
+alguna, o entra en una familia de [docs/CATALOGO.md](docs/CATALOGO.md) o se escribe ahí por qué no
+entra en ninguna.
+
+## Modelos
+
+Sonnet ejecuta, Opus asesora, Haiku acarrea. Está en el ajuste global, así que no hace falta nada
+por proyecto; el porqué y los avisos, en `~/.claude/QUALITY-STACK.md` § Models.
+
+**Aquí se consulta al asesor antes de** proponer o aprobar un cambio de diseño, tocar una regla de
+[docs/CATALOGO.md](docs/CATALOGO.md), o dar por terminado un cambio. En este repositorio los fallos
+caros no han sido de código sino de juicio: una recomendación de diseño sin respaldo que hubo que
+retirar, una prueba que medía la propiedad equivocada y daba verde con el defecto puesto, una
+expresión regular que se comió 237 líneas. Ninguna puerta automática atrapa eso.
+
+**Si un diseño se rechaza dos veces en una sesión**, eso es la señal para poner `"model": "opus"` en
+`.claude/settings.json` de este proyecto, en vez de seguir intentando con el mismo.
 
 ## Toolset
 
+- modelos: Sonnet ejecutor + Opus asesor + Haiku acarreo (ver arriba)
 - delegation: on
 - lean-code: on
 - verify-loop: on

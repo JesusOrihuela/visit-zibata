@@ -2,7 +2,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { today, toggleVisitToday, visitsStore } from './useVisits.ts'
+import { registrarVisita, today, visitsStore } from './useVisits.ts'
 import { VisitButton } from './VisitButton.tsx'
 
 const stored = () => JSON.parse(window.localStorage.getItem('zibata:visitas') ?? '{}')
@@ -17,36 +17,40 @@ describe('VisitButton', () => {
     visitsStore.write(new Map())
   })
 
-  it('marca la visita de hoy y la cuenta', async () => {
+  it('sin visitas, invita a registrar la primera', () => {
     render(<VisitButton placeId="cafe-aurora" placeName="Café Aurora" />)
     expect(screen.getByText('Registra tu primera visita')).toBeInTheDocument()
-
-    await userEvent.click(screen.getByRole('button', { name: /Registrar tu visita de hoy/ }))
-    expect(stored()).toEqual({ 'cafe-aurora': [today()] })
-    expect(screen.getByRole('button', { name: /Quitar la visita de hoy/ })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    )
-    // La cuenta va dentro del botón (con su nombre para lectores de pantalla) y el aviso al lado.
-    expect(screen.getByText('1 visita')).toBeInTheDocument()
-    expect(screen.getByText('Toca para deshacer, solo hoy')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Registrar una visita a Café Aurora/ })).toBeVisible()
   })
 
-  it('el mismo día se puede deshacer', async () => {
+  it('cuenta las visitas y dice cuándo fue la última', () => {
+    registrarVisita('cafe-aurora', '2026-09-24')
+    registrarVisita('cafe-aurora', '2026-10-12')
     render(<VisitButton placeId="cafe-aurora" placeName="Café Aurora" />)
-    const button = screen.getByRole('button')
-    await userEvent.click(button)
-    await userEvent.click(button)
-    expect(stored()).toEqual({})
+    expect(screen.getByText(/Has venido 2 veces/)).toBeInTheDocument()
+    expect(screen.getByText(/12 de octubre de 2026/)).toBeInTheDocument()
   })
 
-  it('la visita de otro día ya no se deshace, se acumula', () => {
-    toggleVisitToday('cafe-aurora', '2026-09-24')
-    toggleVisitToday('cafe-aurora', '2026-09-25')
-    expect(stored()).toEqual({ 'cafe-aurora': ['2026-09-24', '2026-09-25'] })
-    // Desmarcar hoy solo quita la de hoy: la de ayer ya ocurrió.
-    toggleVisitToday('cafe-aurora', '2026-09-25')
+  it('el historial se abre y cada fecha se puede quitar', async () => {
+    registrarVisita('cafe-aurora', '2026-09-24')
+    registrarVisita('cafe-aurora', '2026-10-12')
+    render(<VisitButton placeId="cafe-aurora" placeName="Café Aurora" />)
+
+    await userEvent.click(screen.getByRole('button', { name: 'Ver todas' }))
+    const fechas = screen.getAllByRole('listitem').map((item) => item.textContent)
+    // De la más reciente a la más antigua.
+    expect(fechas[0]).toContain('12/Oct/2026')
+
+    await userEvent.click(screen.getByRole('button', { name: /Quitar la visita del 12/ }))
     expect(stored()).toEqual({ 'cafe-aurora': ['2026-09-24'] })
+  })
+
+  it('cualquier día se registra, y el mismo día dos veces cuenta una', () => {
+    registrarVisita('cafe-aurora', '2026-09-25')
+    registrarVisita('cafe-aurora', '2026-09-24')
+    registrarVisita('cafe-aurora', '2026-09-25')
+    // Ordenadas y sin repetir: el orden personal lee la última como la más reciente.
+    expect(stored()).toEqual({ 'cafe-aurora': ['2026-09-24', '2026-09-25'] })
   })
 
   it('"hoy" es el día de la persona, no el de UTC', () => {

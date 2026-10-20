@@ -27,90 +27,42 @@
   padding: 4px 12px;
 }
 
+/*
+ * La cápsula del catálogo, sin variante propia. Antes había dos: una apagada dentro del panel y una
+ * translúcida con desenfoque sobre el mapa. La translúcida se va porque sobre el mapa nada puede
+ * fiarse de lo que haya detrás, y la apagada se va porque entonces las dos son la misma.
+ */
 .chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  height: 2.125rem;
-  padding: 0 0.8rem;
-  border: 0;
-  border-radius: var(--radius-pill);
-  background: var(--color-surface-muted);
-  box-shadow: inset 0 0 0 1px var(--color-border);
-  color: var(--ink-800);
-  font-size: var(--text-sm);
-  font-weight: 500;
-  white-space: nowrap;
-  transition:
-    background-color var(--duration-fast) var(--ease-out),
-    color var(--duration-fast) var(--ease-out),
-    box-shadow var(--duration-fast) var(--ease-out);
+  composes: base pildora from "../../styles/controls.module.css";
 }
 
-.chip svg {
-  color: var(--olive-600);
-}
-
-.chip:hover {
-  background: var(--lime-50);
-  box-shadow: inset 0 0 0 1px rgb(83 108 42 / 0.3);
-}
-
-.chip[aria-pressed="true"] {
-  background: var(--olive-600);
-  box-shadow: none;
-  color: white;
-}
-
-.chip[aria-pressed="true"] svg {
-  color: var(--lime-300);
-}
-
-.count {
-  min-width: 1.25rem;
-  padding: 0 0.3rem;
-  border-radius: var(--radius-pill);
-  background: rgb(83 108 42 / 0.1);
-  color: var(--olive-700);
-  font-size: var(--text-2xs);
-  font-weight: 700;
-  line-height: 1.25rem;
-  text-align: center;
-  font-variant-numeric: tabular-nums;
-}
-
-/* Contraste AA: cifra oscura sobre lima dentro de la pastilla activa. */
-.chip[aria-pressed="true"] .count {
-  background: var(--lime-500);
-  color: var(--ink-900);
-}
-
-/* Flechas de desplazamiento (solo ratón): pegadas a cada extremo del carril. */
+/*
+ * Las flechas del carril: atajo de ratón, no acción de la página. Con teclado se llega a las mismas
+ * cápsulas tabulando, así que estas quedan fuera del orden de tabulación (`tabIndex={-1}` en el
+ * componente) y desaparecen donde el gesto nativo ya sirve.
+ */
 .arrow {
+  composes: base botonIcono mini sobreMapa from "../../styles/controls.module.css";
   position: absolute;
   top: 50%;
-  display: grid;
-  place-items: center;
-  width: 2.125rem;
-  height: 2.125rem;
-  border: 0;
-  border-radius: 50%;
-  background: var(--color-surface-solid);
-  box-shadow:
-    0 0 0 1px var(--color-border),
-    var(--shadow-sm);
-  color: var(--ink-700);
   translate: 0 -50%;
+  /*
+   * Redonda y fuera del orden de tabulación como manda su familia, pero con el alto de la cápsula y
+   * no los 32 px del atajo: va dentro del mismo carril, y cuatro píxeles de diferencia entre dos
+   * piezas de la misma fila se leen como un descuido. Lo fija layering.spec.ts.
+   */
+  width: var(--control-h);
+  height: var(--control-h);
+}
+
+/* Reemplaza la superficie del catálogo, así que le toca decir qué hace al pasar por encima. */
+.arrow:hover {
+  background: var(--hover-quiet);
 }
 
 .arrow[hidden] {
   /* `display: grid` gana al `[hidden]` del navegador: sin esto la flecha se ve con el carril al tope. */
   display: none;
-}
-
-.arrow svg {
-  width: 1rem;
-  height: 1rem;
 }
 
 .arrow[data-side="start"] {
@@ -121,33 +73,15 @@
   right: 2px;
 }
 
-.arrow:hover {
-  background: var(--lime-50);
-  color: var(--olive-700);
-}
-
-/* Con dedo o trackpad el gesto nativo basta y las flechas solo taparían pastillas. */
+/* Con dedo o trackpad el gesto nativo basta y las flechas solo taparían cápsulas. */
 @media (hover: none) {
   .arrow {
     display: none;
   }
 }
 
-/* Sobre el mapa: pastillas con fondo translúcido y sombra. */
-.rail[data-variant="floating"] .chip {
-  background: var(--color-surface);
-  backdrop-filter: var(--blur-surface);
-  box-shadow:
-    0 0 0 1px var(--color-border),
-    var(--shadow-sm);
-}
-
-.rail[data-variant="floating"] .chip[aria-pressed="true"] {
-  background: var(--olive-600);
-}
-
 /* Dentro de un panel: el carril sangra hacia los márgenes lo mismo que el relleno interno de las
-   pastillas (que deja sitio al desvanecido), así que la primera queda alineada con el resto del
+   cápsulas (que deja sitio al desvanecido), así que la primera queda alineada con el resto del
    contenido en vez de 12 px más adentro. */
 .rail[data-variant="inline"] {
   margin-inline: -12px;

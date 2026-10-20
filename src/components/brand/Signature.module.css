@@ -4,9 +4,12 @@
  * la marca y la leyenda es solo el conector.
  */
 .signature {
+  composes: base from "../../styles/controls.module.css";
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+  font-size: inherit;
+  font-weight: inherit;
   text-decoration: none;
   white-space: nowrap;
 }
@@ -25,9 +28,16 @@
   color: var(--ink-700);
 }
 
+/*
+ * Al pasar por encima el logotipo se aviva, y no se subraya: el wordmark es una marca y un
+ * subrayado la convierte en un enlace de texto cualquiera.
+ *
+ * Y se aviva solo en el hover, no se apaga en reposo. El catálogo pedía jugar con la opacidad, pero
+ * bajarla en reposo deja un texto de 11 px por debajo del 4,5:1 que necesita para leerse, y eso no
+ * se compensa con nada.
+ */
 .signature:hover .wordmark {
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
+  color: var(--ink-900);
 }
 
 /* El punto en oro es lo que liga el wordmark con el píxel-cursor del símbolo. */

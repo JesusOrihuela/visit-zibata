@@ -40,7 +40,15 @@ describe('FilterBar', () => {
     const chips = screen.getByRole('list', { name: 'Categorías' })
     expect(chips).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Todo/ })).toHaveAttribute('aria-pressed', 'true')
-    expect(screen.getByRole('button', { name: /Desayunos y café/ })).toHaveTextContent('2')
+    /*
+     * La cuenta va en el nombre del control, no dentro de él. En la pantalla se quitó por el mismo
+     * motivo que en los interruptores: diecinueve cifras repetidas no dicen más que una, y el
+     * número de lo que estás viendo ya lo dice la cabecera del panel, junto a la lista que cuenta.
+     * Quien no ve la fila sí la necesita, porque no puede mirar cuál está llena.
+     */
+    const desayunos = screen.getByRole('button', { name: /Desayunos y café/ })
+    expect(desayunos).toHaveAccessibleName('Desayunos y café, 2 lugares')
+    expect(desayunos).not.toHaveTextContent('2')
   })
 
   it('selecciona una categoría y al volver a pulsarla la quita', async () => {
@@ -86,12 +94,12 @@ describe('FilterBar', () => {
   it('oculta "Limpiar filtros" y favoritos cuando no aplican', () => {
     setup()
     expect(screen.queryByRole('button', { name: 'Limpiar filtros' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /Favoritos/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('switch', { name: /Favoritos/ })).not.toBeInTheDocument()
   })
 
   it('muestra el filtro de favoritos cuando hay alguno guardado', async () => {
     const props = setup({ favoritesCount: 2 })
-    await userEvent.click(screen.getByRole('button', { name: /Favoritos/ }))
+    await userEvent.click(screen.getByRole('switch', { name: /Favoritos/ }))
     expect(props.onToggleFavorites).toHaveBeenCalled()
   })
 })
@@ -101,16 +109,28 @@ describe('el filtro de abiertos', () => {
     // Una pastilla que no puede dar resultados estorba más de lo que ayuda. A las cuatro de la
     // mañana desaparece sola.
     setup({ openNowCount: 0 })
-    expect(screen.queryByRole('button', { name: /Abierto ahora/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('switch', { name: /Abierto ahora/ })).not.toBeInTheDocument()
   })
 
   it('anuncia cuántos hay abiertos y se puede pulsar', async () => {
     const onToggleOpenNow = vi.fn()
     setup({ openNowCount: 7, onToggleOpenNow })
-    const boton = screen.getByRole('button', { name: /Abierto ahora/ })
-    expect(boton).toHaveTextContent('7')
-    expect(boton).toHaveAttribute('aria-pressed', 'false')
-    await userEvent.click(boton)
+    /*
+     * `switch` y no `button`: los dos síes o noes de la fila son ajustes que quedan puestos, no
+     * botones que se quedan hundidos, y el papel que se anuncia tiene que decir cuál de las dos
+     * cosas es.
+     */
+    const interruptor = screen.getByRole('switch', { name: /Abierto ahora/ })
+    /*
+     * La cuenta va en el nombre del control, y en ningún sitio más. El interruptor se quedó desnudo
+     * (sin caja, sin rótulo y sin cifra): de un filtro lo que importa es si está puesto, y el
+     * número de resultados se ve en la fila de abajo. Quien no ve la pantalla sí la recibe.
+     */
+    expect(interruptor).toHaveAccessibleName('Abierto ahora, 7')
+    expect(interruptor).not.toHaveTextContent('7')
+    expect(screen.queryByText('7')).not.toBeInTheDocument()
+    expect(interruptor).toHaveAttribute('aria-checked', 'false')
+    await userEvent.click(interruptor)
     expect(onToggleOpenNow).toHaveBeenCalled()
   })
 
@@ -118,8 +138,8 @@ describe('el filtro de abiertos', () => {
     // Si desapareciera al cerrar el último local, no habría forma de quitarlo y la lista se
     // quedaría vacía sin explicación.
     setup({ openNowCount: 0, openNowOnly: true })
-    expect(screen.getByRole('button', { name: /Abierto ahora/ })).toHaveAttribute(
-      'aria-pressed',
+    expect(screen.getByRole('switch', { name: /Abierto ahora/ })).toHaveAttribute(
+      'aria-checked',
       'true',
     )
   })

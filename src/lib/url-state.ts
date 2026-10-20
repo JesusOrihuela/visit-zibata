@@ -158,3 +158,38 @@ export function pathFromLegacyHash(hash: string, base: string): string | null {
   if (!state.plazaSlug && !state.placeSlug && !state.infoTopic) return null
   return buildPath(state, base)
 }
+
+/**
+ * La dirección de un lugar o de una zona, para ponerla en un enlace de verdad.
+ *
+ * Abrir un lugar es navegar: la ruta existe, se puede compartir y funciona sin JavaScript porque
+ * la guía la pinta también en el servidor. Mientras eso se abría con un botón, el navegador no
+ * podía ofrecer lo que ofrece con cualquier enlace (abrir en otra pestaña, copiar la dirección,
+ * ver el destino antes de pulsar) y un lector de pantalla anunciaba "botón" donde tocaba "enlace".
+ *
+ * El W3C lo dice sin rodeos: añadir el rol de enlace a otro elemento no hace que el navegador
+ * añada el comportamiento de un enlace, y entonces proveerlo es responsabilidad de quien escribe.
+ * Sale más barato usar el elemento que lo trae puesto.
+ */
+export const rutaDeLugar = (slug: string, locale: Locale, base: string): string =>
+  buildPath({ locale, placeSlug: slug, plazaSlug: null, categorySlug: null, infoTopic: null }, base)
+
+export const rutaDeZona = (slug: string, locale: Locale, base: string): string =>
+  buildPath({ locale, placeSlug: null, plazaSlug: slug, categorySlug: null, infoTopic: null }, base)
+
+/**
+ * Y la de una página de información, que también es una dirección de verdad.
+ *
+ * "Acerca", "Privacidad" y "Sugiere un cambio" se abrían con un botón teniendo cada una su ruta
+ * (`/info/privacidad` y las suyas), así que pasaba lo mismo: no se podían abrir aparte ni copiar,
+ * y un buscador no encontraba ninguna.
+ *
+ * El tutorial entra igual que las otras tres. Se dibuja como una capa encima de lo que estés
+ * viendo, pero tiene su propia ruta y se abre directamente desde ella, así que el enlace que lleva
+ * a él es un enlace como los demás.
+ */
+export const rutaDeInfo = (topic: InfoTopic, locale: Locale, base: string): string =>
+  buildPath(
+    { locale, placeSlug: null, plazaSlug: null, categorySlug: null, infoTopic: topic },
+    base,
+  )

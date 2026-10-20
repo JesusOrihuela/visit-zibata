@@ -1,8 +1,23 @@
+/*
+ * La nota al lado, y debajo solo cuando la ficha es estrecha.
+ *
+ * Lo que decide es el ancho del contenedor, no el largo del texto. Antes envolvía por sí sola, y
+ * como el texto cambia (la invitación, la vista previa al pasar por encima, la calificación
+ * puesta) cada uno tenía un ancho distinto: la nota saltaba de debajo a al lado según lo que
+ * dijera, delante de los ojos y mientras se usaba. Con el umbral en el contenedor, en una pantalla
+ * dada la nota está siempre en el mismo sitio, diga lo que diga.
+ */
 .rating {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.25rem var(--space-3);
+}
+
+@container ficha (max-width: 20rem) {
+  .rating > .note {
+    flex: 1 0 100%;
+  }
 }
 
 .scale {
@@ -94,7 +109,7 @@
 }
 
 .star:hover {
-  background: var(--color-surface-muted);
+  background: var(--hover-quiet);
 }
 
 .star:has(input:focus-visible) {

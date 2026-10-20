@@ -2,6 +2,13 @@
   width: min(24.5rem, calc(100vw - 2rem));
   padding: 0;
   border: 0;
+
+  /*
+
+   * 367 px de lado corto.
+
+   */
+
   border-radius: var(--radius-xl);
   background: transparent;
   color: var(--color-text);
@@ -33,29 +40,25 @@
   max-height: calc(100dvh - 2.5rem);
   overflow-y: auto;
   padding: var(--space-4) var(--space-5) var(--space-5);
+
+  /*
+
+   * 367 px de lado corto.
+
+   */
+
   border-radius: var(--radius-xl);
   background: var(--sand-25);
   box-shadow: var(--shadow-lg);
 }
 
+/* Cerrar ejecuta: cuadrado de icono con la esquina de la familia, no círculo. */
 .close {
+  composes: base botonIcono conSuperficie from "../../styles/controls.module.css";
   position: absolute;
-  /* Mismos márgenes que el contenido de la tarjeta: alineado con el título y con los botones de abajo. */
+  /* Mismos márgenes que el contenido de la tarjeta: alineado con el título y con los de abajo. */
   top: var(--space-4);
   right: var(--space-5);
-  display: grid;
-  place-items: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  border: 0;
-  border-radius: 50%;
-  background: var(--color-surface-muted);
-  color: var(--ink-700);
-}
-
-.close svg {
-  width: 1rem;
-  height: 1rem;
 }
 
 /* La ilustración vive en su propio panel: se lee como imagen y ordena la tarjeta. */
@@ -65,7 +68,18 @@
   padding: var(--space-3) var(--space-4);
   margin-bottom: var(--space-2);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+
+  /*
+
+   * Concentricidad: los 28 de la tarjeta menos sus 20 de relleno lateral.
+
+   * Es la única superficie de la guía que se apoya en la esquina de otra, así que es la única
+
+   * donde la resta se ve; el resto va lo bastante lejos del canto como para que mande el tamaño.
+
+   */
+
+  border-radius: var(--radius-sm);
   background: var(--sand-50);
 }
 
@@ -129,30 +143,12 @@
   margin-top: var(--space-2);
 }
 
-.primary,
-.secondary {
-  height: 2.75rem;
-  padding: 0 1.2rem;
-  border: 0;
-  border-radius: var(--radius-pill);
-  font-weight: 600;
-}
-
+/* Una sola llena por grupo: seguir es la principal y saltar es la fantasma. */
 .primary {
+  composes: base boton principal from "../../styles/controls.module.css";
   flex: 1;
-  background: var(--olive-600);
-  color: white;
-}
-
-.primary:hover {
-  background: var(--olive-700);
 }
 
 .secondary {
-  background: transparent;
-  color: var(--ink-700);
-}
-
-.secondary:hover {
-  background: var(--color-surface-muted);
+  composes: base boton fantasma from "../../styles/controls.module.css";
 }

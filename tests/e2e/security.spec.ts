@@ -31,7 +31,7 @@ test.describe('Seguridad', () => {
     )
     await waitForMap(page)
     const region = panel(page)
-    await region.getByRole('button', { name: 'Ver detalles de Bendito Bocado' }).click()
+    await region.getByRole('link', { name: 'Ver detalles de Bendito Bocado' }).click()
     await expect(region.getByRole('heading', { level: 2, name: 'Bendito Bocado' })).toBeVisible()
     await page.getByRole('searchbox', { name: 'Buscar lugares' }).fill('tacos')
     // Tiempo para que el mapa pida teselas, fuentes e imágenes tras los movimientos de cámara.

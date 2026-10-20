@@ -36,36 +36,16 @@
   gap: var(--space-2);
 }
 
+/*
+ * La misma cápsula que las categorías, porque hace lo mismo: elegir de un conjunto pequeño y
+ * visible. Lo que cambia es que aquí es una `label` con un radio escondido dentro, así que el
+ * relleno lo pinta `:has(input:checked)`: el estado del formulario, no una clase que haya que
+ * recordar poner.
+ */
 .whoOption {
-  display: inline-flex;
-  align-items: center;
-  min-height: 2rem;
-  padding: 0 0.8rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-pill);
-  background: var(--color-surface-solid);
-  color: var(--ink-700);
-  font-size: var(--text-xs);
-  font-weight: 600;
+  composes: pildora from "../../styles/controls.module.css";
+  position: relative;
   cursor: pointer;
-}
-
-.whoOption[data-on="true"] {
-  border-color: var(--olive-600);
-  background: var(--lime-50);
-  color: var(--olive-700);
-}
-
-.whoOption input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-}
-
-.whoOption:has(input:focus-visible) {
-  outline: 2.5px solid var(--color-focus);
-  outline-offset: 2px;
 }
 
 .field {
@@ -88,29 +68,22 @@
 }
 
 .input {
-  width: 100%;
-  padding: 0.55rem 0.7rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface-solid);
-  color: var(--ink-900);
-  font: inherit;
-  font-size: var(--text-sm);
-  resize: vertical;
+  composes: campo from "../../styles/controls.module.css";
 }
 
-.input:focus-visible {
-  outline: 2.5px solid var(--color-focus);
-  outline-offset: 1px;
+/* El área de texto crece con lo que se escribe: no tiene alto de control. */
+.area {
+  composes: campo areaTexto from "../../styles/controls.module.css";
 }
 
-.input[aria-invalid="true"] {
+.input[aria-invalid="true"],
+.area[aria-invalid="true"] {
   /*
    * Decía `var(--color-danger, #c0453c)` y ese token nunca existió, así que lo que se pintaba era
    * el fallback: el rojo de los corazones marcando un campo inválido. Dos semánticas opuestas con
    * el mismo color, por un nombre mal escrito que nadie veía.
    */
-  border-color: var(--danger-600);
+  box-shadow: inset 0 0 0 1.5px var(--danger-600);
 }
 
 .actions {
@@ -120,21 +93,9 @@
   gap: var(--space-3);
 }
 
+/* Ejecutar, no elegir: esquina de 6 px y no cápsula. Era píldora y se confundía con un filtro. */
 .send {
-  display: inline-flex;
-  align-items: center;
-  min-height: 2.5rem;
-  padding: 0 1.1rem;
-  border: 0;
-  border-radius: var(--radius-pill);
-  background: var(--olive-600);
-  color: white;
-  font-size: var(--text-sm);
-  font-weight: 600;
-}
-
-.send:hover {
-  background: var(--olive-700);
+  composes: base boton principal from "../../styles/controls.module.css";
 }
 
 .send:disabled {

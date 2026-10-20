@@ -1,24 +1,50 @@
+/*
+ * El idioma: bandera y código, como siempre, pero cada opción es un enlace de verdad.
+ *
+ * Lo que se ve no cambió; lo que cambió es que la versión en inglés tiene su dirección y se puede
+ * abrir aparte, copiar y compartir, y que el idioma en el que estás va marcado con `aria-current`
+ * en vez de adivinarse. En la barra solo cabe uno, así que el actual se esconde a la vista y queda
+ * para quien escucha: lo que se pulsa es el otro.
+ */
 .switch {
   flex-shrink: 0;
+}
+
+.switch ul {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/*
+ * El cambio de idioma es navegar: lleva a la misma página en el otro idioma, y es un `<a href>` de
+ * verdad. Sin subrayado ni color de enlace, porque lo que se pulsa es la pieza entera (bandera y
+ * código), igual que una tarjeta.
+ *
+ * La esquina es la de control y no la anidada que pedía la tarjeta de arriba: el catálogo da cinco
+ * formas a lo que se pulsa, y una sexta calculada aquí no la gana nadie de un vistazo.
+ */
+.otro {
+  composes: zonaPulsable from "../../styles/controls.module.css";
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  height: 2.5rem;
+  height: var(--control-h);
   padding: 0 0.7rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-pill);
-  background: var(--color-surface);
+  border-radius: var(--radius-control);
   color: var(--ink-700);
   font: 700 var(--text-xs) / 1 var(--font-sans);
   letter-spacing: 0.04em;
 }
 
-/* Ancho fijo: el botón mide lo mismo con "ES" que con "EN". */
+/* Ancho fijo: el enlace mide lo mismo con "ES" que con "EN". */
 .flag {
   flex-shrink: 0;
   width: 1.25rem;
   height: 1.25rem;
-  border-radius: 50%;
+  border-radius: var(--radius-round);
 }
 
 .code {
@@ -26,20 +52,28 @@
   text-align: center;
 }
 
-/* En pantallas estrechas manda el buscador: el botón se queda con el símbolo. */
+/*
+ * El idioma actual no se dibuja: en una barra que va justa de ancho, enseñar los dos nombres roba
+ * sitio al buscador. Sigue en el árbol para quien escucha, que es quien lo necesita para saber
+ * dónde está.
+ */
+.soloParaLectores {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* En pantallas estrechas manda el buscador: el enlace se queda con la bandera. */
 @media (max-width: 560px) {
-  .switch {
+  .otro {
     justify-content: center;
-    width: 2.5rem;
-    padding: 0;
+    padding: 0 0.5rem;
   }
 
   .code {
     display: none;
   }
-}
-
-.switch:hover {
-  background: var(--lime-50);
-  color: var(--olive-700);
 }

@@ -14,15 +14,20 @@ test.describe('Abierto ahora', () => {
     await waitForMap(page)
     const region = panel(page)
 
-    const pastilla = page.getByRole('button', { name: /Abierto ahora/ })
-    if ((await pastilla.count()) === 0) {
+    /*
+     * `switch` y no `button`. Pedia `button`, no encontraba nada y se saltaba sola con el pretexto
+     * de que no hay nada abierto: una prueba que se auto-salta cuando no encuentra su objetivo no
+     * falla nunca, y esta llevaba sin ejecutarse desde que el filtro paso a ser un interruptor.
+     */
+    const interruptor = page.getByRole('switch', { name: /Abierto ahora/ })
+    if ((await interruptor.count()) === 0) {
       test.skip(true, 'No hay nada abierto a esta hora en Querétaro')
       return
     }
 
     const antes = await region.locator('article').count()
-    await pastilla.click()
-    await expect(pastilla).toHaveAttribute('aria-pressed', 'true')
+    await interruptor.click()
+    await expect(interruptor).toHaveAttribute('aria-checked', 'true')
 
     const tarjetas = region.locator('article')
     const despues = await tarjetas.count()
@@ -32,8 +37,8 @@ test.describe('Abierto ahora', () => {
     await expect(region.getByText(/^Abierto ahora: /)).toHaveCount(despues)
 
     // Y se puede quitar: la lista vuelve a lo que era.
-    await pastilla.click()
-    await expect(pastilla).toHaveAttribute('aria-pressed', 'false')
+    await interruptor.click()
+    await expect(interruptor).toHaveAttribute('aria-checked', 'false')
     await expect(tarjetas).toHaveCount(antes)
   })
 

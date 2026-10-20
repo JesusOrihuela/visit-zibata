@@ -4,7 +4,9 @@ import type { CSSProperties } from 'react'
 import { EmptyState } from '../../components/ui/EmptyState.tsx'
 import { DEFAULT_PLAZA_TONE, plazaTones } from '../../config/palette.ts'
 import { useCatalog } from '../../data/CatalogContext.tsx'
-import { t } from '../../i18n/index.ts'
+import { t, useLocale } from '../../i18n/index.ts'
+import { alPulsarEnlace } from '../../lib/navegacion.ts'
+import { rutaDeZona } from '../../lib/url-state.ts'
 import type { Place } from '../../types/domain.ts'
 import { groupByPlaza } from '../filters/filters.ts'
 import { PlaceList } from '../places/PlaceList.tsx'
@@ -24,6 +26,7 @@ export function ResultsPanel({
   onClearFilters,
 }: ResultsPanelProps) {
   const catalog = useCatalog()
+  const idioma = useLocale()
   const tones = plazaTones(catalog.plazas.filter((plaza) => plaza.active).map((plaza) => plaza.id))
   const groups = groupByPlaza(places)
 
@@ -80,16 +83,17 @@ export function ResultsPanel({
                 } as CSSProperties
               }
             >
-              <button
-                type="button"
+              {/* La cabecera es el enlace a esa zona: la zona tiene dirección propia. */}
+              <a
                 className={styles.groupHeader}
-                onClick={() => onSelectPlaza(plazaId)}
+                href={rutaDeZona(plaza.slug, idioma, import.meta.env.BASE_URL)}
+                onClick={alPulsarEnlace(() => onSelectPlaza(plazaId))}
               >
                 <span className={styles.groupName}>{plaza.name}</span>
                 <span className={styles.count}>
                   {t('places.matching', { count: groupPlaces.length })}
                 </span>
-              </button>
+              </a>
               <PlaceList places={groupPlaces} onOpen={onOpenPlace} label={plaza.name} />
             </div>
           )

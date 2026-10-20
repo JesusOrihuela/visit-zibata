@@ -1,7 +1,7 @@
 /** MapControls: zoom, orientación, mi ubicación y regreso a la vista de Zibatá. */
 import { Compass, House, LocateFixed, Minus, Plus } from 'lucide-react'
 import { type Map as MapLibreMap, Marker } from 'maplibre-gl'
-import { useEffect, useRef, useState } from 'react'
+import { type PointerEvent as ReactPointerEvent, useEffect, useRef, useState } from 'react'
 import { insideCenterBounds } from '../../config/map.ts'
 import { t } from '../../i18n/index.ts'
 import type { Plaza } from '../../types/domain.ts'
@@ -15,11 +15,71 @@ interface MapControlsProps {
   compact: boolean
 }
 
+/** Un octavo de vuelta: ocho pulsaciones dan la vuelta entera y cada parada es un punto cardinal. */
+const PASO_DE_GIRO = 45
+
 export function MapControls({ map, plazas, compact }: MapControlsProps) {
   const [bearing, setBearing] = useState(map.getBearing())
   const [locating, setLocating] = useState(false)
   const [locateMessage, setLocateMessage] = useState<string | null>(null)
   const userMarker = useRef<Marker | null>(null)
+  /*
+   * La brújula endereza el norte **y** devuelve la inclinación de salida.
+   *
+   * Solo enderezaba el norte, así que con el norte ya arriba pulsarla no hacía nada aunque el mapa
+   * estuviera tumbado hasta el horizonte: la única forma de recuperar la vista era el botón de
+   * casa, que además mueve el centro y el zoom. Enderezar incluye volver a ver el volumen, que es
+   * de lo que trata este mapa.
+   */
+  const [girando, setGirando] = useState(false)
+  const giro = useRef<{ desde: number; bearing: number; movio: boolean } | null>(null)
+
+  /** El ángulo del puntero respecto al centro del botón, en grados. */
+  const anguloDe = (event: ReactPointerEvent<HTMLElement>) => {
+    const caja = event.currentTarget.getBoundingClientRect()
+    const x = event.clientX - (caja.left + caja.width / 2)
+    const y = event.clientY - (caja.top + caja.height / 2)
+    return (Math.atan2(y, x) * 180) / Math.PI
+  }
+
+  const empezarGiro = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    event.currentTarget.setPointerCapture(event.pointerId)
+    giro.current = { desde: anguloDe(event), bearing: map.getBearing(), movio: false }
+  }
+
+  const seguirGiro = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    const actual = giro.current
+    if (!actual) return
+    const delta = anguloDe(event) - actual.desde
+    // Un par de grados de margen: un dedo nunca pulsa del todo quieto, y sin esto un toque
+    // limpio se contaría como giro y la brújula dejaría de enderezar.
+    if (!actual.movio && Math.abs(delta) < 3) return
+    actual.movio = true
+    setGirando(true)
+    map.setBearing(actual.bearing + delta)
+  }
+
+  const terminarGiro = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    const actual = giro.current
+    giro.current = null
+    setGirando(false)
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId)
+    }
+    /*
+     * Pulsarla sin arrastrar gira un octavo de vuelta, al siguiente punto cardinal.
+     *
+     * Antes enderezaba al norte, y eso la dejaba atascada: una vez en el norte, pulsarla no movía
+     * nada, y encima cada pulsación devolvía la inclinación aunque no la hubieras tocado. Girando
+     * por pasos siempre hace algo, ocho pulsaciones dan la vuelta entera, y la primera después de
+     * un arrastre cuadra el rumbo a un múltiplo de 45, así que el mapa nunca se queda en un ángulo
+     * sucio por accidente.
+     */
+    if (actual && !actual.movio) {
+      const siguiente = (Math.floor(map.getBearing() / PASO_DE_GIRO) + 1) * PASO_DE_GIRO
+      map.easeTo({ bearing: siguiente, duration })
+    }
+  }
 
   useEffect(() => {
     const sync = () => setBearing(map.getBearing())
@@ -113,12 +173,35 @@ export function MapControls({ map, plazas, compact }: MapControlsProps) {
         </button>
       </div>
       <div className={styles.stack}>
+        {/*
+         * La brújula gira el mapa, y además lo endereza.
+         *
+         * Giraba solo con el botón derecho del ratón, que no lo descubre nadie, así que en
+         * escritorio la única pieza que habla de orientación servía para deshacer un giro que no
+         * había forma evidente de hacer. Arrastrarla gira sin saltos; pulsarla gira un octavo de
+         * vuelta. Con el teclado, las flechas hacen lo mismo que una pulsación.
+         */}
         <button
           type="button"
           className={styles.button}
-          onClick={() => map.easeTo({ bearing: 0, duration })}
-          aria-label={t('map.resetNorth')}
-          title={t('map.resetNorth')}
+          data-girando={girando}
+          onPointerDown={empezarGiro}
+          onPointerMove={seguirGiro}
+          onPointerUp={terminarGiro}
+          onPointerCancel={terminarGiro}
+          onKeyDown={(event) => {
+            const paso =
+              event.key === 'ArrowLeft'
+                ? -PASO_DE_GIRO
+                : event.key === 'ArrowRight'
+                  ? PASO_DE_GIRO
+                  : 0
+            if (paso === 0) return
+            event.preventDefault()
+            map.setBearing(map.getBearing() + paso)
+          }}
+          aria-label={t('map.rotate')}
+          title={t('map.rotate')}
         >
           <Compass aria-hidden="true" style={{ transform: `rotate(${-bearing - 45}deg)` }} />
         </button>

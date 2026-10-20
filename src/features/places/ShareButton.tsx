@@ -14,6 +14,11 @@ interface ShareButtonProps {
   giros: string
   plazaName: string
   size?: 'sm' | 'md'
+  /**
+   * Con nombre a la vista, para la fila de salidas de la ficha. Sin esto es solo el icono, que es
+   * lo que quiere la barra de herramientas y lo que quiere una tarjeta.
+   */
+  conNombre?: boolean
 }
 
 /**
@@ -25,7 +30,14 @@ interface ShareButtonProps {
  * acuse donde estaba el dedo es donde se busca. Se anuncia con `role="status"`, que el lector de
  * pantalla lee sin robar el foco.
  */
-export function ShareButton({ name, slug, giros, plazaName, size = 'md' }: ShareButtonProps) {
+export function ShareButton({
+  name,
+  slug,
+  giros,
+  plazaName,
+  size = 'md',
+  conNombre = false,
+}: ShareButtonProps) {
   const [resultado, setResultado] = useState<ShareOutcome | null>(null)
   const temporizador = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -49,7 +61,7 @@ export function ShareButton({ name, slug, giros, plazaName, size = 'md' }: Share
     <>
       <button
         type="button"
-        className={styles.button}
+        className={conNombre ? styles.conNombre : styles.cromo}
         data-size={size}
         data-done={copiado}
         aria-label={etiqueta}
@@ -64,6 +76,18 @@ export function ShareButton({ name, slug, giros, plazaName, size = 'md' }: Share
         }}
       >
         {copiado ? <Check aria-hidden="true" /> : <Share2 aria-hidden="true" />}
+        {conNombre && (
+          /*
+           * Las dos palabras ocupan la misma celda, y la que no toca se esconde pero sigue
+           * midiendo. Así el botón vale siempre lo que la más larga y no crece ni encoge al
+           * acusar: un control que cambia de tamaño al pulsarlo empuja a su vecino y se siente
+           * como un error, no como una confirmación.
+           */
+          <span className={styles.acuse}>
+            <span data-visible={!copiado}>{t('share.action')}</span>
+            <span data-visible={copiado}>{t('share.copied')}</span>
+          </span>
+        )}
       </button>
       <span role="status" className="visually-hidden">
         {resultado === 'copied' && t('share.copied')}

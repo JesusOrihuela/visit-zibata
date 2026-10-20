@@ -1,7 +1,8 @@
 import { CategoryIcon } from '../../components/icons/CategoryIcon.tsx'
 import { useCatalog } from '../../data/CatalogContext.tsx'
-import { localized, t } from '../../i18n/index.ts'
+import { localized, t, useLocale } from '../../i18n/index.ts'
 import { estadoDe } from '../../lib/estado.ts'
+import { rutaDeLugar } from '../../lib/url-state.ts'
 import type { Place } from '../../types/domain.ts'
 import { FavoriteButton } from '../favorites/FavoriteButton.tsx'
 import { useZonedNow } from './OpenStatus.tsx'
@@ -75,14 +76,36 @@ export function PlaceCard({ place, onOpen, showPlaza = false }: PlaceCardProps) 
 
   // El número de local y el horario solo los publica una minoría: en la lista crearían filas desiguales
   // (unas con dato, la mayoría sin él). Se muestran en la ficha, donde el dato se entiende con su fuente.
+  const idioma = useLocale()
   const meta = showPlaza && plaza ? plaza.name : null
 
   return (
     <article className={styles.card}>
-      <button
-        type="button"
+      {/*
+       * Un enlace de verdad, no un botón. Abrir un lugar es navegar: la ruta existe, se comparte
+       * y funciona sin JavaScript. Siendo botón, el navegador no podía ofrecer abrir en otra
+       * pestaña, copiar la dirección ni enseñar el destino antes de pulsar, y un lector anunciaba
+       * "botón" donde toca "enlace".
+       *
+       * El `onClick` sigue ahí para que dentro de la aplicación no se recargue la página, y por
+       * eso pregunta por las teclas: con Ctrl, Cmd, Mayúsculas o el botón central, el gesto es
+       * "ábrelo aparte" y hay que dejar que el navegador lo haga.
+       */}
+      <a
         className={styles.main}
-        onClick={() => onOpen(place)}
+        href={rutaDeLugar(place.slug, idioma, import.meta.env.BASE_URL)}
+        onClick={(event) => {
+          if (
+            event.metaKey ||
+            event.ctrlKey ||
+            event.shiftKey ||
+            event.altKey ||
+            event.button !== 0
+          )
+            return
+          event.preventDefault()
+          onOpen(place)
+        }}
         aria-label={t('place.openDetail', { name: place.name })}
       >
         <span className={styles.foto}>
@@ -111,7 +134,7 @@ export function PlaceCard({ place, onOpen, showPlaza = false }: PlaceCardProps) 
             {meta && <span className={styles.meta}> · {meta}</span>}
           </span>
         </span>
-      </button>
+      </a>
       <FavoriteButton placeId={place.id} placeName={place.name} size="sm" />
     </article>
   )

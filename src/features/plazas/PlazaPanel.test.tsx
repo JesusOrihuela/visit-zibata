@@ -36,10 +36,10 @@ describe('PlazaPanel', () => {
     expect(screen.getByText(/Zona · 3 lugares/)).toBeInTheDocument()
     const categories = screen.getByRole('list', { name: 'Categorías' })
     expect(within(categories).getAllByRole('button')).toHaveLength(4)
-    // El índice va en grupos por horario, así que la lista es una por grupo y cada una lleva su
-    // rótulo. Lo que se fija aquí es que estén los tres lugares, repartidos como estén.
-    const grupos = screen.getAllByRole('list').filter((lista) => lista.dataset.estado !== undefined)
-    expect(grupos.flatMap((lista) => within(lista).getAllByRole('listitem'))).toHaveLength(3)
+    // El índice es una sola lista: el horario ordena pero ya no parte. Lo que se fija aquí es que
+    // estén los tres lugares, en el orden en que queden.
+    const indice = screen.getByRole('list', { name: /lugares/i })
+    expect(within(indice).getAllByRole('listitem')).toHaveLength(3)
   })
 
   it('mueve el foco al título para lectores de pantalla', async () => {
@@ -58,9 +58,11 @@ describe('PlazaPanel', () => {
       filtersActive: true,
     })
     const chips = within(screen.getByRole('list', { name: 'Categorías' }))
-    expect(chips.getByRole('button', { name: /^Todo/ })).toHaveTextContent('Todo1')
-    expect(chips.getByRole('button', { name: /Tacos y antojitos/ })).toHaveTextContent(/1$/)
-    expect(chips.getByRole('button', { name: /Pizza/ })).not.toHaveTextContent(/\d$/)
+    // "Anuncian" literalmente: la cuenta vive en el nombre accesible, no en la pantalla.
+    expect(chips.getByRole('button', { name: /^Todo/ })).toHaveAccessibleName(/1 lugar/)
+    expect(chips.getByRole('button', { name: /Tacos y antojitos/ })).toHaveAccessibleName(/1 lugar/)
+    // Y la que no tiene ninguno no anuncia ninguno: su nombre es solo la categoría.
+    expect(chips.getByRole('button', { name: /Pizza/ })).toHaveAccessibleName('Pizza')
   })
 
   it('filtra por categoría dentro de la plaza', async () => {
@@ -71,7 +73,7 @@ describe('PlazaPanel', () => {
 
   it('abre la ficha de un lugar', async () => {
     const props = await setup()
-    await userEvent.click(screen.getByRole('button', { name: 'Ver detalles de Café Aurora' }))
+    await userEvent.click(screen.getByRole('link', { name: 'Ver detalles de Café Aurora' }))
     expect(props.onOpenPlace).toHaveBeenCalledWith(expect.objectContaining({ id: 'cafe-aurora' }))
   })
 

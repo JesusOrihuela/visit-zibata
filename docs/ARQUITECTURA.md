@@ -175,26 +175,22 @@ viaja una vez en `localProfileSnapshot()` para no empezar de cero.
 
 ## Tipografía
 
-Dos familias y una sola escala, ambas en `src/styles/tokens.css`. Nada de tamaños sueltos en los
-componentes: si un texto necesita otro cuerpo, se elige el peldaño más cercano.
+**La escala vive en [docs/CATALOGO.md](CATALOGO.md) § 3**, con un escalón por papel, las tres
+familias y los tres pesos. Aquí estaba repetida y se desfasó: decía dos familias cuando hay tres y
+el cuerpo en 15 px cuando pasó a 14. Es exactamente lo que una fuente única viene a evitar, así que
+en vez de corregirla se quita.
 
-| Token | Tamaño | Dónde se usa |
-| --- | --- | --- |
-| `--text-2xs` | 11 px | Leyenda de la guía, versión, notas al pie |
-| `--text-xs` | 12 px | Versalitas de sección (HORARIO, CONTACTO Y REDES), enlaces de la franja |
-| `--text-sm` | 13 px | Metadatos, giros de la ficha, botones secundarios |
-| `--text-base` | 15 px | Cuerpo: descripciones y textos de las hojas |
-| `--text-md` | 17 px | Nombre del lugar en listas y tarjetas |
-| `--text-lg` | 22 px | Subtítulos: nombre de plaza en la lista, estados vacíos |
-| `--text-xl` | 24 px | Título de la ficha de un lugar |
-| `--text-2xl` | 30 px | Título de panel y de hoja (plaza, información, tu perfil) |
+Lo que sí es de arquitectura y no de catálogo:
 
-- **Fraunces 600** (`--font-display`) solo en títulos: `--text-xl` y `--text-2xl`, más el nombre de la
-  marca. Es ancha, así que por encima de 30 px los nombres largos empiezan a partirse en tres líneas.
-- **Instrument Sans** (`--font-sans`) en todo lo demás: 400 para cuerpo, 500 para datos, 600 para
-  etiquetas y botones, 700 para cifras.
+- Los valores viven en `src/styles/tokens.css` y **no hay tamaños sueltos en los componentes**: lo
+  comprueba una prueba (`tests/e2e/catalogo.spec.ts`).
+- Fraunces es ancha, así que por encima de 30 px los nombres largos empiezan a partirse en tres
+  líneas. Ese es el techo de la escala, y el motivo.
 - Las versalitas llevan `letter-spacing: 0.08em`; los títulos, `-0.015em`.
-- Cifras que se comparan en columna (horarios, conteos) con `font-variant-numeric: tabular-nums`.
+- Las cifras que se comparan en columna (horarios, conteos) van con `font-variant-numeric:
+  tabular-nums`.
+- **Cada visita baja un solo idioma**, así que también baja un solo juego de pesos: se cargan tres
+  ficheros de fuente, no cinco, y por eso la escala no tiene 500 ni 800.
 
 ## Idioma
 

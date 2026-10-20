@@ -50,15 +50,20 @@
   width: 9.125rem;
   height: 9.125rem;
   padding-inline: 1.375rem;
-  border-radius: 50%;
+  border-radius: var(--radius-round);
   box-shadow:
     0 0 0 3px currentColor,
     0 0 0 7px transparent,
     0 0 0 10px currentColor;
   color: var(--plaza-accent, var(--olive-600));
-  opacity: 0.1;
+  /*
+   * Un matasellos tiene que leerse como tinta gastada, no como una marca de agua. A 0.1 y 15 px se
+   * adivinaba el arco pero no el nombre, y entonces no es un sello de nada: es una textura. Sube a
+   * donde el nombre se lee sin esfuerzo y sigue quedando claro que está debajo del titular.
+   */
+  opacity: 0.16;
   font-family: var(--font-mono);
-  font-size: 0.9375rem;
+  font-size: 1.0625rem;
   font-weight: 700;
   line-height: 1.18;
   letter-spacing: 0.03em;
@@ -87,12 +92,23 @@
   color: var(--plaza-accent, var(--olive-600));
 }
 
+/*
+ * El punto del antetítulo es la misma gota del mapa, en miniatura y sin cifra.
+ *
+ * Era un rombo: un cuadrado girado 45 grados que no existe en ningún otro sitio de la guía y que
+ * solo llevaba el tono. Con la gota, el encabezado de una zona empieza por la pieza que esa zona
+ * tiene puesta en el mapa, igual que cada renglón del índice.
+ */
 .eyebrowDot {
-  width: 0.45rem;
-  height: 0.45rem;
-  border-radius: 2px;
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50% 50% 50% 0;
+  /* Girada, la pieza mide 13,6 px de alto aunque su caja mida 9,6: la punta sobresale 2 px por
+     debajo del redondel. Centrar la caja deja el conjunto 1 px bajo respecto al texto, así que se
+     sube ese píxel. Es la regla de la caja que pinta otra vez, en pequeño. */
+  translate: 0 -1px;
+  rotate: -45deg;
   background: var(--plaza-accent, var(--lime-500));
-  transform: rotate(45deg);
 }
 
 .title {
@@ -137,38 +153,16 @@
 }
 
 .inlineLink {
+  composes: enlace from "../../styles/controls.module.css";
   display: inline-flex;
   align-items: center;
   gap: 0.2rem;
-  color: var(--olive-700);
   font-weight: 600;
-  text-decoration: none;
 }
 
-.inlineLink:hover {
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
+/* Cerrar ejecuta: cuadrado de icono con la esquina de la familia, no círculo. */
 .close {
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-  width: 2.5rem;
-  height: 2.5rem;
-  border: 0;
-  border-radius: 50%;
-  background: var(--color-surface-muted);
-  color: var(--ink-700);
-}
-
-.close svg {
-  width: 1.125rem;
-  height: 1.125rem;
-}
-
-.close:hover {
-  background: var(--sand-200);
+  composes: base botonIcono conSuperficie from "../../styles/controls.module.css";
 }
 
 .sectionHeader {
@@ -195,18 +189,15 @@
   font-variant-numeric: tabular-nums;
 }
 
+/*
+ * "Quitar filtros" en texto: ejecuta, no navega, así que es botón fantasma y no enlace. Sin caja
+ * hasta el hover, que es cuando aparece el fondo y se ve dónde empieza y acaba.
+ */
 .textButton {
-  padding: 0;
-  border: 0;
-  background: none;
+  composes: base boton fantasma from "../../styles/controls.module.css";
+  height: auto;
+  padding: var(--space-2) var(--space-3);
   color: var(--olive-700);
-  font-size: var(--text-sm);
-  font-weight: 600;
-}
-
-.textButton:hover {
-  text-decoration: underline;
-  text-underline-offset: 3px;
 }
 
 .note {
@@ -223,23 +214,15 @@
   gap: var(--space-1);
 }
 
+/* La cabecera de grupo: igual que el renglón del índice, porque lleva al mismo sitio. */
 .groupHeader {
+  composes: zonaPulsable from "../../styles/controls.module.css";
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
-  width: 100%;
   padding: var(--space-2) var(--space-2) var(--space-1);
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: none;
-  text-align: left;
-}
-
-.groupHeader:hover .groupName {
-  color: var(--olive-700);
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  border-radius: var(--radius-control);
 }
 
 /*
@@ -260,50 +243,71 @@
   gap: var(--space-2);
 }
 
+/*
+ * Sin tarjeta. Eran once cajas iguales, una debajo de otra, en un panel que ya vive dentro de otra
+ * caja y debajo de una fila de filtros con superficie: la tarjeta no agrupaba nada que el renglón
+ * no agrupara solo. Lo que queda es la gota, el nombre y lo que hay, que es toda la información
+ * que la tarjeta envolvía. El fondo aparece al pasar por encima, que es cuando hace falta saber
+ * cuál se va a pulsar.
+ */
+/*
+ * El renglón del índice de zonas: la pieza entera es el enlace, sin subrayado ni color de enlace.
+ * Lo que marca que se puede pulsar es que todo el renglón responde.
+ */
 .plazaCard {
+  composes: zonaPulsable from "../../styles/controls.module.css";
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  width: 100%;
-  padding: var(--space-3);
-  border: 0;
-  border-radius: var(--radius-md);
-  background: var(--color-surface-muted);
-  box-shadow: inset 0 0 0 1px var(--color-border);
-  text-align: left;
-  transition:
-    background-color var(--duration-fast) var(--ease-out),
-    transform var(--duration-fast) var(--ease-out);
+  /* Aire igual a los dos lados: con --space-1 a la izquierda el fondo del hover quedaba pegado a la
+     gota y parecía recortarla, porque la punta de la gota llega más allá de su propia caja. */
+  padding: var(--space-2);
+  border-radius: var(--radius-control);
 }
 
-.plazaCard:hover {
-  background: var(--lime-50);
-}
-
-.plazaCard:active {
-  transform: scale(0.99);
-}
-
-.plazaDot {
+/*
+ * La gota del mapa, en miniatura y con su cifra dentro.
+ *
+ * Es la misma construcción que en `PlazaMarkers`: esquina sin redondear abajo a la izquierda y giro
+ * de -45 grados, que deja la punta mirando hacia abajo. La cifra se desgira para quedar derecha.
+ * A este tamaño la punta cae fuera del cuadro que mide el elemento, así que el renglón reserva su
+ * sitio con el ancho de la columna y no con el de la pieza (la regla de la caja que pinta).
+ */
+.plazaGota {
   flex-shrink: 0;
-  width: 0.6rem;
-  height: 0.6rem;
-  border-radius: 2px;
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50% 50% 50% 0;
+  rotate: -45deg;
   background: var(--plaza-accent, var(--lime-500));
-  transform: rotate(45deg);
 }
 
+.plazaGota span {
+  rotate: 45deg;
+  display: grid;
+  place-items: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: var(--radius-round);
+  background: var(--sand-25);
+  color: var(--plaza-accent, var(--olive-700));
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Lo que hay, en un renglón y sin envolver: si no cabe se recorta, que es mejor que un segundo
+   renglón que descuadra el ritmo de la lista entera. */
 .plazaMeta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.35rem 0.6rem;
-}
-
-.plazaCount {
+  display: block;
+  overflow: hidden;
   color: var(--color-text-muted);
   font-size: var(--text-sm);
-  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .plazaInfo {
@@ -317,13 +321,6 @@
 .plazaName {
   font-weight: 600;
   color: var(--ink-900);
-}
-
-.plazaIcons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  color: var(--olive-600);
 }
 
 .chevron {
@@ -354,20 +351,9 @@
   color: var(--color-text-muted);
 }
 
+/* Abrir la lista ejecuta: esquina de 6 px. Era cápsula y se confundía con un filtro. */
 .peekButton {
-  flex-shrink: 0;
-  height: 2.5rem;
-  padding: 0 1rem;
-  border: 0;
-  border-radius: var(--radius-pill);
-  background: var(--olive-600);
-  color: white;
-  font-size: var(--text-sm);
-  font-weight: 600;
-}
-
-.peekButton:hover {
-  background: var(--olive-700);
+  composes: base boton principal from "../../styles/controls.module.css";
 }
 
 /* Plazas confirmadas y en obra: informativas, sin acción (todavía no tienen locales). */

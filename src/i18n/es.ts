@@ -27,6 +27,7 @@ export const es = {
   'explore.title': 'Explora Zibatá',
   'explore.summary': '{plazas} con {places} en el mapa',
   'explore.hint': 'Toca una zona en el mapa o elige una de la lista.',
+  'explore.andMore': '{list} y {count} más',
   'explore.list': 'Zonas',
   'explore.openList': 'Explora Zibatá',
 
@@ -50,6 +51,7 @@ export const es = {
   'place.directionsToPlaza': 'Cómo llegar a {plaza}',
   'place.directionsToPlace': 'Cómo llegar a {name}',
   'place.directions': 'Cómo llegar',
+  'place.onlyYou': 'Solo para ti',
   'place.directionsHint': 'Abre Google Maps en una pestaña nueva',
   'place.machineTranslation': 'Traducción automática',
   'place.showOriginal': 'Ver original en español',
@@ -107,21 +109,20 @@ export const es = {
   },
 
   'visit.action': 'Registrar visita',
-  'visit.registered': 'Visita registrada',
-  'visit.mark': 'Registrar tu visita de hoy a {name}',
-  'visit.undo': 'Quitar la visita de hoy a {name}',
-  'visit.count': { one: '{count} visita', other: '{count} visitas' },
-  'visit.last': 'Última visita: {date}',
-  'visit.undoHint': 'Toca para deshacer, solo hoy',
+  'visit.mark': 'Registrar una visita a {name}',
+  'visit.pickDay': 'Elige el día de la visita',
+  'visit.been': { one: 'Has venido una vez', other: 'Has venido {count} veces' },
+  'visit.lastOne': ', la última el {date}.',
+  'visit.seeAll': 'Ver todas',
+  'visit.hideAll': 'Ocultar',
+  'visit.remove': 'Quitar la visita del {date}',
+  'visit.prevMonth': 'Mes anterior',
+  'visit.nextMonth': 'Mes siguiente',
+  'visit.closeCalendar': 'Cerrar el calendario',
   'visit.first': 'Registra tu primera visita',
-
   'favorites.add': 'Guardar en favoritos',
   'favorites.remove': 'Quitar de favoritos',
   'favorites.filter': 'Favoritos',
-  'places.groupOpen': 'Abiertos ahora',
-  'places.groupClosed': 'Cerrados ahora',
-  'places.groupTemporary': 'Cerrados temporalmente',
-  'places.groupUnknown': 'Sin horario publicado',
   'filters.openNow': 'Abierto ahora',
   // Nombre del grupo de interruptores para quien lo escucha; a la vista no lleva título.
   'filters.switches': 'Filtros rápidos',
@@ -169,7 +170,7 @@ export const es = {
   'share.place': 'Compartir {name}',
   /* Etiqueta, no frase: lleva el nombre, los giros y la zona, que es lo que la guía ya publica. */
   'share.text': '{name} · {giros} · {plaza}',
-  'share.copied': 'Enlace copiado',
+  'share.copied': 'Copiado',
   'share.failed': 'No se pudo copiar el enlace',
 
   'panel.close': 'Cerrar panel',
@@ -183,6 +184,7 @@ export const es = {
 
   'map.zoomIn': 'Acercar',
   'map.zoomOut': 'Alejar',
+  'map.rotate': 'Girar el mapa: arrastra, o pulsa para girar un octavo de vuelta',
   'map.resetNorth': 'Orientar al norte',
   'map.reset': 'Volver a la vista de Zibatá',
   'map.locate': 'Mostrar mi ubicación',
@@ -233,8 +235,6 @@ export const es = {
     'Los cuatro pasos para moverte por el mapa, encontrar un lugar y guardarlo.',
   'about.moreLabel': 'Más sobre la guía',
   'about.independent': 'Guía independiente de establecimientos y servicios de la zona.',
-  'about.languageEs': 'Español',
-  'about.languageEn': 'English',
 
   'about.aboutLead': 'Una guía para saber qué hay en Zibatá y decidir adónde ir.',
   'about.aboutBody':
@@ -327,6 +327,7 @@ export const es = {
     'Registra una visita, guarda un lugar con el corazón o califícalo, y aquí verás tu paso por Zibatá.',
   'profile.storage': 'Todo esto se queda en este navegador.',
 
+  'locale.label': 'Idioma',
   'locale.shortEs': 'ES',
   'locale.shortEn': 'EN',
   'locale.switchTo': 'Ver la guía en {language}',

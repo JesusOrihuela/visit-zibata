@@ -49,6 +49,15 @@ export function formatVisitDate(date: string): string {
   return `${day}/${short.charAt(0).toUpperCase()}${short.slice(1)}/${year}`
 }
 
+/** "12 de octubre de 2026": la frase de la ficha se lee, no se consulta como una tabla. */
+export function formatVisitDateLong(date: string): string {
+  const [year, month, day] = date.split('-').map(Number)
+  if (!year || !month || !day) return date
+  return new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long', year: 'numeric' }).format(
+    new Date(year, month - 1, day),
+  )
+}
+
 const isDateList = (value: unknown): value is string[] =>
   Array.isArray(value) && value.every((date) => typeof date === 'string' && DATE_PATTERN.test(date))
 
@@ -64,16 +73,20 @@ export const visitsStore = createLocalStore<ReadonlyMap<string, VisitDates>>(
   EMPTY,
 )
 
-/** Marca la visita de hoy o, si ya estaba marcada hoy, la deshace. Devuelve las fechas resultantes. */
-export function toggleVisitToday(placeId: string, day = today()): VisitDates {
+/**
+ * Guarda la lista de fechas de un lugar y la manda al servidor. Ordenada y sin repetidos.
+ *
+ * Ordenada porque desde que se puede registrar cualquier día, el último elemento ya no es
+ * necesariamente el más reciente, y hay dos sitios que cuentan con que lo sea: el orden personal
+ * (que mide hace cuánto fue la última visita) y la frase que la ficha enseña debajo del control.
+ */
+function guardar(placeId: string, dates: readonly string[]): VisitDates {
   // Lo que ya había antes de las cuentas sube con el primer gesto, no al entrar.
   subirLasQueYaHabia()
   const next = new Map(visitsStore.read())
-  const dates = [...(next.get(placeId) ?? [])]
-  if (dates.at(-1) === day) dates.pop()
-  else dates.push(day)
+  const limpias = [...new Set(dates)].sort()
   next.delete(placeId)
-  if (dates.length > 0) next.set(placeId, dates.slice(-MAX_DATES))
+  if (limpias.length > 0) next.set(placeId, limpias.slice(-MAX_DATES))
   // Map conserva el orden de inserción: el primero es el lugar que hace más que no se visita.
   while (next.size > MAX_PLACES) next.delete(next.keys().next().value as string)
   visitsStore.write(next)
@@ -81,6 +94,19 @@ export function toggleVisitToday(placeId: string, day = today()): VisitDates {
   // dispositivos que marcaron días distintos no dejan nada que conciliar.
   enviar('/api/visitas', { fechas: { [placeId]: next.get(placeId) ?? [] } })
   return next.get(placeId) ?? []
+}
+
+/** Registra un día concreto. Repetir el mismo día no hace nada: una visita por día y por lugar. */
+export function registrarVisita(placeId: string, day: string): VisitDates {
+  return guardar(placeId, [...(visitsStore.read().get(placeId) ?? []), day])
+}
+
+/** Quita un día del historial de un lugar. */
+export function quitarVisita(placeId: string, day: string): VisitDates {
+  return guardar(
+    placeId,
+    (visitsStore.read().get(placeId) ?? []).filter((fecha) => fecha !== day),
+  )
 }
 
 /** Sube de una vez las visitas que ya estaban en este dispositivo. Solo antes de que haya cuenta. */
@@ -97,14 +123,16 @@ export function useVisits() {
     visitsStore.read,
     () => visitsStore.empty,
   )
-  const toggleToday = useCallback((placeId: string) => toggleVisitToday(placeId), [])
+  const registrar = useCallback((placeId: string, day: string) => registrarVisita(placeId, day), [])
+  const quitar = useCallback((placeId: string, day: string) => quitarVisita(placeId, day), [])
   const datesOf = (placeId: string): VisitDates => visits.get(placeId) ?? []
   return {
     visits,
-    toggleToday,
+    registrar,
+    quitar,
     datesOf,
     countOf: (placeId: string) => datesOf(placeId).length,
-    visitedToday: (placeId: string) => datesOf(placeId).at(-1) === today(),
+    visitedToday: (placeId: string) => datesOf(placeId).includes(today()),
     /** Lugares distintos visitados y visitas en total. */
     totals: () => ({
       places: visits.size,

@@ -12,20 +12,20 @@ test.describe('Búsqueda y filtros', () => {
     await search.fill('cafe')
     await expect(region.getByRole('heading', { name: 'Resultados' })).toBeVisible()
     await expect(
-      region.getByRole('button', { name: 'Ver detalles de Good Morning Coffee' }),
+      region.getByRole('link', { name: 'Ver detalles de Good Morning Coffee' }),
     ).toBeVisible()
 
     await search.fill('coffee')
     await expect(
-      region.getByRole('button', { name: 'Ver detalles de D’Lu Coffee & Bakery' }),
+      region.getByRole('link', { name: 'Ver detalles de D’Lu Coffee & Bakery' }),
     ).toBeVisible()
 
     await search.fill('pizeria')
-    await expect(region.getByRole('button', { name: "Ver detalles de Domino's" })).toBeVisible()
+    await expect(region.getByRole('link', { name: "Ver detalles de Domino's" })).toBeVisible()
 
     await search.fill('helado')
     await expect(
-      region.getByRole('button', { name: "Ver detalles de Husky's Ice Cream" }),
+      region.getByRole('link', { name: "Ver detalles de Husky's Ice Cream" }),
     ).toBeVisible()
   })
 
@@ -38,24 +38,24 @@ test.describe('Búsqueda y filtros', () => {
     // Primero quien sirve pasta; detrás, el resto de "Italiana" (su categoría, incluidos los
     // locales cuyo segundo giro es una pizzería).
     await search.fill('pasta')
-    await expect(region.getByRole('button', { name: /^Ver detalles de/ })).toHaveCount(
+    await expect(region.getByRole('link', { name: /^Ver detalles de/ })).toHaveCount(
       placesInCategory('italiana'),
     )
     await expect(
-      region.getByRole('button', { name: /^Ver detalles de/ }).first(),
+      region.getByRole('link', { name: /^Ver detalles de/ }).first(),
     ).toHaveAccessibleName('Ver detalles de Tomassa Almacén de Pastas')
     // Todos llevan "bar" literal en su nombre, categoría o descripción: ninguno entra por parecido.
     await search.fill('bar')
     // Entra lo que lleva "bar" en el nombre, en la categoría o en la descripción…
     await expect(
-      region.getByRole('button', { name: 'Ver detalles de Wicklow Irish Pub' }),
+      region.getByRole('link', { name: 'Ver detalles de Wicklow Irish Pub' }),
     ).toBeVisible()
     // …y no entra nada por parecido: "Bagel" no empieza por "bar".
-    await expect(region.getByRole('button', { name: 'Ver detalles de Mr. Bagel' })).toHaveCount(0)
+    await expect(region.getByRole('link', { name: 'Ver detalles de Mr. Bagel' })).toHaveCount(0)
     // La tolerancia a errores sigue funcionando cuando no hay coincidencias literales.
     await search.fill('rometa')
     await expect(
-      region.getByRole('button', { name: 'Ver detalles de Rometta Gastrobar' }),
+      region.getByRole('link', { name: 'Ver detalles de Rometta Gastrobar' }),
     ).toBeVisible()
   })
 
@@ -68,7 +68,7 @@ test.describe('Búsqueda y filtros', () => {
     await expect(search).toBeFocused()
     await expect(search).toHaveValue('hor')
     await expect(
-      panel(page).getByRole('button', { name: 'Ver detalles de El Hornero' }),
+      panel(page).getByRole('link', { name: 'Ver detalles de El Hornero' }),
     ).toBeVisible()
   })
 
@@ -80,9 +80,7 @@ test.describe('Búsqueda y filtros', () => {
     await page.getByRole('searchbox', { name: 'Buscar lugares' }).fill('taco')
     // Los resultados salen agrupados por plaza, no solo los de la que estaba abierta.
     await expect(region.getByRole('heading', { name: 'Resultados' })).toBeVisible()
-    await expect(
-      region.getByRole('button', { name: 'Ver detalles de Tacos el Pata' }),
-    ).toBeVisible()
+    await expect(region.getByRole('link', { name: 'Ver detalles de Tacos el Pata' })).toBeVisible()
     // La plaza sigue elegida y vuelve en cuanto se borra la búsqueda.
     await expect(page.getByRole('combobox', { name: 'Filtrar por zona' })).toHaveValue('plaza-luna')
     await page.getByRole('searchbox', { name: 'Buscar lugares' }).fill('')
@@ -111,19 +109,25 @@ test.describe('Búsqueda y filtros', () => {
 
     const region = panel(page)
     await expect(region.getByRole('heading', { level: 2, name: 'Paseo Zibatá' })).toBeVisible()
-    const cards = region.getByRole('button', { name: /^Ver detalles de/ })
+    const cards = region.getByRole('link', { name: /^Ver detalles de/ })
     const desayunos = placesInCategory('desayunos-y-cafe', 'Paseo Zibatá')
     await expect(cards).toHaveCount(desayunos)
     await expect(
-      region.getByRole('button', { name: 'Ver detalles de D’Lu Coffee & Bakery' }),
+      region.getByRole('link', { name: 'Ver detalles de D’Lu Coffee & Bakery' }),
     ).toBeVisible()
     await expect(page.getByText(`${desayunos} resultados`, { exact: true }).first()).toBeVisible()
-    // Las pastillas anuncian los mismos conteos que la plaza seleccionada (arriba y en el panel).
-    await expect(topCategories.getByRole('button', { name: /Desayunos y Café/ })).toHaveText(
-      new RegExp(`${desayunos}$`),
-    )
-    await expect(topCategories.getByRole('button', { name: /^Todo/ })).toHaveText(
-      new RegExp(`${placesInPlaza('Paseo Zibatá')}$`),
+    /*
+     * Las cápsulas **anuncian** los mismos conteos que la plaza seleccionada, y anuncian es la
+     * palabra: la cifra vive en el nombre accesible y no en la pantalla. Se quitó de la vista
+     * porque diecinueve cifras repetidas no dicen más que una, y el número de lo que estás viendo
+     * ya lo da la cabecera del panel, junto a la lista que cuenta. Quien no ve la fila sí la
+     * necesita, porque no puede mirar cuál está llena.
+     */
+    await expect(
+      topCategories.getByRole('button', { name: /Desayunos y Café/ }),
+    ).toHaveAccessibleName(new RegExp(`${desayunos} lugares`))
+    await expect(topCategories.getByRole('button', { name: /^Todo/ })).toHaveAccessibleName(
+      new RegExp(`${placesInPlaza('Paseo Zibatá')} lugares`),
     )
     await expect(page).toHaveURL(/\/zona\/paseo-zibata\?categoria=desayunos-y-cafe$/)
 
@@ -144,11 +148,12 @@ test.describe('Búsqueda y filtros', () => {
       .click()
     const region = panel(page)
     await expect(region.getByRole('heading', { name: 'Resultados' })).toBeVisible()
-    await expect(region.getByRole('button', { name: /^Xentric Anáhuac/ })).toBeVisible()
-    await expect(region.getByRole('button', { name: /^Paseo Zibatá/ })).toBeVisible()
-    await region.getByRole('button', { name: /^Paseo Zibatá/ }).click()
+    // La cabecera de grupo es un enlace: la zona tiene dirección propia.
+    await expect(region.getByRole('link', { name: /^Xentric Anáhuac/ })).toBeVisible()
+    await expect(region.getByRole('link', { name: /^Paseo Zibatá/ })).toBeVisible()
+    await region.getByRole('link', { name: /^Paseo Zibatá/ }).click()
     await expect(region.getByRole('heading', { level: 2, name: 'Paseo Zibatá' })).toBeVisible()
-    await expect(region.getByRole('button', { name: /^Ver detalles de/ })).toHaveCount(
+    await expect(region.getByRole('link', { name: /^Ver detalles de/ })).toHaveCount(
       placesInCategory('bar', 'Paseo Zibatá'),
     )
   })

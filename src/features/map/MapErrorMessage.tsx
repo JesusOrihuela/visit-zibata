@@ -17,7 +17,7 @@ export function MapErrorMessage({
       <h2>{t('map.error.title')}</h2>
       <p>{reason === 'webgl' ? t('map.error.webgl') : t('map.error.generic')}</p>
       {onRetry && (
-        <button type="button" onClick={onRetry}>
+        <button type="button" className={styles.reintentar} onClick={onRetry}>
           {t('map.retry')}
         </button>
       )}

@@ -436,11 +436,20 @@ const layers: LayerInput[] = [
   },
   { name: 'buildings', features: baseBuildings, minZoom: buildingsMinZoom + 1, maxZoom },
   { name: 'labels', features: labels, minZoom, maxZoom },
-  // De lejos basta la copa baja; el segundo piso entra en z15 y el tronco en z16, cuando se distinguen.
+  /*
+   * Los árboles entran en z14 y no en z13.
+   *
+   * La tesela se dibuja sobre una rejilla de 4096 unidades, así que en z13 cada unidad mide ~1,2 m
+   * y una copa de 3 m de radio ocupa dos unidades y media: casi todos sus vértices caen en la misma
+   * coordenada entera y el polígono se guarda entero para no pintar nada. Son bytes que viajan en
+   * la tesela que más se pide (z13 es la vista inicial en móvil) sin llegar nunca a verse.
+   *
+   * De lejos basta la copa baja; el segundo piso entra en z15 y el tronco en z16.
+   */
   {
     name: 'trees',
     features: trees.filter((tree) => tree.properties.part === 'crown'),
-    minZoom: buildingsMinZoom,
+    minZoom: buildingsMinZoom + 1,
     maxZoom: 14,
   },
   {

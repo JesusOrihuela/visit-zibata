@@ -1,43 +1,88 @@
-/* Mismo cuerpo que el botón de favoritos: en la tarjeta van uno al lado del otro y cualquier
-   diferencia de tamaño o de redondeo se lee como un descuido. */
-.button {
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
+/*
+ * Compartir tiene dos cuerpos, y la diferencia no es de tamaño sino de familia.
+ *
+ * En la tarjeta es cromo: un icono al lado del corazón, sin nombre escrito. Comparte medida y
+ * esquina con el corazón a propósito, porque van uno junto al otro y cualquier diferencia se lee
+ * como un descuido.
+ *
+ * En la fila de salidas de la ficha es un botón con su palabra, acompañando a "Cómo llegar". Las
+ * dos entregan el lugar a algo que no es esta guía; lo que las separa es el relleno, que dice cuál
+ * es la principal.
+ */
+.cromo {
+  composes: base botonIcono from "../../styles/controls.module.css";
   width: 2.25rem;
   height: 2.25rem;
-  border: 0;
-  /* Botón de cromo, como el de guardar y el de cerrar: esquina corta, no círculo. */
-  border-radius: var(--radius-sm);
-  background: transparent;
+  border-radius: var(--radius-round);
   color: var(--ink-500);
-  transition:
-    background-color var(--duration-fast) var(--ease-out),
-    color var(--duration-fast) var(--ease-out),
-    transform var(--duration-fast) var(--ease-out);
 }
 
-.button svg {
+.cromo svg {
   width: 1.125rem;
   height: 1.125rem;
 }
 
-.button:hover {
-  background: var(--lime-50);
-  color: var(--olive-600);
+/* En la ficha el cromo crece al alto de control y toma la esquina y la superficie de la familia. */
+.cromo[data-size="md"] {
+  width: var(--control-h);
+  height: var(--control-h);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-muted);
+  /* Con su filete, como todo lo que lleva esta superficie: en la fila de arriba de la ficha
+     conviven con "Volver" y sin canto se veían de otro material. */
+  box-shadow: inset 0 0 0 1px var(--color-border-strong);
 }
 
-.button:active {
-  transform: scale(0.9);
+/* Reemplaza la superficie del catálogo, así que le toca decir qué hace al pasar por encima. */
+.cromo[data-size="md"]:hover {
+  background: var(--hover-quiet);
 }
 
 /* Copiado: el verde de acción durante el acuse, sin cambiar de tamaño para que nada salte. */
-.button[data-done="true"] {
+.cromo[data-done="true"],
+.conNombre[data-done="true"] {
   color: var(--olive-600);
 }
 
-.button[data-size="md"] {
-  width: 2.5rem;
-  height: 2.5rem;
-  background: var(--color-surface-muted);
+.conNombre {
+  composes: base boton secundario from "../../styles/controls.module.css";
+}
+
+.conNombre svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+/*
+ * En una ficha muy estrecha, el botón se queda en su icono. Es lo primero que puede ceder de la
+ * fila: "Cómo llegar" es la acción principal y tiene que conservar su palabra entera, y un icono
+ * de compartir sin texto es de los pocos que se reconocen solos. El nombre sigue completo en la
+ * etiqueta accesible, que es de donde lo toma quien no ve el icono.
+ */
+@container ficha (max-width: 20rem) {
+  .conNombre {
+    padding-inline: 0.7rem;
+  }
+
+  .conNombre span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+/* Las dos palabras en la misma celda: el ancho lo fija la más larga y el botón no se mueve. */
+.acuse {
+  display: grid;
+}
+
+.acuse > span {
+  grid-area: 1 / 1;
+}
+
+.acuse > span[data-visible="false"] {
+  visibility: hidden;
 }

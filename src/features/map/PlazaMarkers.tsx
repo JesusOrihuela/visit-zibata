@@ -52,6 +52,16 @@ const COMPACT_WIDTH = PIN_WIDTH
 const GAP = 4
 /** Lo que sube la etiqueta por nivel de elevación (debe coincidir con PlazaMarkers.module.css). */
 const LIFT_STEP = MARKER_HEIGHT + GAP
+
+/**
+ * Las dos bandas de apilamiento del mapa: todas las líneas por debajo de todas las gotas.
+ *
+ * Dentro de cada banda se ordena por cercanía (la coordenada Y en pantalla, que no pasa de unos
+ * pocos miles) más los empujes de selección. La distancia entre bandas deja sitio de sobra para
+ * esa suma sin que una banda alcance a la otra. `ComingSoonMarkers` usa las mismas.
+ */
+export const CAPA_TALLOS = 0
+export const CAPA_ETIQUETAS = 20_000
 const EDGE_RESERVED_RIGHT = 64
 
 /** Cuánto se pisan dos sitios, en píxeles cuadrados. Cero si no se tocan. */
@@ -79,6 +89,7 @@ export function PlazaMarkers({
   // Mismo reparto de tonos que el estilo del mapa (buildMapStyle): la etiqueta y su plaza combinan.
   const tones = useMemo(() => plazaTones(activePlazas.map((plaza) => plaza.id)), [activePlazas])
   const [elements, setElements] = useState<Map<string, HTMLElement>>(new Map())
+  const [stemElements, setStemElements] = useState<Map<string, HTMLElement>>(new Map())
   const [modes, setModes] = useState<ReadonlyMap<string, Placement>>(new Map())
   const [focusedPlazaId, setFocusedPlazaId] = useState<string | null>(null)
   /** La plaza bajo el cursor, para el orden de capas, sin rehacer la colocación al pasar por encima. */
@@ -94,17 +105,47 @@ export function PlazaMarkers({
   const widthsVersion = useRef(0)
   const relayout = useRef(() => {})
 
+  /*
+   * Dos marcadores por plaza, en el mismo punto: uno lleva el tallo y otro la etiqueta.
+   *
+   * Es lo que hace cumplir la regla de que la gota manda sobre la línea. MapLibre coloca cada
+   * marcador con un `transform`, que crea contexto de apilamiento, así que el tallo y la etiqueta
+   * que viven en el mismo marcador no se pueden ordenar por separado: el tallo de una plaza
+   * cercana se pintaba encima de la gota de una lejana, y una línea tapando el objeto que señala
+   * es exactamente al revés de lo que tiene que pasar.
+   *
+   * Separados, cada uno cae en su banda (CAPA_TALLOS y CAPA_ETIQUETAS) y dentro de su banda
+   * siguen ordenándose por cercanía. El tallo que queda dentro del marcador de la etiqueta no
+   * desaparece: se queda de separador, porque es su alto lo que sube la etiqueta sobre el punto,
+   * y así el alto no se calcula en dos sitios que luego hay que mantener a la par.
+   */
   useEffect(() => {
     const created = new Map<string, HTMLElement>()
-    const markers = activePlazas.map((plaza) => {
+    const createdStems = new Map<string, HTMLElement>()
+    const markers = activePlazas.flatMap((plaza) => {
       const element = document.createElement('div')
       element.className = styles.anchor ?? ''
+      // La banda se pone ya aquí y no solo al repartir: hasta la primera pasada del solucionador,
+      // un marcador recién creado se quedaba sin z-index y podía pintarse por debajo de un tallo.
+      element.style.zIndex = String(CAPA_ETIQUETAS)
       created.set(plaza.id, element)
-      return new Marker({ element, anchor: 'bottom', subpixelPositioning: true })
-        .setLngLat([plaza.coordinates.lng, plaza.coordinates.lat])
-        .addTo(map)
+      const stem = document.createElement('div')
+      stem.className = styles.anchor ?? ''
+      stem.style.zIndex = String(CAPA_TALLOS)
+      createdStems.set(plaza.id, stem)
+      const punto: [number, number] = [plaza.coordinates.lng, plaza.coordinates.lat]
+      // El del tallo primero: con la misma z gana el último, y aquí el último tiene que ser la gota.
+      return [
+        new Marker({ element: stem, anchor: 'bottom', subpixelPositioning: true })
+          .setLngLat(punto)
+          .addTo(map),
+        new Marker({ element, anchor: 'bottom', subpixelPositioning: true })
+          .setLngLat(punto)
+          .addTo(map),
+      ]
     })
     setElements(created)
+    setStemElements(createdStems)
     return () => {
       for (const marker of markers) marker.remove()
     }
@@ -399,15 +440,23 @@ export function PlazaMarkers({
 
       // Quien está más abajo en pantalla está más cerca del observador: va por encima. Sin esto el tallo
       // de una plaza lejana podía cruzar por encima de la etiqueta de una plaza que tiene delante.
+      // La cercanía ordena dentro de cada banda; entre bandas manda siempre la gota sobre la línea.
       for (const [id, anchor] of anchors) {
         const element = elements.get(id)
         if (!element) continue
         const front = id === selectedPlazaId || id === hoveredIdRef.current
-        if (next.get(id)?.abajo) element.dataset.abajo = 'true'
+        const abajo = next.get(id)?.abajo === true
+        const cercania = Math.round(anchor.y)
+        if (abajo) element.dataset.abajo = 'true'
         else delete element.dataset.abajo
         element.style.zIndex = String(
-          Math.round(anchor.y) + (forzados.has(id) ? 5_000 : 0) + (front ? 10_000 : 0),
+          CAPA_ETIQUETAS + cercania + (forzados.has(id) ? 5_000 : 0) + (front ? 10_000 : 0),
         )
+        const stem = stemElements.get(id)
+        if (!stem) continue
+        if (abajo) stem.dataset.abajo = 'true'
+        else delete stem.dataset.abajo
+        stem.style.zIndex = String(CAPA_TALLOS + cercania)
       }
 
       setModes((previous) =>
@@ -433,7 +482,7 @@ export function PlazaMarkers({
       map.off('resize', schedule)
       if (frame) cancelAnimationFrame(frame)
     }
-  }, [map, elements, selectedPlazaId, activePlazas, matchCounts, placeCounts])
+  }, [map, elements, stemElements, selectedPlazaId, activePlazas, matchCounts, placeCounts])
 
   // Tras un render que cambia modos, las etiquetas con nombre ya se pueden medir: otra pasada sustituye los
   // anchos estimados por los reales. Solo se repite mientras se aprendan anchos nuevos; en cuanto la pasada
@@ -478,7 +527,7 @@ export function PlazaMarkers({
           '--plaza-accent': tone.accent,
           '--plaza-soft': tone.soft,
         } as CSSProperties
-        return createPortal(
+        const etiqueta = createPortal(
           <>
             <button
               type="button"
@@ -513,18 +562,41 @@ export function PlazaMarkers({
                 <span className={styles.name}>{plaza.name}</span>
               </span>
             </button>
-            {/* El tallo va fuera del botón: el área pulsable es solo la etiqueta. */}
+            {/*
+             * El tallo va fuera del botón: el área pulsable es solo la etiqueta.
+             *
+             * Este de aquí no se pinta, solo ocupa: es su alto el que sube la etiqueta sobre el
+             * punto. El que se ve vive en el marcador de al lado, en la capa de los tallos, y
+             * comparte clase y `data-lift` con este para que los dos midan igual siempre.
+             */}
             <span
               className={styles.stem}
-              style={toneStyle}
-              data-state={state}
               data-lift={lift}
+              data-fantasma="true"
               aria-hidden="true"
             />
           </>,
           element,
           plaza.id,
         )
+        const tallo = stemElements.get(plaza.id)
+        return tallo
+          ? [
+              etiqueta,
+              createPortal(
+                <span
+                  className={styles.stem}
+                  style={toneStyle}
+                  data-state={state}
+                  data-lift={lift}
+                  data-mode={mode}
+                  aria-hidden="true"
+                />,
+                tallo,
+                `${plaza.id}-tallo`,
+              ),
+            ]
+          : etiqueta
       })}
     </>
   )

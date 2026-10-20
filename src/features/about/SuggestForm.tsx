@@ -116,7 +116,7 @@ export function SuggestForm() {
         <legend className={styles.label}>{t('suggest.who')}</legend>
         <div className={styles.whoOptions}>
           {WHO.map((option) => (
-            <label key={option.value} className={styles.whoOption} data-on={who === option.value}>
+            <label key={option.value} className={styles.whoOption}>
               <input
                 type="radio"
                 name={`${ids}-who`}
@@ -166,7 +166,7 @@ export function SuggestForm() {
         <span className={styles.label}>{t('suggest.message')}</span>
         <textarea
           id={`${ids}-message`}
-          className={styles.input}
+          className={styles.area}
           rows={3}
           value={message}
           maxLength={1200}

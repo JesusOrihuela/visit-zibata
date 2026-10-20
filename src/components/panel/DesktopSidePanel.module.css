@@ -30,19 +30,9 @@
   overscroll-behavior: contain;
   /* La barra de desplazamiento vive dentro de este bloque: separado del borde redondeado del panel para
      que no se recorte contra la esquina ni quede pegada al filo. El hueco se reserva siempre
-     (scrollbar-gutter) para que el contenido no salte al aparecer y desaparecer. */
+     (scrollbar-gutter) para que el contenido no salte al aparecer y desaparecer. El aspecto de la
+     barra lo pone global.css, igual para toda la guía. */
   margin: var(--space-2);
   padding: var(--space-4) var(--space-3) var(--space-8) var(--space-4);
   scrollbar-gutter: stable;
-  scrollbar-width: thin;
-  scrollbar-color: var(--sand-300) transparent;
-}
-
-.scroll::-webkit-scrollbar {
-  width: 8px;
-}
-
-.scroll::-webkit-scrollbar-thumb {
-  border-radius: var(--radius-pill);
-  background: var(--sand-300);
 }

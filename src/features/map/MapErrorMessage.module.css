@@ -1,11 +1,26 @@
+/*
+ * Centrado de verdad, no al 40 por ciento.
+ *
+ * Estaba a 40 para dejarle sitio a la hoja inferior, pero el mapa no ocupa la pantalla entera: la
+ * barra de arriba y la hoja ya le recortan arriba y abajo, así que dentro de lo que le queda esto
+ * estaba alto. Un aviso que explica por qué no hay mapa tiene que quedar en el centro de donde
+ * debería estar el mapa.
+ */
 .error {
   position: absolute;
   left: 50%;
-  top: 40%;
+  top: 50%;
   translate: -50% -50%;
   width: min(26rem, calc(100% - 2rem));
   padding: var(--space-6);
-  border-radius: var(--radius-lg);
+
+  /*
+
+   * Hasta 416 px de ancho.
+
+   */
+
+  border-radius: var(--radius-xl);
   background: var(--color-surface-solid);
   box-shadow: var(--shadow-lg);
   text-align: center;
@@ -24,12 +39,8 @@
   color: var(--color-text-muted);
 }
 
-.error button {
+/* Reintentar es la acción principal del aviso, y la única que hay. */
+.reintentar {
+  composes: base boton principal from "../../styles/controls.module.css";
   margin-top: var(--space-4);
-  padding: var(--space-2) var(--space-5);
-  border: 0;
-  border-radius: var(--radius-pill);
-  background: var(--color-accent);
-  color: white;
-  font-weight: 600;
 }
