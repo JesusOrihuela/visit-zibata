@@ -152,11 +152,16 @@ export const es = {
    * Textos que solo salen en los metadatos de cada página prerenderizada: título de pestaña,
    * resultado de búsqueda y vista previa al compartir. Nunca se ven dentro de la aplicación.
    */
-  'seo.home.title': 'Visit Zibatá · La guía de zibateños para zibateños',
+  'seo.home.title': 'Visit Zibatá · La guía local para descubrir Zibatá',
   'seo.home.description':
-    'Explora Zibatá, Querétaro, en un mapa 3D y descubre qué hay en cada plaza: horarios, contacto y cómo llegar.',
+    'Descubre lo que hay en Zibatá, Querétaro: los negocios y lugares de cada zona en un mapa 3D, con horarios, contacto y cómo llegar.',
   'seo.title': '{name} · Visit Zibatá',
+  // Solo para los locales cuyo nombre se repite (dos sucursales de una misma cadena).
+  'seo.title.zone': '{name} · {plaza} · Visit Zibatá',
   'seo.place.fallback': '{giros} en {plaza}, Zibatá. Horario, contacto y cómo llegar.',
+  // Lo que se añade a una descripción corta: solo los giros y la zona del propio local.
+  'seo.place.context': '{giros} en {lugar}.',
+  'seo.place.contextLugar': 'En {lugar}.',
   'seo.plaza.fallback': '{name}, Zibatá. Qué hay, horarios y cómo llegar.',
   // Los cuatro siguientes solo salen en el HTML que se sirve antes de que arranque la aplicación
   // (ver scripts/build/contenido.ts). Son texto de interfaz igual: los lee quien no tiene

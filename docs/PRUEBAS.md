@@ -54,6 +54,12 @@ así que encontraba cero siempre: la prueba no fallaba nunca porque no se ejecut
 `test.skip` que depende de encontrar el objetivo no distingue "no aplica" de "ya no existe". Si una
 prueba puede saltarse, la condición tiene que mirar el dato (hay o no hay abiertos), no el DOM.
 
+`metadatos.spec.ts` lee el HTML ya publicado en `dist/` (una sola etiqueta de cada tipo, `og:*` igual
+que el título y la descripción, la portada, las cadenas de locales, el cierre temporal, el enlace de
+WhatsApp, los caracteres especiales y, sobre las 234 páginas del sitemap, que ningún título ni
+descripción se repita dentro de un idioma). La lógica está en `scripts/build/metadatos.test.ts` y
+`scripts/build/prerender.metadatos.test.ts`, que se comprobó que **fallan** con el generador anterior.
+
 `fragmentos.spec.ts` mide el DOM renderizado, no a Google: que el texto de interfaz de una ficha y de
 una zona ("Cómo llegar", su ayuda, compartir, calificar, el estado oculto de las tarjetas) esté dentro
 de un `data-nosnippet` válido (`span`, `div` o `section`) y que el nombre, la zona, la dirección y la

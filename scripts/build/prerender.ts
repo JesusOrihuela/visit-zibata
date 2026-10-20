@@ -20,9 +20,11 @@ import { dirname, join } from 'node:path'
 import type { Plugin } from 'vite'
 import { en } from '../../src/i18n/en.ts'
 import { es } from '../../src/i18n/es.ts'
+import { whatsappUrl } from '../../src/lib/maps-url.ts'
 import { buildPath, INFO_TOPICS, type InfoTopic } from '../../src/lib/url-state.ts'
 import type { Category, Place, Plaza } from '../../src/types/domain.ts'
 import { contenidoDeLista, contenidoDeLugar } from './contenido.ts'
+import { descripcionDeFicha, lugarDe, repetidos } from './metadatos.ts'
 import { bloque, listado, negocio } from './structured-data.ts'
 
 type Locale = 'es' | 'en'
@@ -102,7 +104,8 @@ function contactoDe(place: Place): { texto: string; href: string }[] {
   ]
   for (const [clave, nombre] of redes) {
     const url = place.links?.[clave]
-    if (url) enlaces.push({ texto: nombre, href: url })
+    // `whatsapp` es un teléfono (E.164), no una URL: sin pasarlo por `wa.me` el enlace salía relativo.
+    if (url) enlaces.push({ texto: nombre, href: clave === 'whatsapp' ? whatsappUrl(url) : url })
   }
   return enlaces
 }
@@ -124,13 +127,13 @@ const fechaLarga = (fecha: string, locale: Locale): string => {
 const escapeHtml = (value: string): string =>
   value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
-interface Dataset {
+export interface Dataset {
   categories: Category[]
   plazas: Plaza[]
   places: Place[]
 }
 
-function pagesFor(
+export function pagesFor(
   locale: Locale,
   data: Dataset,
   base: string,
@@ -218,21 +221,67 @@ function pagesFor(
     })
   }
 
-  for (const place of data.places) {
+  /*
+   * Los metadatos de todas las fichas se deciden juntos y no de una en una: un título o una descripción
+   * solo se puede distinguir de otro mirando la lista entera. Dos locales de una misma cadena
+   * ("Starbucks", "Luka") salían con el mismo título y a veces con la misma descripción.
+   */
+  const fichas = data.places.map((place) => {
     const plaza = plazaById.get(place.plazaId)
     const giros = place.giros.map((id) => giroLabel.get(id) ?? id)
+    const nombrePlaza = plaza ? text(plaza.name, locale) : undefined
+    return {
+      place,
+      plaza,
+      giros,
+      nombrePlaza,
+      descripcion: text(place.description, locale),
+      // El mismo aviso que abre el cuerpo de la ficha, sin la fecha ni la reapertura: cabe en un fragmento.
+      aviso: place.cierre
+        ? `${copy['closure.title']}. ${copy[`closure.${place.cierre.motivo}`]}`
+        : undefined,
+      contexto: {
+        giros: giros.slice(0, 2),
+        lugar: lugarDe(nombrePlaza),
+        conGiros: copy['seo.place.context'],
+        soloLugar: copy['seo.place.contextLugar'],
+      },
+    }
+  })
+
+  // La zona va en el título solo de los locales cuyo nombre se repite: es lo que los distingue.
+  const mismoNombre = repetidos(fichas.map((ficha) => ficha.place.name))
+  const titulos = fichas.map((ficha, indice) =>
+    mismoNombre.has(indice) && ficha.nombrePlaza
+      ? fill(copy['seo.title.zone'], { name: ficha.place.name, plaza: ficha.nombrePlaza })
+      : fill(copy['seo.title'], { name: ficha.place.name }),
+  )
+
+  const componer = (ficha: (typeof fichas)[number], conContexto: boolean): string =>
+    descripcionDeFicha({
+      descripcion: ficha.descripcion,
+      nombre: ficha.place.name,
+      contexto: ficha.contexto,
+      aviso: ficha.aviso,
+      conContexto,
+    })
+  const primeras = fichas.map((ficha) => componer(ficha, false))
+  const mismaDescripcion = repetidos(primeras)
+  const descripciones = fichas.map((ficha, indice) =>
+    mismaDescripcion.has(indice) ? componer(ficha, true) : (primeras[indice] ?? ''),
+  )
+
+  fichas.forEach(({ place, plaza, giros }, indice) => {
     const image = `${ogDir}${place.slug}.jpg`
     pages.push({
       href: route({ placeSlug: place.slug }),
-      lastmod: place.verification?.lastVerifiedAt,
-      title: fill(copy['seo.title'], { name: place.name }),
-      description: trim(
-        text(place.description, locale) ||
-          fill(copy['seo.place.fallback'], {
-            giros: giros.join(', '),
-            plaza: plaza ? text(plaza.name, locale) : 'Zibatá',
-          }),
-      ),
+      // La última vez que el dato cambió de verdad: la verificación o, si es más reciente, el cierre.
+      lastmod: [place.verification?.lastVerifiedAt, place.cierre?.desde]
+        .filter((fecha): fecha is string => typeof fecha === 'string')
+        .sort()
+        .at(-1),
+      title: titulos[indice] ?? '',
+      description: descripciones[indice] ?? '',
       image,
       jsonLd: negocio({
         place,
@@ -278,7 +327,7 @@ function pagesFor(
         volver: { texto: copy['seo.backHome'], href: route({}) },
       }),
     })
-  }
+  })
 
   const INFO: Record<
     InfoTopic,

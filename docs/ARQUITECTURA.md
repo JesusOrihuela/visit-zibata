@@ -276,6 +276,33 @@ español, que es el idioma por omisión del sitio). Las dos listas de páginas s
 recorrido, así que la gemela en el otro idioma ocupa la misma posición y las `hreflang` salen sin
 emparejar por ruta.
 
+### Título y descripción de una ficha
+
+`scripts/build/metadatos.ts` decide el título y la descripción de las 101 fichas **juntas**, porque
+un título o una descripción solo se distingue de otro mirando la lista entera. Es solo el `<head>`:
+el texto visible de la ficha y el `description` del JSON-LD siguen siendo los del negocio.
+
+| Qué | Regla |
+|---|---|
+| Título | `{nombre} · Visit Zibatá`. Si dos locales comparten nombre (dos sucursales de Starbucks, Luka, Sinforosa, La Michoacana), el de cada uno lleva su zona: `{nombre} · {zona} · Visit Zibatá` |
+| Saltos de línea del dato | Si la línea siguiente empieza en minúscula, es un corte duro a media frase y se une con un espacio. Si empieza en mayúscula, emoji o cifra, es un separador y se une con " · " (o con un espacio si la anterior ya termina en puntuación o emoji) |
+| Nombre repetido | Se quita del principio de la descripción solo si le sigue un separador (`.`, `\|`, `:`) y queda texto de verdad. "CAFELE es una cafetería…" se queda: el nombre es el sujeto |
+| Descripción corta (menos de 70 caracteres) | Se completa con los giros y la zona del propio local ("Bowl Revolution. Açaí, Jugos en Centro Zibatá."). Un giro que la descripción ya dice no se repite: si no queda ninguno, solo se dice la zona |
+| Dos descripciones iguales | A la segunda se le reserva sitio para el contexto, de modo que ninguna pareja salga idéntica |
+| Corte | A 160 caracteres, en una frase completa si deja al menos la mitad; si no, en una palabra, sin signos ni conjunciones colgando |
+| Cierre temporal | La descripción abre con "Cerrado temporalmente. {motivo}", el mismo aviso que abre el cuerpo, y el `lastmod` del sitemap no es anterior a la fecha del cierre |
+
+Nada se inventa: lo único que se añade son los giros y la zona del local, que ya están en los datos.
+Que Google muestre esta descripción, o que respete su orden, no está garantizado: la usa cuando le
+parece que describe mejor la página que el texto de la propia página. Lo comprueban
+`scripts/build/metadatos.test.ts` (las funciones, con locales reales),
+`scripts/build/prerender.metadatos.test.ts` (las 234 páginas con el dataset) y
+`tests/e2e/metadatos.spec.ts` (el HTML ya publicado en `dist/`).
+
+La portada tiene sus propios `seo.home.title` y `seo.home.description` (en `src/i18n`), que también
+están en `index.html` para que la plantilla no diverja. El lema de la marca (`app.tagline`), que es
+visible en la interfaz y es el `h1`, no cambia con ellos.
+
 Son **archivos planos** (`dist/lugar/tomassa.html`) y no carpetas con índice. Cloudflare sirve un
 archivo individual sin barra final, pero redirige `/lugar/tomassa` a `/lugar/tomassa/` si es una
 carpeta: un salto extra en cada enlace compartido y una URL canónica distinta de la que se comparte.

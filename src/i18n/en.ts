@@ -135,11 +135,14 @@ export const en = {
 
   'brand.by': 'A project by',
 
-  'seo.home.title': 'Visit Zibatá · By locals, for locals',
+  'seo.home.title': 'Visit Zibatá · The local guide to discovering Zibatá',
   'seo.home.description':
-    'Explore Zibatá, Querétaro, on a 3D map and find what each plaza has: hours, contact and directions.',
+    'Discover what is in Zibatá, Querétaro: the businesses and places of each area on a 3D map, with hours, contact and directions.',
   'seo.title': '{name} · Visit Zibatá',
+  'seo.title.zone': '{name} · {plaza} · Visit Zibatá',
   'seo.place.fallback': '{giros} at {plaza}, Zibatá. Hours, contact and directions.',
+  'seo.place.context': '{giros} at {lugar}.',
+  'seo.place.contextLugar': 'At {lugar}.',
   'seo.plaza.fallback': '{name}, Zibatá. What is there, hours and directions.',
   'seo.nearby': 'More in {plaza}',
   'seo.whatsHere': 'What is here',
