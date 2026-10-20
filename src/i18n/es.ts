@@ -235,8 +235,6 @@ export const es = {
     'Los cuatro pasos para moverte por el mapa, encontrar un lugar y guardarlo.',
   'about.moreLabel': 'Más sobre la guía',
   'about.independent': 'Guía independiente de establecimientos y servicios de la zona.',
-  'about.languageEs': 'Español',
-  'about.languageEn': 'English',
 
   'about.aboutLead': 'Una guía para saber qué hay en Zibatá y decidir adónde ir.',
   'about.aboutBody':

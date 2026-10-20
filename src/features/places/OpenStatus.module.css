@@ -9,7 +9,7 @@
 .dot {
   width: 0.45rem;
   height: 0.45rem;
-  border-radius: 50%;
+  border-radius: var(--radius-round);
   background: var(--sand-400);
 }
 

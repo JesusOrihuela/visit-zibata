@@ -29,7 +29,7 @@ describe('InfoDialog', () => {
     // Las otras páginas no se amontonan aquí: son enlaces a su propia ruta.
     expect(screen.queryByText(/OpenStreetMap/)).not.toBeInTheDocument()
 
-    await userEvent.click(screen.getByRole('button', { name: 'Sugiere un cambio' }))
+    await userEvent.click(screen.getByRole('link', { name: 'Sugiere un cambio' }))
     expect(onGoTo).toHaveBeenCalledWith('sugerir')
   })
 
@@ -37,11 +37,19 @@ describe('InfoDialog', () => {
     render(<InfoDialog topic="acerca" onClose={vi.fn()} onGoTo={vi.fn()} />)
     expect(screen.getByText(/OpenStreetMap/)).toBeInTheDocument()
     expect(screen.getByText(/Versión/)).toBeInTheDocument()
-    // El único enlace es la firma de autoría, y apunta a algún sitio: sin canal de contacto
-    // abierto, cualquier otro enlace aquí sería un enlace muerto.
-    const enlaces = screen.getAllByRole('link')
-    expect(enlaces).toHaveLength(1)
-    expect(enlaces[0]).toHaveAttribute('href', 'https://aurariola.com')
+    /*
+     * El único enlace que sale de la guía es la firma de autoría, y apunta a algún sitio: sin canal
+     * de contacto abierto, cualquier otro enlace hacia fuera sería un enlace muerto.
+     *
+     * Se mira el destino y no el elemento: las páginas de información se enlazan entre sí, porque
+     * cada una tiene su ruta, y contar `link` a secas haría fallar esto por el motivo contrario al
+     * que protege.
+     */
+    const haciaFuera = screen
+      .getAllByRole('link')
+      .filter((a) => a.getAttribute('href')?.startsWith('http'))
+    expect(haciaFuera).toHaveLength(1)
+    expect(haciaFuera[0]).toHaveAttribute('href', 'https://aurariola.com')
   })
 
   it('desde cualquier página se llega al tutorial, que es un tema más', async () => {
@@ -49,7 +57,7 @@ describe('InfoDialog', () => {
     // verlo. Va por `onGoTo` como los otros tres, para que tenga ruta y el botón atrás lo cierre.
     const onGoTo = vi.fn()
     render(<InfoDialog topic="acerca" onClose={vi.fn()} onGoTo={onGoTo} />)
-    await userEvent.click(screen.getByRole('button', { name: 'Ver el tutorial' }))
+    await userEvent.click(screen.getByRole('link', { name: 'Ver el tutorial' }))
     expect(onGoTo).toHaveBeenCalledWith('tutorial')
   })
 

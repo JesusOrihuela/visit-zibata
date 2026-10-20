@@ -110,7 +110,7 @@
 .loadingDot {
   width: 0.5rem;
   height: 0.5rem;
-  border-radius: 50%;
+  border-radius: var(--radius-round);
   background: var(--lime-300);
   animation: llega 1.4s var(--ease-in-out) infinite;
 }

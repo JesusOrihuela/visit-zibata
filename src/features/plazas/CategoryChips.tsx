@@ -97,7 +97,6 @@ export function CategoryChips({
               onClick={() => onChange(null)}
             >
               {t('filters.allCategories')}
-              {totalCount !== undefined && <span className={styles.count}>{totalCount}</span>}
             </button>
           </li>
           {categories.map((category) => {
@@ -116,9 +115,8 @@ export function CategoryChips({
                   }
                   onClick={() => onChange(active ? null : category.id)}
                 >
-                  <CategoryIcon name={category.icon} size={15} strokeWidth={2} />
+                  <CategoryIcon name={category.icon} size={16} strokeWidth={2} />
                   {localized(category.label)}
-                  {count !== undefined && <span className={styles.count}>{count}</span>}
                 </button>
               </li>
             )

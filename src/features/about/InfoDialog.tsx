@@ -14,7 +14,8 @@ import { createPortal } from 'react-dom'
 import { Signature } from '../../components/brand/Signature.tsx'
 import { APP_VERSION } from '../../config/site.ts'
 import { t, useLocale } from '../../i18n/index.ts'
-import { INFO_TOPICS, type InfoPagina, type InfoTopic } from '../../lib/url-state.ts'
+import { alPulsarEnlace } from '../../lib/navegacion.ts'
+import { INFO_TOPICS, type InfoPagina, type InfoTopic, rutaDeInfo } from '../../lib/url-state.ts'
 import styles from './InfoDialog.module.css'
 
 /** Pesa lo suyo y casi nadie lo abre: viaja en su propio trozo, no en el arranque de la guía. */
@@ -78,7 +79,7 @@ interface InfoDialogProps {
 
 export function InfoDialog({ topic, onClose, onGoTo }: InfoDialogProps) {
   // La hoja se redibuja al cambiar de idioma aunque se abra sola (p. ej. en una prueba).
-  useLocale()
+  const idioma = useLocale()
   const dialogRef = useRef<HTMLDivElement>(null)
   const closeRef = useRef<HTMLButtonElement>(null)
   const key = TOPIC[topic]
@@ -192,16 +193,20 @@ export function InfoDialog({ topic, onClose, onGoTo }: InfoDialogProps) {
             </>
           )}
 
+          {/*
+           * Enlaces y no botones, como en la franja de la guía y en el pie de Tu Zibatá: cada una
+           * de estas páginas tiene su ruta, el tutorial incluido.
+           */}
           <nav className={styles.more} aria-label={t('about.moreLabel')}>
             {INFO_TOPICS.filter((other) => other !== topic).map((other) => (
-              <button
+              <a
                 key={other}
-                type="button"
                 className={styles.moreLink}
-                onClick={() => onGoTo(other)}
+                href={rutaDeInfo(other, idioma, import.meta.env.BASE_URL)}
+                onClick={alPulsarEnlace(() => onGoTo(other))}
               >
                 {t(ENLACE[other])}
-              </button>
+              </a>
             ))}
           </nav>
         </div>

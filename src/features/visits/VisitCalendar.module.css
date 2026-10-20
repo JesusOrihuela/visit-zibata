@@ -1,22 +1,50 @@
 /*
- * El calendario de visitas. Vive dentro del bloque personal de la ficha, así que se apoya en el
- * papel y no flota: no es una ventana encima de nada, es la parte de la ficha que se despliega.
+ * El calendario flota sobre la ficha, no se incrusta en ella.
+ *
+ * Desplegado en el flujo empujaba hacia abajo la descripción, el horario y el contacto, así que
+ * abrirlo movía media pantalla y cerrarlo la devolvía: la ficha daba un salto cada vez. Flotando,
+ * lo que hay debajo se queda donde estaba, que es lo que se espera de algo que se abre y se
+ * cierra.
+ *
+ * Anclado al botón y no centrado en la pantalla: no es una decisión que interrumpa, es un detalle
+ * del control que la pide, y aparece donde está el dedo.
  */
 .calendario {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  left: 0;
+  z-index: var(--z-panel);
   display: grid;
   gap: var(--space-2);
-  width: 100%;
-  max-width: 19rem;
+  width: max-content;
+  max-width: min(19rem, calc(100vw - 2 * var(--space-4)));
   padding: var(--space-3);
-  border-radius: var(--radius-md);
-  background: var(--color-surface-muted);
+
+  /*
+
+   * Unos 280 px de lado corto.
+
+   */
+
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-solid);
+  box-shadow:
+    0 0 0 1px var(--color-border),
+    var(--shadow-lg);
+  animation: calendario-entra var(--duration-base) var(--ease-out);
 }
 
-.cabecera {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
+@keyframes calendario-entra {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .calendario {
+    animation: none;
+  }
 }
 
 .cabecera h3 {
@@ -31,24 +59,28 @@
   text-transform: uppercase;
 }
 
-.cabecera button {
-  display: grid;
-  place-items: center;
-  width: 2rem;
-  height: 2rem;
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: none;
-  color: var(--ink-700);
+/*
+ * Las flechas del mes y la cruz: iconos de 32 px, redondos, como las flechas del carril y la cruz
+ * del buscador. Son controles pequeños dentro de una superficie compacta, y el cuadrado de 40 px de
+ * la familia ocuparía la mitad de la cabecera.
+ */
+.flecha {
+  composes: base botonIcono mini from "../../styles/controls.module.css";
 }
 
-.cabecera button:hover {
-  background: var(--sand-200);
-}
-
-.cabecera svg {
-  width: 1.1rem;
-  height: 1.1rem;
+/*
+ * La cruz: cuadrada y con superficie, igual que la que cierra la ficha, el panel y los diálogos.
+ * Era redonda porque componía el atajo de ratón, y entonces la misma acción tenía dos formas según
+ * dónde estuvieras. Lo que cambia respecto a las otras es el tamaño, porque la cabecera del
+ * calendario es estrecha; la forma y la materia son las mismas.
+ *
+ * Las flechas sí son atajo y siguen redondas y sin fondo: no cierran nada, se mueven dentro del
+ * control, y con fondo propio parecerían otra cosa.
+ */
+.cerrar {
+  composes: base botonIcono conSuperficie from "../../styles/controls.module.css";
+  width: var(--control-h-mini);
+  height: var(--control-h-mini);
 }
 
 .semana,
@@ -67,32 +99,19 @@
   text-transform: uppercase;
 }
 
-.rejilla button {
+.dia {
+  composes: base dia from "../../styles/controls.module.css";
+  width: auto;
+  height: auto;
   aspect-ratio: 1;
-  display: grid;
-  place-items: center;
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: none;
-  color: var(--ink-800);
-  font: 600 var(--text-sm) / 1 var(--font-sans);
-  font-variant-numeric: tabular-nums;
-  transition: background-color var(--duration-fast) var(--ease-out);
 }
 
-.rejilla button:hover:not(:disabled) {
-  background: var(--sand-200);
-}
-
+/* Un día cualquiera se tiñe suave; uno ya registrado, que va lleno de olivo, se oscurece. */
 /* Un día que todavía no ha llegado no se puede haber visitado: se apaga, no se esconde, para que
    el mes conserve su forma y se entienda por qué no se puede pulsar. */
-.rejilla button:disabled {
-  color: var(--sand-400);
-  cursor: default;
-}
-
 /* Hoy, con un filete: dice dónde estás sin gastar el relleno, que significa otra cosa. */
-.rejilla button[data-hoy="true"] {
+/* Hoy, con un filete: dice dónde estás sin gastar el relleno, que significa otra cosa. */
+.dia[data-hoy="true"] {
   box-shadow: inset 0 0 0 1.5px var(--sand-400);
 }
 
@@ -100,25 +119,22 @@
  * Un día visitado va lleno, que es la misma gramática que el resto de la guía: lleno es puesto.
  * Y no se marca solo con color, que no todo el mundo distingue: el día pasa además a negrita.
  */
-.rejilla button[aria-pressed="true"] {
-  background: var(--olive-600);
+.dia[aria-pressed="true"] {
   box-shadow: none;
-  color: var(--sand-25);
-  font-weight: 700;
 }
 
-.rejilla button[aria-pressed="true"][data-hoy="true"] {
+.dia[aria-pressed="true"][data-hoy="true"] {
   box-shadow: inset 0 0 0 1.5px var(--olive-700);
 }
 
+/* La cruz vive en la cabecera, a la derecha del mes y separada de las flechas del mes. */
 .cerrar {
-  justify-self: start;
-  padding: 0.35rem 0;
-  border: 0;
-  background: none;
-  color: var(--olive-700);
-  font: 600 var(--text-xs) / 1.4 var(--font-sans);
-  text-decoration: underline;
-  text-decoration-color: var(--sand-400);
-  text-underline-offset: 0.2em;
+  margin-left: 0.25rem;
+}
+
+.cabecera {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: var(--space-1);
 }

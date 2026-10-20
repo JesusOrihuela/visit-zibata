@@ -176,3 +176,20 @@ export const rutaDeLugar = (slug: string, locale: Locale, base: string): string 
 
 export const rutaDeZona = (slug: string, locale: Locale, base: string): string =>
   buildPath({ locale, placeSlug: null, plazaSlug: slug, categorySlug: null, infoTopic: null }, base)
+
+/**
+ * Y la de una página de información, que también es una dirección de verdad.
+ *
+ * "Acerca", "Privacidad" y "Sugiere un cambio" se abrían con un botón teniendo cada una su ruta
+ * (`/info/privacidad` y las suyas), así que pasaba lo mismo: no se podían abrir aparte ni copiar,
+ * y un buscador no encontraba ninguna.
+ *
+ * El tutorial entra igual que las otras tres. Se dibuja como una capa encima de lo que estés
+ * viendo, pero tiene su propia ruta y se abre directamente desde ella, así que el enlace que lleva
+ * a él es un enlace como los demás.
+ */
+export const rutaDeInfo = (topic: InfoTopic, locale: Locale, base: string): string =>
+  buildPath(
+    { locale, placeSlug: null, plazaSlug: null, categorySlug: null, infoTopic: topic },
+    base,
+  )

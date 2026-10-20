@@ -56,6 +56,12 @@ La transcripción está en [release/evidencia/nvda-transcripcion.md](release/evi
   accesible equivalente.
 - **Contraste**: la paleta se diseñó con contraste AA para texto e iconos sobre sus fondos, y axe no
   reporta fallos, pero no se ha medido a mano cada combinación sobre el mapa (texto sobre cartografía).
+
+  El contraste **no textual** (WCAG 1.4.11, las partes de un control) se mide aparte, porque axe no
+  lo revisa: la vía del interruptor contra su perilla lo comprueba `tests/e2e/catalogo.spec.ts`. Es
+  el caso que más importa de los tres, porque la posición de la perilla es lo único que dice si el
+  filtro está puesto; con la arena clara que llevaba daba 1,66:1 y el control no comunicaba su
+  estado. El resto de las partes de control no está medido a mano todavía.
 - **Zoom de texto al 200 %** verificado por tamaños de viewport equivalentes, no con el zoom de texto del
   navegador.
 - Un diálogo del navegador (permiso de ubicación) queda fuera del control de la guía.

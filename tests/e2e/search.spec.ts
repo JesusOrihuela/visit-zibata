@@ -116,12 +116,18 @@ test.describe('Búsqueda y filtros', () => {
       region.getByRole('link', { name: 'Ver detalles de D’Lu Coffee & Bakery' }),
     ).toBeVisible()
     await expect(page.getByText(`${desayunos} resultados`, { exact: true }).first()).toBeVisible()
-    // Las pastillas anuncian los mismos conteos que la plaza seleccionada (arriba y en el panel).
-    await expect(topCategories.getByRole('button', { name: /Desayunos y Café/ })).toHaveText(
-      new RegExp(`${desayunos}$`),
-    )
-    await expect(topCategories.getByRole('button', { name: /^Todo/ })).toHaveText(
-      new RegExp(`${placesInPlaza('Paseo Zibatá')}$`),
+    /*
+     * Las cápsulas **anuncian** los mismos conteos que la plaza seleccionada, y anuncian es la
+     * palabra: la cifra vive en el nombre accesible y no en la pantalla. Se quitó de la vista
+     * porque diecinueve cifras repetidas no dicen más que una, y el número de lo que estás viendo
+     * ya lo da la cabecera del panel, junto a la lista que cuenta. Quien no ve la fila sí la
+     * necesita, porque no puede mirar cuál está llena.
+     */
+    await expect(
+      topCategories.getByRole('button', { name: /Desayunos y Café/ }),
+    ).toHaveAccessibleName(new RegExp(`${desayunos} lugares`))
+    await expect(topCategories.getByRole('button', { name: /^Todo/ })).toHaveAccessibleName(
+      new RegExp(`${placesInPlaza('Paseo Zibatá')} lugares`),
     )
     await expect(page).toHaveURL(/\/zona\/paseo-zibata\?categoria=desayunos-y-cafe$/)
 
@@ -142,9 +148,10 @@ test.describe('Búsqueda y filtros', () => {
       .click()
     const region = panel(page)
     await expect(region.getByRole('heading', { name: 'Resultados' })).toBeVisible()
-    await expect(region.getByRole('button', { name: /^Xentric Anáhuac/ })).toBeVisible()
-    await expect(region.getByRole('button', { name: /^Paseo Zibatá/ })).toBeVisible()
-    await region.getByRole('button', { name: /^Paseo Zibatá/ }).click()
+    // La cabecera de grupo es un enlace: la zona tiene dirección propia.
+    await expect(region.getByRole('link', { name: /^Xentric Anáhuac/ })).toBeVisible()
+    await expect(region.getByRole('link', { name: /^Paseo Zibatá/ })).toBeVisible()
+    await region.getByRole('link', { name: /^Paseo Zibatá/ }).click()
     await expect(region.getByRole('heading', { level: 2, name: 'Paseo Zibatá' })).toBeVisible()
     await expect(region.getByRole('link', { name: /^Ver detalles de/ })).toHaveCount(
       placesInCategory('bar', 'Paseo Zibatá'),

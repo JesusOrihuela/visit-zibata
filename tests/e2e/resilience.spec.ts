@@ -24,7 +24,7 @@ test.describe('Estados de error', () => {
     ).toBeVisible()
     if (isMobile(page)) await page.getByRole('button', { name: 'Explora Zibatá' }).click()
     await page
-      .getByRole('button', {
+      .getByRole('link', {
         name: new RegExp(`^Paseo Zibatá, ${placesInPlaza('Paseo Zibatá')} lugares`),
       })
       .click()
@@ -63,7 +63,7 @@ test.describe('Estados de error', () => {
     await expect(page.getByRole('searchbox', { name: 'Buscar lugares' })).toBeVisible()
     await page.getByRole('button', { name: 'Explora Zibatá' }).click()
     // La plaza sigue abriéndose: solo faltan los registros defectuosos.
-    await page.getByRole('button', { name: /^Plaza Condesa, \d+ lugares/ }).click()
+    await page.getByRole('link', { name: /^Plaza Condesa, \d+ lugares/ }).click()
     await expect(
       panel(page).getByRole('heading', { level: 2, name: 'Plaza Condesa' }),
     ).toBeVisible()
@@ -82,7 +82,7 @@ test.describe('Estados de error', () => {
     await expect(page.getByRole('searchbox', { name: 'Buscar lugares' })).toBeVisible()
     if (isMobile(page)) await page.getByRole('button', { name: 'Explora Zibatá' }).click()
     await page
-      .getByRole('button', {
+      .getByRole('link', {
         name: new RegExp(`^Paseo Zibatá, ${placesInPlaza('Paseo Zibatá')} lugares`),
       })
       .click()

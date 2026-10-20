@@ -173,6 +173,21 @@ política de seguridad no admite un solo destino externo.
 | `--text-xl` | 24 | título de ficha |
 | `--text-2xl` | 30 | título de panel y de hoja |
 
+**El escalón de los campos.** `--text-campo` son 16 px y están fuera de la escala a propósito.
+Safari en iPhone amplía la página entera al enfocar un campo que mide menos de 16, y los 15 de
+`--text-base` lo disparan. Es una restricción de la plataforma, no una preferencia; existe como
+escalón nombrado para que no aparezca como un `1rem` suelto dentro de una hoja.
+
+**La regla del papel.** El tamaño de un texto lo decide el papel que hace, no el sitio donde está.
+Nueve escalones, cada uno con su papel y su peso, en [docs/CATALOGO.md](docs/CATALOGO.md) § 3. En
+los módulos de la interfaz no hay ni un tamaño escrito a mano; lo que queda fuera de la escala son
+cuatro piezas que no son texto de interfaz (un logotipo, un matasellos, la 404 y el contenido que se
+pinta antes de que carguen los tokens), y las cuatro están nombradas ahí.
+
+**La regla de los tres pesos.** 400 para el cuerpo, 600 para la interfaz, 700 solo para cifras y
+versalitas. No hay 500 ni 800: un paso intermedio entre 400 y 600 no dice nada que no diga ya el
+tamaño, y lo único que consigue es que dos textos del mismo papel se vean distintos sin motivo.
+
 ### Named Rules
 
 **La regla de los cuatro papeles.** Cada familia tiene un trabajo y solo uno. Fraunces titula,
@@ -209,25 +224,39 @@ segunda tarjeta.
 
 ## Shapes
 
-`--radius-sm` 8 px para cajas pequeñas, `md` 14 px para tarjetas, `lg` 20 px y `xl` 28 px para
-paneles y hojas, `pill` para todo lo que se pulsa.
+`--radius-control` 6 px para lo que ejecuta y lo que se escribe, `--radius-round` para la perilla y
+la identidad, `--radius-pill` para lo que elige de un conjunto. `md` 14 px para tarjetas, `lg` 20 px
+y `xl` 28 px para paneles y hojas: los tres de contenedor, y los contenedores no se pulsan.
 
-**La regla de la píldora.** Lo redondo se pulsa. Un rectángulo con esquinas blandas es contenido; una
-píldora es un control. Mezclarlos enseña al dedo a dudar.
+**La regla de la forma por la acción.** Lo que decide la forma de un control es **el tipo de acción
+que ejecuta**, nunca el sitio donde está. Cinco familias y nada fuera de ellas sin un motivo
+escrito: elegir de un conjunto es cápsula, sí o no es interruptor, ejecutar es esquina de 6, navegar
+no tiene caja y escribir es campo. El mapa tiene vocabulario propio, para que un marcador no se
+confunda nunca con un control. El catálogo completo, con las 75 piezas y sus valores, está en
+[docs/CATALOGO.md](docs/CATALOGO.md); los valores viven en `src/styles/controls.module.css` y los
+módulos los componen con `composes` en vez de volver a escribirlos.
 
-Se rompía en cuatro sitios hasta la v4.23, y los cuatro eran contenedores con forma de botón: la
-barra de búsqueda (una cápsula con dos cápsulas dentro), el resumen de filtros, la franja del pie y
-el aviso de carga. Si un contenedor y lo que contiene tienen la misma forma, la jerarquía desaparece.
+Esto corrige tres errores seguidos. El primero: dar a cada control una forma propia, que dejaba
+cuatro siluetas para cuatro controles y una fila sin gramática. El segundo: dar una esquina distinta
+a uno solo, que lo convierte en el raro. El tercero, el que duró más: repartir dos siluetas por
+**dónde** estaba cada pieza (una para las categorías, otra para todo lo demás), que es una regla que
+no se puede aplicar sin saberse de memoria el mapa de la interfaz. Por la acción se deduce mirando.
+**Una silueta solo informa cuando la lleva una familia entera, y solo se aprende cuando la familia
+se puede reconocer sin que nadie la explique.**
 
-**La regla de las dos siluetas.** Desde la v4.26 hay **dos** y no más. La **cápsula** es solo de las
-categorías: dieciocho pastillas de un conjunto del que se elige una, y nada más en la guía la lleva.
-La **esquina de 8** (`--radius-sm`) es de todo lo que no es una categoría: la zona, las condiciones,
-la salida, los controles del mapa y los botones de la ficha. El mapa no usa ninguna de las dos, para
-que un marcador no se confunda nunca con un control.
+**La regla del estado que se anuncia.** Lo elegido se dibuja con `[aria-pressed="true"]`,
+`[aria-checked="true"]` o `:has(input:checked)`, nunca con una clase propia. Así la única forma de
+conseguir el relleno es poner el atributo: un estado que se ve pero no se anuncia deja de ser
+posible por construcción y no por disciplina.
 
-Esto corrige dos errores seguidos. El primero: dar a cada control una forma propia, que dejaba cuatro
-siluetas para cuatro controles y una fila sin gramática. El segundo: dar una esquina distinta a uno
-solo, que lo convierte en el raro. **Una silueta solo informa cuando la lleva una familia entera.**
+**La regla del enlace que es un enlace.** Un destino con dirección propia se dibuja con `<a href>`.
+Seis sitios eran botones teniendo ruta (el índice de zonas, las cabeceras de resultados, el podio de
+Tu Zibatá, la franja de la guía, el pie de Tu Zibatá y los enlaces entre páginas de información), y
+mientras lo fueron no se podían abrir en otra pestaña, ni copiar, ni encontrar desde fuera. El
+último salió al corregir las pruebas: lo había dibujado como enlace y dejado como botón, que es
+exactamente el defecto que esta regla viene a quitar. El W3C lo dice sin rodeos: poner el rol de enlace
+en otro elemento no le da el comportamiento de un enlace, y entonces proveerlo es trabajo de quien
+escribe. Sale más barato usar el elemento que lo trae puesto.
 
 **La regla de las dos direcciones.** En la ficha de un lugar, los controles se agrupan por hacia
 dónde apuntan y no por cuándo se usan. *Hacia fuera* (Cómo llegar, Compartir) entregan el lugar a
@@ -237,11 +266,12 @@ y no se publican nunca: pierden la superficie entera, que es más diferencia que
 nueva. El rótulo "Solo para ti" lo dice en palabras en vez de dejar que se suponga, y va sin filete:
 una línea que aparece una sola vez en toda la ficha no se lee como estructura, se lee como un corte.
 
-**La regla de la línea que no es caja.** El buscador es lo único de la guía dibujado con un filete
-inferior y no con un contorno. Un contorno dice "aquí hay un objeto" y un renglón dice "aquí se
-escribe". En reposo no tiene superficie ninguna, porque vive dentro de la franja de arriba y una
-caja dentro de una caja no agrupa nada; la superficie aparece al enfocar, que es cuando el campo
-deja de ser un sitio donde se puede escribir y pasa a ser el sitio donde se está escribiendo.
+**La regla del campo que se gana su caja.** El buscador es el único campo de la guía sin filete ni
+fondo en reposo, porque vive dentro de la franja de arriba y una caja dentro de una caja no agrupa
+nada. Lo que queda es la lupa y el texto; el filete y el papel de la familia aparecen al enfocar, que
+es cuando el campo deja de ser un sitio donde se puede escribir y pasa a ser el sitio donde se está
+escribiendo. Llevó un filete inferior suelto y desentonaba: un renglón dentro de una pastilla
+redondeada no pertenece a ninguna de las cinco formas y se leía como un subrayado perdido.
 
 **La regla de la barra heredada.** La barra de desplazamiento se declara una sola vez, en
 `global.css`, y la hereda todo lo que se desplace. Van los dos juegos de propiedades y el reparto
@@ -306,11 +336,15 @@ mide en vivo y los marcadores se colocan en lo que queda. Subir de 157 a 221 px 
 punto y la dejó bajo la insignia de la vecina. Antes de engordar la interfaz, mirar qué pasa con los
 marcadores.
 
-**La regla del cristal escaso.** El desenfoque es un acento, no un rasgo de carácter. Lo llevan la
-barra de búsqueda y las pastillas de categoría, que es lo que se toca primero. Llegó a haber nueve
-superficies con la misma receta (fondo translúcido, desenfoque, filete y sombra), y con nueve
-primeros planos no hay ninguno. Lo demás se apoya plano sobre el mapa y se lee por su sombra de
-texto, del color del papel.
+**La regla del cristal escaso.** El desenfoque es un acento, no un rasgo de carácter. Llegó a haber
+nueve superficies con la misma receta (fondo translúcido, desenfoque, filete y sombra), y con nueve
+primeros planos no hay ninguno. Desde el catálogo queda solo en la franja de la barra superior: en
+cuanto lo que flota sobre el mapa pasó a ser opaco por regla, el desenfoque dejó de tener nada que
+desenfocar y era puro costo de GPU encima de un mapa 3D que está dibujando.
+
+**La regla de lo que flota opaco.** Nada que se lea contra calles, manzanas y arbolado puede fiarse
+de lo que haya detrás. Todo lo que va sobre el mapa lleva superficie sólida y una sombra que lo
+despega, y "hueco" pasa a significar *sin el acento*, no *sin fondo*.
 
 **La regla del aro.** El filete de las fotos circulares va con `outline` de 1 px, no con
 `box-shadow`. Una sombra sobre una curva se dibuja difuminada y escalona el borde; `outline` sigue el
@@ -328,9 +362,14 @@ Cuatro estados y ninguno más: verde abierto, gris cerrado, hueco sin horario pu
 temporalmente. El hueco existe porque "no se sabe" no es lo mismo que "cerrado", y pintarlo gris
 sería afirmar algo que la guía no sabe.
 
-**Las pastillas de filtro.** Píldora, superficie translúcida, conteo a la derecha en `tabular-nums`.
-Una pastilla que daría cero resultados no se dibuja: el filtro de "abierto ahora" desaparece solo a
-las cuatro de la mañana.
+**Las pastillas de filtro.** Cápsula, superficie sólida, conteo a la derecha en un disco con
+`tabular-nums` y centrado por óptica. Una pastilla que daría cero resultados no se dibuja: el filtro
+de "abierto ahora" desaparece solo a las cuatro de la mañana.
+
+**Los interruptores.** Desnudos: sin pastilla alrededor y sin rótulo, con el nombre y la cuenta en
+`aria-label`. Aquí se sigue a Apple y no a NN/G, y el motivo es de forma y no de legibilidad: con
+texto hacía falta una pastilla que lo contuviera, y eso metía una caja dentro de otra. El costo
+queda apuntado: el reloj y el corazón tienen que sostenerse solos.
 
 **Los botones.** Ocho estados obligatorios en cualquier control: reposo, hover, `:focus-visible`,
 activo, deshabilitado, cargando, error, éxito. El anillo de foco aparece **al instante**, nunca con

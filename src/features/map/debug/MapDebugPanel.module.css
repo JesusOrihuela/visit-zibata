@@ -58,7 +58,7 @@
   margin-top: 0.25rem;
   padding: 0.3rem 0.6rem;
   border: 1px solid #536c2a;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   background: transparent;
   color: #f3f8ea;
   font: inherit;

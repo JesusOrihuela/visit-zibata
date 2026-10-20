@@ -2,18 +2,22 @@
  * Suelto en la barra, no dentro de la tarjeta: es la esquina de la persona, no un control más.
  * Mide lo mismo que la tarjeta de búsqueda, con el alto que calcula la fila (--topbar-height).
  */
+/*
+ * El avatar ejecuta: abre una hoja, no navega a una dirección. Es redondo y no cuadrado porque la
+ * forma redonda es la de identidad en toda la guía (fotos, logotipos), y lo que hay dentro es
+ * justamente eso: quién eres en esta guía.
+ */
 .avatar {
+  composes: base botonIcono from "../../styles/controls.module.css";
   position: relative;
-  flex-shrink: 0;
-  display: grid;
-  place-items: center;
-  width: var(--topbar-height, 2.75rem);
-  height: var(--topbar-height, 2.75rem);
-  border: 1px solid var(--color-border);
-  border-radius: 50%;
-  background: var(--color-surface-solid);
-  box-shadow: var(--shadow-sm);
+  width: var(--topbar-height, var(--control-h));
+  height: var(--topbar-height, var(--control-h));
+  border-radius: var(--radius-round);
   color: var(--ink-600);
+  background: var(--color-surface-solid);
+  box-shadow:
+    inset 0 0 0 1px var(--color-border),
+    0 1px 3px rgb(31 36 25 / 0.1);
 }
 
 /*
@@ -27,27 +31,17 @@
 
 /* Con algo marcado en este navegador, el avatar toma el verde de la guía. */
 .avatar[data-active="true"] {
-  border-color: var(--lime-300);
-  background: var(--lime-50);
   color: var(--olive-600);
-}
-
-.avatar:hover {
   background: var(--lime-50);
-  color: var(--olive-700);
+  box-shadow:
+    inset 0 0 0 1px var(--lime-300),
+    0 1px 3px rgb(31 36 25 / 0.1);
 }
 
-.badge {
-  position: absolute;
-  right: -0.15rem;
-  bottom: -0.15rem;
-  min-width: 1.05rem;
-  padding: 0 0.2rem;
-  border-radius: var(--radius-pill);
-  background: var(--olive-600);
-  color: white;
-  font: 700 var(--text-2xs) / 1.05rem var(--font-sans);
-  font-variant-numeric: tabular-nums;
+/* Reemplaza la superficie del catálogo, así que le toca decir qué hace al pasar por encima. */
+.avatar:hover {
+  color: var(--olive-700);
+  background: var(--hover-quiet);
 }
 
 .veil {
@@ -62,11 +56,16 @@
   backdrop-filter: blur(2px);
 }
 
+/*
+ * El velo: un botón a pantalla completa, detrás de la hoja, para que pulsar fuera la cierre. No
+ * tiene forma porque no se ve nunca; lo único que necesita es nombre accesible, y por eso es un
+ * botón de verdad y no un `div` con un `onClick`.
+ */
 .veilButton {
+  composes: base from "../../styles/controls.module.css";
   position: absolute;
   inset: 0;
-  border: 0;
-  background: none;
+  cursor: default;
 }
 
 .sheet {
@@ -78,7 +77,14 @@
   flex-direction: column;
   gap: var(--space-3);
   padding: var(--space-4) var(--space-5) var(--space-5);
-  border-radius: var(--radius-lg);
+
+  /*
+
+   * 369 px de lado corto.
+
+   */
+
+  border-radius: var(--radius-xl);
   background: var(--color-surface-solid);
   box-shadow: var(--shadow-lg);
 }
@@ -106,7 +112,7 @@
   height: 3rem;
   /* Con borde la silueta se lee como un avatar y no como un icono suelto sobre el fondo. */
   border: 1px solid var(--lime-300);
-  border-radius: 50%;
+  border-radius: var(--radius-round);
   background: var(--lime-50);
   color: var(--olive-600);
 }
@@ -129,25 +135,9 @@
   color: var(--ink-900);
 }
 
+/* Cerrar ejecuta: cuadrado de icono con la esquina de la familia, no círculo. */
 .close {
-  flex-shrink: 0;
-  display: grid;
-  place-items: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  border: 0;
-  border-radius: 50%;
-  background: var(--color-surface-muted);
-  color: var(--ink-700);
-}
-
-.close:hover {
-  background: var(--sand-200);
-}
-
-.close svg {
-  width: 1.1rem;
-  height: 1.1rem;
+  composes: base botonIcono conSuperficie from "../../styles/controls.module.css";
 }
 
 /* Cada bloque responde a una parte de la pregunta: cuánto llevas, qué guardaste, qué te gusta. */
@@ -247,15 +237,18 @@
   order: 3;
 }
 
+/*
+ * Una columna del podio: la pieza entera es el enlace a esa ficha. Era un botón, y lo único que
+ * respondía al pasar por encima era un subrayado en el nombre, así que no se veía dónde pulsar.
+ */
 .stepButton {
+  composes: zonaPulsable from "../../styles/controls.module.css";
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.15rem;
-  width: 100%;
-  padding: 0;
-  border: 0;
-  background: none;
+  padding: var(--space-2) var(--space-1);
+  border-radius: var(--radius-control);
   color: var(--ink-800);
   text-align: center;
 }
@@ -266,7 +259,7 @@
   width: 2rem;
   height: 2rem;
   margin-bottom: 0.05rem;
-  border-radius: 50%;
+  border-radius: var(--radius-round);
   background: var(--zone-soft, var(--lime-50));
   color: var(--zone-accent, var(--olive-600));
 }
@@ -330,11 +323,6 @@
   font-size: var(--text-xl);
 }
 
-.stepButton:hover .stepName {
-  text-decoration: underline;
-  text-underline-offset: 0.15em;
-}
-
 /* Tus antojos: el giro, con su icono, y cuántos lugares tuyos caen en él, en pastillas. */
 .tastes {
   display: flex;
@@ -391,17 +379,9 @@
 }
 
 .link {
+  composes: enlace from "../../styles/controls.module.css";
   padding: 0.35rem 0;
-  border: 0;
-  background: none;
-  color: var(--olive-700);
   font: 600 var(--text-sm) / 1.4 var(--font-sans);
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
-}
-
-.link:hover {
-  color: var(--olive-600);
 }
 
 /*

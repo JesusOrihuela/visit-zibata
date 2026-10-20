@@ -8,10 +8,8 @@
   --sand-25: #fcfaf6;
   --sand-50: #f8f4ed;
   --sand-100: #f1ebe0;
-  --sand-200: #e6ddcd;
   --sand-300: #d1c3b0;
   --sand-400: #b9a88f;
-  --sand-500: #978670;
 
   /* Tinta (texto) */
   --ink-900: #1f2419;
@@ -25,7 +23,6 @@
   --olive-800: #34451a;
   --olive-700: #435a22;
   --olive-600: #536c2a;
-  --olive-500: #6a8736;
   --lime-500: #8cba37;
   --lime-300: #b8d77c;
   --lime-100: #e7f1d4;
@@ -66,10 +63,9 @@
    * El rojo del corazón. No es el de alerta y no debe confundirse con él: uno dice "esto te gusta"
    * y el otro dice "algo va mal". Vivían los dos escritos a mano y en tres tonos distintos (#b4432c
    * en el botón y en el filtro, #c0453c en la ilustración del tutorial), que es como una decisión
-   * se convierte en deriva. Da 5,33:1 sobre la superficie y 4,73:1 sobre su propio fondo.
+   * se convierte en deriva. Da 5,33:1 sobre la superficie, que es donde se usa.
    */
   --heart-600: #b4432c;
-  --heart-50: #fbe9e4;
 
   --danger-600: #a3402b;
   --danger-50: #fbede9;
@@ -84,9 +80,27 @@
   --color-text: var(--ink-900);
   --color-text-muted: var(--ink-500);
   --color-accent: var(--olive-600);
-  --color-accent-strong: var(--olive-700);
-  --color-accent-soft: var(--lime-100);
-  --color-highlight: var(--lime-500);
+
+  /*
+   * El hover, dos tokens y no diez tratamientos.
+   *
+   * Había diez: unas piezas se teñían de verde al pasar por encima, otras se oscurecían en arena,
+   * otras cambiaban a un olivo más oscuro, y la regla de cuál tocaba no existía. Una interfaz en la
+   * que el mismo gesto da respuestas distintas según dónde lo hagas no enseña nada sobre sí misma.
+   *
+   * La regla es una: **al pasar por encima, todo se mueve un paso hacia el acento**. Lo que está
+   * apagado o hueco se tiñe de verde claro; lo que ya está lleno de olivo se oscurece. No hay más
+   * casos, porque no hay más clases de superficie.
+   */
+  --hover-quiet: var(--lime-50);
+  --hover-strong: var(--olive-700);
+  /*
+   * Y un tercero, para lo que es transparente encima de una superficie de color: ahí no se puede
+   * teñir de verde ni de olivo sin pelearse con el fondo que ya hay, así que lo que se mueve es la
+   * luz. Son tres casos porque hay tres clases de superficie, no porque hagan falta tres tokens.
+   */
+  --hover-ghost: rgb(255 255 255 / 0.16);
+
   --color-focus: #3d6b00;
 
   /* Tipografía */
@@ -106,11 +120,31 @@
   --text-2xs: 0.6875rem;
   --text-xs: 0.75rem;
   --text-sm: 0.8125rem;
-  --text-base: 0.9375rem;
+  /*
+   * 14 y no 15. Es el `font-size` del `body`, así que es el cuerpo de toda la guía: las páginas de
+   * información, la descripción de una ficha, el nombre de un lugar en una lista y todo lo que no
+   * pide otro escalón. Estuvo en 15, y donde se notaba era en las páginas que son solo texto: con
+   * cinco párrafos seguidos del mismo tamaño no hay jerarquía que descanse la vista, mientras que
+   * en una ficha el mismo 15 convive con metadatos de 12 y 13 y se lee como el bloque grande.
+   *
+   * Se baja el escalón y no solo las páginas: un cuerpo que mide distinto según dónde esté deja de
+   * ser un escalón.
+   */
+  --text-base: 0.875rem;
   --text-md: 1.0625rem;
   --text-lg: 1.375rem;
   --text-xl: 1.5rem;
   --text-2xl: 1.875rem;
+
+  /*
+   * Y un paso fuera de la escala, solo para los campos de texto.
+   *
+   * Safari en iPhone amplía la página entera al enfocar un campo que mide menos de 16 px, y deja la
+   * guía a medio zoom sin forma obvia de volver. Los 15 de `--text-base` lo disparan. Es una
+   * restricción de la plataforma, no una preferencia, así que el escalón existe y se nombra en vez
+   * de aparecer como un 1rem suelto dentro de una hoja.
+   */
+  --text-campo: 1rem;
 
   /* Espaciado y forma */
   --space-1: 0.25rem;
@@ -120,11 +154,62 @@
   --space-5: 1.25rem;
   --space-6: 1.5rem;
   --space-8: 2rem;
+  /*
+   * La forma, y es una decisión de catálogo, no una escala suelta.
+   *
+   * Había diecinueve valores de esquina repartidos por los módulos, y ninguna regla que dijera cuál
+   * tocaba. La regla ahora es por familia de acción, y son cinco formas en todo lo que se pulsa:
+   *
+   *   pill     elegir de un conjunto (cápsulas) y la vía del interruptor
+   *   control  ejecutar: botones, botones de icono, días del calendario, campos de texto
+   *   round    la perilla del interruptor, el avatar, las flechas del carril, la cruz del buscador
+   *   sin caja navegar: el enlace no tiene forma propia
+   *   silueta  el banderín del mapa, que es un recorte y no un radio
+   *
+   * Los seis px de `control` no son un redondeo: son el valor que separa "ejecutar" de "elegir de
+   * un conjunto" sin que ninguna de las dos parezca la otra.
+   *
+   * Y para las superficies, que no se pulsan, hay cuatro escalones que **los reparte el tamaño**:
+   * manda el lado más corto de la superficie.
+   *
+   *   sm 8    menos de 48 px   la franja de la guía, el globo del mapa, el aviso, la pila
+   *   md 14   de 48 a 80       la tarjeta de búsqueda, las de lugar, las tablas, los avisos de ficha
+   *   lg 20   de 80 a 320      el calendario
+   *   xl 28   más de 320       las hojas, el panel lateral, los diálogos
+   *
+   * Es lo que hacen Uber Base, Material 3 y Apple, y resuelve el caso que ninguna regla por sitio
+   * resolvía: la tarjeta de búsqueda mide 51 px de alto, así que con `lg` su esquina era el 39 % de
+   * su propia altura. La misma cifra no puede hacer eso en una caja de 51 y en una hoja de 596.
+   *
+   * Y una segunda regla, la concentricidad de Apple: lo que se apoya en la esquina de otra
+   * superficie lleva **la esquina de fuera menos el relleno**. En esta guía eso solo se ve en un
+   * sitio (el cuadro de ilustración del tutorial); el resto va lo bastante lejos del canto como
+   * para que mande el tamaño.
+   */
+  --radius-control: 0.375rem;
+  --radius-round: 50%;
   --radius-sm: 0.5rem;
   --radius-md: 0.875rem;
   --radius-lg: 1.25rem;
   --radius-xl: 1.75rem;
   --radius-pill: 999px;
+
+  /*
+   * El alto, que también es de catálogo. Dos medidas:
+   *
+   *   control  40 px, el alto de TODO lo que se pulsa: botones, campos, cápsulas, interruptores
+   *   mini     32 px, los atajos de ratón (flechas de carril y de mes, cruz del buscador)
+   *
+   * Hubo un tercero de 36 para las cápsulas y la fila de filtros, y era un error: la barra flota
+   * sobre la hoja, así que una cápsula de arriba y un botón de la ficha se ven a la vez, y cuatro
+   * píxeles de diferencia entre dos cosas que se pulsan igual se leen como un descuido. Unificar
+   * cuesta ocho píxeles de mapa (cuatro por cada una de las dos filas de la barra) y los vale.
+   *
+   * WCAG 2.2 AA pide 24 px de objetivo y las dos lo pasan. Los 44 del nivel mejorado quedan
+   * apuntados, no cumplidos: subir a 44 obliga a rehacer la barra superior entera.
+   */
+  --control-h: 2.5rem;
+  --control-h-mini: 2rem;
 
   --shadow-sm: 0 1px 2px rgb(31 36 25 / 0.06), 0 1px 1px rgb(31 36 25 / 0.04);
   --shadow-md: 0 6px 18px -6px rgb(31 36 25 / 0.18), 0 2px 6px -2px rgb(31 36 25 / 0.08);

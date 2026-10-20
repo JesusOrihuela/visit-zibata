@@ -61,9 +61,8 @@ export function ShareButton({
     <>
       <button
         type="button"
-        className={styles.button}
+        className={conNombre ? styles.conNombre : styles.cromo}
         data-size={size}
-        data-nombre={conNombre}
         data-done={copiado}
         aria-label={etiqueta}
         title={copiado ? t('share.copied') : t('share.action')}

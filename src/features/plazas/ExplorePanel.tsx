@@ -3,7 +3,9 @@ import { ChevronRight, Construction, X } from 'lucide-react'
 import type { CSSProperties } from 'react'
 import { DEFAULT_PLAZA_TONE, plazaTones } from '../../config/palette.ts'
 import { useCatalog } from '../../data/CatalogContext.tsx'
-import { localized, t } from '../../i18n/index.ts'
+import { localized, t, useLocale } from '../../i18n/index.ts'
+import { alPulsarEnlace } from '../../lib/navegacion.ts'
+import { rutaDeZona } from '../../lib/url-state.ts'
 import styles from './Panel.module.css'
 
 interface ExplorePanelProps {
@@ -21,6 +23,7 @@ export function ExplorePanel({
   onExpand,
 }: ExplorePanelProps) {
   const catalog = useCatalog()
+  const idioma = useLocale()
   /**
    * Lo que hay en una zona: sus giros, los que más se repiten primero.
    *
@@ -117,10 +120,14 @@ export function ExplorePanel({
         <ul className={styles.plazaList}>
           {plazas.map(({ plaza, count }) => (
             <li key={plaza.id}>
-              <button
-                type="button"
+              {/*
+               * El renglón entero es el enlace a la zona. Era un botón, y la zona tiene dirección
+               * propia: así se puede abrir en otra pestaña, copiar y encontrar desde fuera.
+               */}
+              <a
                 className={styles.plazaCard}
-                onClick={() => onSelectPlaza(plaza.id)}
+                href={rutaDeZona(plaza.slug, idioma, import.meta.env.BASE_URL)}
+                onClick={alPulsarEnlace(() => onSelectPlaza(plaza.id))}
                 aria-label={`${plaza.name}, ${t('places.count', { count })}: ${plaza.categories
                   .map((id) => {
                     const category = catalog.categoryById.get(id)
@@ -158,7 +165,7 @@ export function ExplorePanel({
                   </span>
                 </span>
                 <ChevronRight className={styles.chevron} aria-hidden="true" />
-              </button>
+              </a>
             </li>
           ))}
         </ul>

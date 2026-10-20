@@ -44,11 +44,6 @@ export function ProfileButton({
         title={t('profile.open')}
       >
         <ProfileIcon className={styles.avatarIcon} />
-        {saved > 0 && (
-          <span className={styles.badge} aria-hidden="true">
-            {saved}
-          </span>
-        )}
       </button>
       {open && (
         <Suspense fallback={null}>

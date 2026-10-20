@@ -35,17 +35,23 @@
   cursor: grabbing;
 }
 
+/*
+ * El asa se arrastra, no se pulsa, así que queda fuera de las cinco familias: lo único que comparte
+ * con ellas es el foco y la transición de `base`. El área de agarre es bastante más grande que la
+ * barra que se ve, porque lo que hay que acertar con el dedo es el gesto, no el dibujo.
+ */
 .handle {
+  composes: base from "../../styles/controls.module.css";
   display: grid;
   place-items: center;
-  /* `touch-action` no se hereda del área de agarre: sin esto el navegador podría interpretar el arrastre
-     que empieza sobre el asa como un desplazamiento suyo y cancelar el puntero a media gesto. */
+  /* `touch-action` no se hereda del área de agarre: sin esto el navegador podría interpretar el
+     arrastre que empieza sobre el asa como un desplazamiento suyo y cancelar el puntero a medio
+     gesto. */
   touch-action: none;
   width: 4.5rem;
   height: 1.5rem;
-  border: 0;
   border-radius: var(--radius-pill);
-  background: transparent;
+  cursor: inherit;
 }
 
 .handle span {

@@ -109,7 +109,7 @@
 }
 
 .star:hover {
-  background: var(--color-surface-muted);
+  background: var(--hover-quiet);
 }
 
 .star:has(input:focus-visible) {

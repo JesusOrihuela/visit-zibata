@@ -17,8 +17,9 @@ import { CategoryIcon } from '../../components/icons/CategoryIcon.tsx'
 import { ProfileIcon } from '../../components/icons/ProfileIcon.tsx'
 import { DEFAULT_PLAZA_TONE, plazaTones } from '../../config/palette.ts'
 import { useCatalog } from '../../data/CatalogContext.tsx'
-import { localized, t } from '../../i18n/index.ts'
-import type { InfoTopic } from '../../lib/url-state.ts'
+import { localized, t, useLocale } from '../../i18n/index.ts'
+import { alPulsarEnlace } from '../../lib/navegacion.ts'
+import { type InfoTopic, rutaDeInfo, rutaDeLugar } from '../../lib/url-state.ts'
 import type { Category, Place, Plaza } from '../../types/domain.ts'
 import { girosOf, placeIconName } from '../places/placeIcon.ts'
 import { categoryAffinity } from '../ranking/rankPlaces.ts'
@@ -203,6 +204,7 @@ function PodiumStep({
   onOpen: (place: Place) => void
 }) {
   const catalog = useCatalog()
+  const idioma = useLocale()
   const { place } = entry
   /*
    * La lista completa de plazas activas, no solo la de este lugar.
@@ -220,10 +222,11 @@ function PodiumStep({
     .join(' · ')
   return (
     <li className={styles.step} data-place={position}>
-      <button
-        type="button"
+      {/* La columna entera es el enlace a la ficha: el lugar tiene dirección propia. */}
+      <a
         className={styles.stepButton}
-        onClick={() => onOpen(place)}
+        href={rutaDeLugar(place.slug, idioma, import.meta.env.BASE_URL)}
+        onClick={alPulsarEnlace(() => onOpen(place))}
         title={place.name}
         aria-label={`${t('profile.position', { position })}. ${t('place.openDetail', {
           name: place.name,
@@ -243,7 +246,7 @@ function PodiumStep({
             {position}
           </span>
         </span>
-      </button>
+      </a>
     </li>
   )
 }
@@ -256,6 +259,7 @@ interface SheetProps {
 
 export function ProfileSheet({ onClose, onOpenInfo, onOpenPlace }: SheetProps) {
   const closeRef = useRef<HTMLButtonElement>(null)
+  const idioma = useLocale()
   const catalog = useCatalog()
   const marks = useMarks()
   const journey = useJourney(marks)
@@ -393,14 +397,14 @@ export function ProfileSheet({ onClose, onOpenInfo, onOpenPlace }: SheetProps) {
 
         <nav className={styles.links} aria-label={t('about.moreLabel')}>
           {LINKS.map((link) => (
-            <button
+            <a
               key={link.topic}
-              type="button"
               className={styles.link}
-              onClick={() => onOpenInfo(link.topic)}
+              href={rutaDeInfo(link.topic, idioma, import.meta.env.BASE_URL)}
+              onClick={alPulsarEnlace(() => onOpenInfo(link.topic))}
             >
               {t(link.label)}
-            </button>
+            </a>
           ))}
         </nav>
       </div>

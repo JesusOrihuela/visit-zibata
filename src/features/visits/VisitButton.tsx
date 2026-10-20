@@ -61,19 +61,18 @@ export function VisitButton({
           <CalendarPlus aria-hidden="true" />
           <span>{t('visit.action')}</span>
         </button>
+        {calendarioAbierto && (
+          <Suspense fallback={null}>
+            <VisitCalendar
+              fechas={fechas}
+              onToggle={(fecha: string) =>
+                fechas.includes(fecha) ? quitar(placeId, fecha) : registrar(placeId, fecha)
+              }
+              onClose={() => setCalendarioAbierto(false)}
+            />
+          </Suspense>
+        )}
       </span>
-
-      {calendarioAbierto && (
-        <Suspense fallback={null}>
-          <VisitCalendar
-            fechas={fechas}
-            onToggle={(fecha: string) =>
-              fechas.includes(fecha) ? quitar(placeId, fecha) : registrar(placeId, fecha)
-            }
-            onClose={() => setCalendarioAbierto(false)}
-          />
-        </Suspense>
-      )}
 
       {fechas.length > 0 && (
         <p className={styles.hint}>
@@ -103,6 +102,7 @@ export function VisitButton({
               <span>{formatVisitDate(fecha)}</span>
               <button
                 type="button"
+                className={styles.quitar}
                 onClick={() => quitar(placeId, fecha)}
                 aria-label={t('visit.remove', { date: formatVisitDate(fecha) })}
               >

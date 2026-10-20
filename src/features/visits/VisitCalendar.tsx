@@ -12,7 +12,7 @@
  * botón que alterna (`aria-pressed` dice si esa visita está registrada), las flechas mueven el foco
  * por la rejilla como en cualquier tabla, y el mes se anuncia al cambiar.
  */
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { useEffect, useId, useRef, useState } from 'react'
 import { locale, t } from '../../i18n/index.ts'
 import { today } from './useVisits.ts'
@@ -92,15 +92,38 @@ export function VisitCalendar({
   return (
     <div className={styles.calendario} role="dialog" aria-labelledby={tituloId}>
       <div className={styles.cabecera}>
-        <button type="button" onClick={() => mover(-1)} aria-label={t('visit.prevMonth')}>
+        <button
+          type="button"
+          className={styles.flecha}
+          onClick={() => mover(-1)}
+          aria-label={t('visit.prevMonth')}
+        >
           <ChevronLeft aria-hidden="true" />
         </button>
         {/* `aria-live`: al cambiar de mes se anuncia sin mover el foco de donde estaba. */}
         <h3 id={tituloId} aria-live="polite">
           {nombreDelMes}
         </h3>
-        <button type="button" onClick={() => mover(1)} aria-label={t('visit.nextMonth')}>
+        <button
+          type="button"
+          className={styles.flecha}
+          onClick={() => mover(1)}
+          aria-label={t('visit.nextMonth')}
+        >
           <ChevronRight aria-hidden="true" />
+        </button>
+        {/*
+         * La cruz, en su esquina. Estaba abajo como enlace subrayado, y eso es la forma de "ir a
+         * otro sitio", no la de cerrar algo que flota: lo que se cierra con una cruz arriba a la
+         * derecha es lo mismo que ya se cierra así en la hoja de información y en el tutorial.
+         */}
+        <button
+          type="button"
+          className={styles.cerrar}
+          onClick={onClose}
+          aria-label={t('visit.closeCalendar')}
+        >
+          <X aria-hidden="true" />
         </button>
       </div>
 
@@ -133,6 +156,7 @@ export function VisitCalendar({
             <button
               key={fecha}
               type="button"
+              className={styles.dia}
               data-dia
               data-hoy={fecha === hoy}
               // Un solo día entra en el orden de tabulación; dentro se anda con las flechas.
@@ -149,10 +173,6 @@ export function VisitCalendar({
           )
         })}
       </div>
-
-      <button type="button" className={styles.cerrar} onClick={onClose}>
-        {t('visit.closeCalendar')}
-      </button>
     </div>
   )
 }

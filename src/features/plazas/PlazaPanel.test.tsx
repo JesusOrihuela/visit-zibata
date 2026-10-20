@@ -58,9 +58,11 @@ describe('PlazaPanel', () => {
       filtersActive: true,
     })
     const chips = within(screen.getByRole('list', { name: 'Categorías' }))
-    expect(chips.getByRole('button', { name: /^Todo/ })).toHaveTextContent('Todo1')
-    expect(chips.getByRole('button', { name: /Tacos y antojitos/ })).toHaveTextContent(/1$/)
-    expect(chips.getByRole('button', { name: /Pizza/ })).not.toHaveTextContent(/\d$/)
+    // "Anuncian" literalmente: la cuenta vive en el nombre accesible, no en la pantalla.
+    expect(chips.getByRole('button', { name: /^Todo/ })).toHaveAccessibleName(/1 lugar/)
+    expect(chips.getByRole('button', { name: /Tacos y antojitos/ })).toHaveAccessibleName(/1 lugar/)
+    // Y la que no tiene ninguno no anuncia ninguno: su nombre es solo la categoría.
+    expect(chips.getByRole('button', { name: /Pizza/ })).toHaveAccessibleName('Pizza')
   })
 
   it('filtra por categoría dentro de la plaza', async () => {

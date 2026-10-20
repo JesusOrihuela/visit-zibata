@@ -16,12 +16,20 @@
   pointer-events: auto;
 }
 
+/*
+ * La fila reserva a su derecha la columna de los controles del mapa.
+ *
+ * Esos controles suben cuando la hoja se asoma (`--controls-bottom`), y al subir llegan hasta aquí.
+ * Lo que se reserva es el ancho del control más su margen, y como la fila se alinea a la izquierda
+ * y parte sola, en pantallas anchas no cuesta nada.
+ */
 .row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  /* El mismo aire que el carril de cápsulas de arriba: son dos filas de la misma barra. */
   gap: var(--space-2);
-  padding-inline: 12px;
+  padding-inline: 12px calc(12px + var(--control-h) + var(--space-4));
   pointer-events: none;
 }
 
@@ -29,64 +37,40 @@
   pointer-events: auto;
 }
 
-/*
- * ## Dos siluetas para toda la guía
- *
- * La cápsula es **solo** de las categorías: dieciocho pastillas de un conjunto del que eliges una.
- * Nada más en la interfaz lleva esa forma. Todo lo que no es una categoría (la zona, las dos
- * condiciones, la salida y los controles del mapa) lleva la esquina corta, y se distingue por lo que
- * lleva dentro, no por su silueta.
- *
- * Esto nace de una queja repetida tres veces: la zona, la condición y la acción eran funcionales y
- * el problema era que las tres tenían forma de píldora siendo tres cosas distintas. Y de la de
- * vuelta: una esquina distinta en un solo control desentona, porque entonces es ese control el raro.
- * Una silueta solo informa cuando la lleva una familia entera.
- *
- * La superficie es la misma que la de las pastillas de categoría a propósito: la fila flota sobre el
- * mapa y todo lo que flota sobre el mapa se apoya igual.
- */
-.zone,
-.clear {
-  /*
-   * 40 px, el mismo alto que los controles de la ficha. Estaban a 36 y la diferencia se notaba sin
-   * saber por qué: dos familias que comparten esquina y se ven a la vez (la fila flota sobre el
-   * panel abierto) pero no comparten alto. Los 40 siguen por debajo de los 44 que recomiendan iOS
-   * y Android para el dedo; subir hasta ahí cuesta 8 px más de franja y está sin decidir.
-   */
-  height: 2.5rem;
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  backdrop-filter: var(--blur-surface);
-  box-shadow:
-    0 0 0 1px var(--color-border),
-    var(--shadow-sm);
-}
-
 /* ------------------------------------------------------------------ la zona */
 
+/*
+ * El selector de zona: la única cápsula de la guía que lleva fondo propio.
+ *
+ * Es cápsula porque elige de un conjunto, igual que las categorías. Y es la excepción con fondo
+ * porque no elige en sitio: abre una lista del sistema, así que necesita leerse como un campo que
+ * se despliega y no como una de dieciocho opciones ya visibles.
+ *
+ * Sólida y sin desenfoque, aunque flote sobre el mapa: nada que se lea contra calles y arbolado
+ * puede fiarse de lo que haya detrás.
+ */
 .zone {
+  composes: pildora sobreMapa from "../../styles/controls.module.css";
   display: inline-flex;
-  align-items: center;
   gap: 0.5rem;
   min-width: 0;
   padding-inline: 0.7rem 0.6rem;
   color: var(--ink-800);
 }
 
+/* Reemplaza la superficie del catálogo, así que le toca decir qué hace al pasar por encima. */
+.zone:hover {
+  background: var(--hover-quiet);
+}
+
 /*
- * El alfiler en miniatura: la misma gota del mapa, a 13 px y con el color de la zona elegida.
+ * El alfiler en miniatura: la misma gota del mapa, a 13 px y con el color de la zona elegida. No un
+ * icono de ubicación de catálogo, sino la pieza que vas a buscar con los ojos.
  *
- * Girar un elemento no mueve su centro, así que el círculo de la gota cae en el centro de su caja
- * aunque la punta sobresalga por abajo. La caja es un píxel más alta que la gota para dejarle sitio
- * a esa punta sin descolocar el círculo, que es lo que el ojo busca.
- */
-/*
- * La caja mide justo lo que pinta la gota, no lo que ocupa su cuadrado.
- *
- * Girar no mueve el centro de un elemento, pero sí cambia lo que se ve: un cuadrado de 13 px girado
- * 45 grados pinta 18,4 px de alto, porque la punta sale por debajo. Centrando la caja de 13 el dibujo
- * quedaba un píxel y medio bajo, que es poco y se nota. La caja mide ahora los 16 px que pinta.
+ * La caja mide justo lo que pinta la gota, no lo que ocupa su cuadrado. Girar no mueve el centro de
+ * un elemento, pero sí cambia lo que se ve: un cuadrado de 13 px girado 45 grados pinta 18,4 px de
+ * alto, porque la punta sale por debajo. Centrando la caja de 13 el dibujo quedaba un píxel y medio
+ * bajo, que es poco y se nota. La caja mide los 16 px que pinta.
  */
 .mini {
   position: relative;
@@ -117,6 +101,9 @@
   height: 100%;
   padding: 0;
   border: 0;
+  /* El `select` trae 6,5 px de esquina de serie. No se ve, porque es transparente dentro de la
+     cápsula, pero es un sexto valor de radio y el catálogo da cinco. */
+  border-radius: 0;
   background: transparent;
   color: var(--ink-900);
   font-size: var(--text-sm);
@@ -128,9 +115,9 @@
 
 .chevron {
   flex: none;
-  width: 0.9rem;
-  height: 0.9rem;
-  color: var(--ink-500);
+  width: 0.875rem;
+  height: 0.875rem;
+  color: var(--ink-600);
   pointer-events: none;
 }
 
@@ -157,103 +144,64 @@
 /* ------------------------------------------------------------------ las condiciones */
 
 /*
- * Las dos condiciones, como pastillas con su palabra.
+ * Los dos síes o noes: interruptor desnudo, sin caja, sin rótulo y sin cifra.
  *
- * Fueron vía y perilla con un icono dentro y ningún texto a la vista. Un interruptor es la forma de
- * un ajuste dentro de una fila de lista, y estos flotan sobre el mapa; y sin palabra, lo único que
- * explicaba el filtro era un icono de reloj, que dice tiempo y no "abierto". Con el nombre puesto
- * se entienden sin que nadie los explique, y de paso los dos se comportan igual entre sí.
+ * Tuvo las tres cosas y las tres se van por el mismo motivo. La caja, porque la vía ya es un
+ * recuadro con su contorno y meterla en otro recuadro hacía dos bordes concéntricos para un solo
+ * control. El rótulo, porque obligaba a esa caja. Y la cifra, porque no decía nada que hiciera
+ * falta: el selector de zona nunca la ha llevado y no se echa en falta, porque de un filtro lo que
+ * importa es si está puesto, no cuántos deja. El número de resultados se ve en la fila de abajo.
  *
- * La misma gramática de encendido que las categorías: lleno es puesto.
+ * El nombre y la cuenta no desaparecen, cambian de sitio: van en `aria-label`, así que un lector de
+ * pantalla dice "Abierto ahora, 23, interruptor" aunque en la pantalla solo haya un reloj.
  */
-.filtro {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  height: 2.5rem;
-  padding: 0 0.75rem;
-  border: 0;
-  border-radius: var(--radius-pill);
-  background: var(--color-surface);
-  backdrop-filter: var(--blur-surface);
-  box-shadow: inset 0 0 0 1px var(--color-border);
-  color: var(--ink-800);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  white-space: nowrap;
-  transition:
-    background-color var(--duration-fast) var(--ease-out),
-    color var(--duration-fast) var(--ease-out);
+.interruptor {
+  composes: base interruptor from "../../styles/controls.module.css";
 }
 
-.filtro svg {
-  flex-shrink: 0;
-  width: 1rem;
-  height: 1rem;
-  color: var(--olive-600);
+.via {
+  composes: via from "../../styles/controls.module.css";
+  /*
+   * Sin caja alrededor, lo que despega la vía del mapa es su propia sombra. El filete del catálogo
+   * se repite aquí porque reemplazar la sombra lo borraría, y es el canto que hace que esta
+   * superficie se lea igual que las demás de su material.
+   */
+  box-shadow:
+    inset 0 0 0 1px var(--color-border-strong),
+    0 1px 4px rgb(31 36 25 / 0.25);
 }
 
-.count {
-  min-width: 1.25rem;
-  padding: 0 0.3rem;
-  border-radius: var(--radius-pill);
-  background: rgb(83 108 42 / 0.12);
-  color: var(--olive-700);
-  font-size: var(--text-2xs);
-  font-weight: 700;
-  line-height: 1.25rem;
-  text-align: center;
-  font-variant-numeric: tabular-nums;
-}
-
-.filtro:hover {
-  background: var(--lime-50);
-}
-
-.filtro[aria-pressed="true"] {
-  background: var(--olive-600);
-  box-shadow: none;
-  color: var(--sand-25);
-}
-
-.filtro[aria-pressed="true"] svg,
-.filtro[aria-pressed="true"] .count {
-  color: currentColor;
-}
-
-.filtro[aria-pressed="true"] .count {
-  background: rgb(255 255 255 / 0.22);
-}
-
-.filtro:focus-visible,
-.clear:focus-visible {
-  outline: 2.5px solid var(--color-focus);
-  outline-offset: 2px;
+.perilla {
+  composes: perilla from "../../styles/controls.module.css";
 }
 
 /* ------------------------------------------------------------------ la salida */
 
 /*
  * Lo único de la fila que ejecuta una acción, y lo único en tinta: el peso dice de qué tipo es cada
- * cosa. El icono va a 19 px, que es la excepción explicada en FilterBar.tsx.
+ * cosa. El icono va a 19 px, que es el del catálogo, y la excepción está explicada en FilterBar.tsx.
  */
 .clear {
-  display: grid;
-  place-items: center;
-  width: 2.5rem;
-  padding: 0;
-  background: var(--ink-800);
-  box-shadow: var(--shadow-sm);
+  composes: base botonIcono from "../../styles/controls.module.css";
+  /*
+   * Cuadrado porque ejecuta, y es lo único de la fila que lo hace: ahí la forma sí tiene que
+   * diferenciarse. Pero con el alto de la fila y no con el de control, porque desentonar en forma
+   * es la regla y desentonar además en tamaño es un descuido.
+   */
+  width: var(--control-h);
+  height: var(--control-h);
   color: var(--sand-25);
+  background: var(--ink-800);
+  box-shadow: 0 1px 3px rgb(31 36 25 / 0.1);
 }
 
-.clear svg {
-  width: 1.1875rem;
-  height: 1.1875rem;
-}
-
+/*
+ * Reemplaza la superficie del catálogo, así que le toca decir qué hace al pasar por encima. Y lleva
+ * el hover lleno y no el apagado: con verde claro, el icono claro que lleva dentro se quedaba en
+ * 1,4:1 y desaparecía.
+ */
 .clear:hover {
-  background: var(--ink-900);
+  background: var(--hover-strong);
 }
 
 /* ------------------------------------------------------------------ la lista desplegada */
@@ -294,13 +242,13 @@
 
   .zone option {
     padding: 0.45rem 0.6rem;
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-control);
     color: var(--ink-800);
     font-size: var(--text-sm);
   }
 
   .zone option:hover {
-    background: var(--lime-50);
+    background: var(--hover-quiet);
   }
 
   .zone option:checked {

@@ -46,10 +46,13 @@ const ESTILO = `
         font-size: 1.75rem; line-height: 1.15; letter-spacing: -.01em; margin-top: .5rem; }
       p { color: var(--apagado); }
       .en { font-size: .875rem; }
-      a { margin-top: 1.25rem; padding: .75rem 1.5rem; border-radius: 999px;
+      /* Botón principal del catálogo de interactuables (docs/CATALOGO.md): esquina de 6, relleno de
+         olivo, hover a olivo oscuro. Los valores van a mano y no por token porque esta página se
+         sirve sola, sin la hoja de la guía, y tiene que pintarse aunque no cargue nada más. */
+      a { margin-top: 1.25rem; padding: .75rem 1.5rem; border-radius: 6px;
         background: var(--olivo); color: #fff; font-weight: 600; text-decoration: none; }
       a:hover { background: #435a22; }
-      a:focus-visible { outline: 3px solid var(--tinta); outline-offset: 3px; }
+      a:focus-visible { outline: 2.5px solid #3d6b00; outline-offset: 2px; }
       @media (prefers-reduced-motion: no-preference) { a { transition: background-color .15s; } }
     `
 

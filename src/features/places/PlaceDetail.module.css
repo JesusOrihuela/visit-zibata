@@ -43,21 +43,13 @@
 }
 
 .back {
-  display: inline-flex;
-  align-items: center;
+  composes: base boton secundario from "../../styles/controls.module.css";
+  justify-content: flex-start;
   gap: 0.2rem;
   min-width: 0;
   max-width: 70%;
-  /* El mismo alto que el corazón y la cruz: tres controles en una fila a dos alturas distintas se
-     leen como un descuido, por mucho que uno lleve texto y los otros no. */
-  height: 2.5rem;
   padding: 0 0.75rem 0 0.4rem;
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: var(--color-surface-muted);
   color: var(--ink-700);
-  font-size: var(--text-sm);
-  font-weight: 600;
 }
 
 .back span {
@@ -72,11 +64,6 @@
   height: 1.1rem;
 }
 
-.back:hover {
-  background: var(--lime-100);
-  color: var(--olive-700);
-}
-
 /*
  * Los tres botones de cromo (compartir, guardar, cerrar) llevan la esquina corta, no un círculo.
  *
@@ -85,23 +72,7 @@
  * del lugar, los logotipos de las redes), que no se pulsan para hacer nada.
  */
 .iconButton {
-  display: grid;
-  place-items: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: var(--color-surface-muted);
-  color: var(--ink-700);
-}
-
-.iconButton svg {
-  width: 1.125rem;
-  height: 1.125rem;
-}
-
-.iconButton:hover {
-  background: var(--sand-200);
+  composes: base botonIcono conSuperficie from "../../styles/controls.module.css";
 }
 
 /*
@@ -164,37 +135,26 @@
   color: var(--color-text-muted);
 }
 
+/*
+ * "Cómo llegar" es la acción principal de la ficha, y la única llena de su fila. Es un enlace que
+ * sale de la guía, así que lleva su flecha y la forma de la familia de ejecutar: lo que importa aquí
+ * es que se vea cuál es la acción principal, y el elemento sigue siendo un `<a>` de verdad.
+ */
 .directions {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  padding: 0.7rem var(--space-4);
-  /* Medía 608 px de ancho con radio completo: a ese tamaño ya no se lee como cápsula, se lee como
-     una barra con las puntas limadas. */
-  border-radius: var(--radius-sm);
-  font-size: var(--text-sm);
-  background: var(--olive-600);
+  composes: boton principal from "../../styles/controls.module.css";
   box-shadow: 0 10px 22px -12px rgb(83 108 42 / 0.8);
-  color: white;
-  font-weight: 600;
   text-decoration: none;
-  transition:
-    background-color var(--duration-fast) var(--ease-out),
-    transform var(--duration-fast) var(--ease-out);
+  cursor: pointer;
+}
+
+.directions:focus-visible {
+  outline: 2.5px solid var(--color-focus);
+  outline-offset: 2px;
 }
 
 .directions svg {
   width: 1rem;
   height: 1rem;
-}
-
-.directions:hover {
-  background: var(--olive-700);
-}
-
-.directions:active {
-  transform: scale(0.98);
 }
 
 .external {
@@ -256,14 +216,19 @@
  * nueve: llamar, WhatsApp, web, Instagram, Facebook, TikTok, Rappi, Uber Eats y DiDi Food) caben en
  * una o dos filas del panel de escritorio, y bajan de fila solos cuando no hay sitio.
  */
+/*
+ * Contacto y redes: dejan de ser círculos.
+ *
+ * El elemento es un enlace (a un teléfono, a un perfil), así que la familia es navegar; la forma es
+ * la del botón de icono, porque lo que lleva dentro es el icono y no hay texto que pueda llevar el
+ * subrayado. Eran redondos y el círculo es la forma de identidad en esta guía (fotos, logotipos):
+ * un teléfono no es una identidad.
+ */
 .link {
-  display: grid;
-  place-items: center;
+  composes: base botonIcono conSuperficie from "../../styles/controls.module.css";
   width: 100%;
+  height: auto;
   aspect-ratio: 1;
-  border-radius: 50%;
-  background: var(--color-surface-muted);
-  box-shadow: inset 0 0 0 1px var(--color-border);
   color: var(--ink-800);
   text-decoration: none;
 }
@@ -274,11 +239,8 @@
   color: var(--olive-600);
 }
 
-.link:hover {
-  background: var(--lime-100);
-}
-
 /* Reparto: el botón es el icono de la aplicación, tal cual, sin el marco de los demás enlaces. */
+/* Un logotipo ajeno (Uber Eats) va dentro de la forma, no la define. */
 .link[data-tile="true"] {
   background: none;
   box-shadow: none;
@@ -332,7 +294,7 @@
   overflow: hidden;
   /* Sin aro, igual que en la tarjeta: un círculo sin filete se lee como una foto y con filete se
      lee como un control. El costo es el mismo, que el color de la zona ya no llega aquí. */
-  border-radius: 50%;
+  border-radius: var(--radius-round);
 }
 
 /*
@@ -396,19 +358,18 @@
   color: var(--color-text-muted);
 }
 
+/*
+ * Ver el original o la traducción: un sí o no que vive dentro de un párrafo, así que es la excepción
+ * al interruptor. Un interruptor a media frase rompe el renglón; un botón fantasma con
+ * `aria-pressed` dice lo mismo y cabe en el texto.
+ */
 .translationToggle {
-  border: 0;
-  background: none;
-  padding: 0;
+  composes: base boton fantasma from "../../styles/controls.module.css";
+  height: auto;
+  padding: 0.1rem 0.35rem;
   font: inherit;
-  color: var(--olive-600);
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
-  cursor: pointer;
-}
-
-.translationToggle:hover {
-  text-decoration-thickness: 2px;
+  font-weight: 600;
+  color: var(--olive-700);
 }
 
 /*

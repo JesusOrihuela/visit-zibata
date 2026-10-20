@@ -22,29 +22,37 @@
 }
 
 /*
- * En reposo no hay nada; al escribir, la caja se gana.
+ * La excepción de la familia: el único campo sin filete ni fondo en reposo.
  *
- * El buscador vivía dentro de la franja blanca de arriba con su propia pastilla y su propio filete:
- * una caja dentro de una caja, en la pantalla que más cajas tiene de la guía. Lo que queda en
- * reposo es la lupa y el texto sobre la franja, que ya es superficie suficiente.
+ * Vive dentro de la franja blanca de arriba, y esa franja ya es la superficie opaca que el catálogo
+ * exige. Darle la suya era una caja dentro de una caja en la pantalla que más cajas tiene. Lo que
+ * queda en reposo es la lupa y el texto; al enfocar aparecen el filete y el papel de la familia,
+ * porque es cuando el campo deja de ser un sitio donde se puede escribir y pasa a ser el sitio
+ * donde se está escribiendo.
  *
- * Sin filete inferior tampoco. Lo llevó una versión y desentonaba: un renglón suelto dentro de una
- * pastilla redondeada no pertenece a ninguna de las dos familias de formas de la guía, y acababa
- * leyéndose como un subrayado perdido en vez de como un campo.
+ * Sin filete inferior tampoco: un renglón suelto dentro de una pastilla redondeada no pertenece a
+ * ninguna de las cinco formas, y acababa leyéndose como un subrayado perdido.
  */
 .input {
-  width: 100%;
-  height: 2.75rem;
+  composes: campo from "../../styles/controls.module.css";
   padding: 0 0.9rem 0 2.5rem;
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  font-size: 1rem;
+  background: none;
+  box-shadow: none;
   text-overflow: ellipsis;
-  transition:
-    box-shadow var(--duration-fast) var(--ease-out),
-    background-color var(--duration-fast) var(--ease-out);
-  appearance: none;
+}
+
+/* Reemplaza la superficie del catálogo, así que le toca decir qué hace al pasar por encima. */
+.input:hover:not(:focus) {
+  background: var(--hover-quiet);
+}
+
+/*
+ * Y el del foco: es cuando el campo deja de ser un sitio donde se puede escribir y pasa a ser el
+ * sitio donde se está escribiendo. El papel es la única señal visible, porque el aro de foco lo
+ * pone `base` igual que en todos los demás controles de la guía.
+ */
+.input:focus {
+  background: var(--color-surface-solid);
 }
 
 /* Con texto escrito aparece el botón de borrar: solo entonces se le reserva sitio. */
@@ -52,52 +60,17 @@
   padding-right: 2.75rem;
 }
 
-.input::placeholder {
-  color: var(--ink-500);
-}
-
 .input::-webkit-search-cancel-button {
   display: none;
 }
 
-/* Al pasar por encima se insinúa la superficie que va a aparecer, sin dibujar ningún borde. */
-.input:hover {
-  background: var(--sand-100);
-}
-
 /*
- * Enfocado sí hay caja: es cuando el campo deja de ser un sitio donde se puede escribir y pasa a
- * ser el sitio donde se está escribiendo.
- *
- * El aviso es la superficie más un filete fino del color de acción, y nada más. Llevó además un
- * halo verde de 4 px por fuera y era lo peor de la pieza: un resplandor alrededor de un campo que
- * ya cambia de fondo y de borde no añade información, solo ruido, y se veía como un error de
- * validación. El contraste del filete contra el papel basta para que el foco se vea.
+ * La cruz de borrar: atajo, no acción de la página. Redonda y de 32 px, como las flechas del carril,
+ * y sin fondo hasta que se pasa por encima, porque en reposo el campo no tiene ninguno.
  */
-.input:focus {
-  outline: none;
-  background: var(--sand-25);
-  box-shadow: inset 0 0 0 1.5px var(--olive-600);
-}
-
 .clear {
+  composes: base botonIcono mini from "../../styles/controls.module.css";
   position: absolute;
   right: 0.35rem;
-  display: grid;
-  place-items: center;
-  width: 2.1rem;
-  height: 2.1rem;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
   color: var(--ink-600);
-}
-
-.clear:hover {
-  background: var(--sand-200);
-}
-
-.clear svg {
-  width: 1rem;
-  height: 1rem;
 }

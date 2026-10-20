@@ -149,11 +149,12 @@ test.describe('Plazas y lugares', () => {
       region.getByRole('button', { name: 'Quitar de favoritos: Escarola' }),
     ).toHaveAttribute('aria-pressed', 'true')
     await region.getByRole('button', { name: 'Cerrar panel' }).click()
-    await page.getByRole('button', { name: /Favoritos/ }).click()
+    await page.getByRole('switch', { name: /Favoritos/ }).click()
     await expect(region.getByRole('heading', { name: 'Resultados' })).toBeVisible()
     await expect(region.getByRole('link', { name: /^Ver detalles de/ })).toHaveCount(1)
     await page.reload()
-    await expect(page.getByRole('button', { name: /Favoritos/ })).toContainText('1')
+    // La cuenta va en el nombre del control, no dentro de el.
+    await expect(page.getByRole('switch', { name: 'Favoritos, 1' })).toBeVisible()
   })
 
   test('en móvil la hoja inferior se expande y se reduce sin tapar todo el mapa', async ({
@@ -167,7 +168,8 @@ test.describe('Plazas y lugares', () => {
     await expect(handle).toHaveAttribute('aria-expanded', 'true')
     await waitForSheet(page)
     await expect(
-      page.getByRole('button', {
+      // El renglon del indice de zonas es un enlace: la zona tiene direccion propia.
+      page.getByRole('link', {
         name: new RegExp(`^Xentric Anáhuac, ${placesInPlaza('Xentric Anáhuac')} lugares`),
       }),
     ).toBeVisible()

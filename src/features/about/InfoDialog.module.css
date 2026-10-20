@@ -20,11 +20,16 @@
 }
 
 /* El velo es un botón a pantalla completa: cerrar tocando fuera sin un div que escuche clics. */
+/*
+ * El velo: un botón a pantalla completa, detrás del diálogo, para que pulsar fuera lo cierre. No
+ * tiene forma porque no se ve nunca; lo único que necesita es nombre accesible, y por eso es un
+ * botón de verdad y no un `div` con un `onClick`.
+ */
 .veilButton {
+  composes: base from "../../styles/controls.module.css";
   position: absolute;
   inset: 0;
-  border: 0;
-  background: none;
+  cursor: default;
 }
 
 /*
@@ -42,7 +47,14 @@
   max-height: 100%;
   display: flex;
   overflow: hidden;
-  border-radius: var(--radius-lg);
+
+  /*
+
+   * 369 px de lado corto.
+
+   */
+
+  border-radius: var(--radius-xl);
   background: var(--color-surface-solid);
   box-shadow: var(--shadow-lg);
   animation: sheet-in var(--duration-slow) var(--ease-out);
@@ -87,38 +99,35 @@
 
 .head {
   display: flex;
-  align-items: flex-start;
   justify-content: space-between;
+  /*
+   * Por el centro y no por arriba. El título mide 25 px de caja y la cruz 40, así que alineados
+   * arriba el centro óptico de la cruz quedaba siete píxeles por debajo del de la palabra, que es
+   * poco y se ve.
+   */
+  align-items: center;
   gap: var(--space-3);
 }
 
+/*
+ * El título de un diálogo del sistema mide lo mismo que el de la ficha, el del tutorial, el del
+ * aviso de mapa caído y el de Tu Zibatá: los cinco son el nombre de lo que acabas de abrir. Estuvo
+ * a 30 y era el único, y en una columna de cuatrocientos y pico píxeles se comía la página.
+ *
+ * Los 30 se quedan para el título de una zona, que no es un diálogo del sistema sino la portada de
+ * ese sitio, y es el único de toda la guía.
+ */
 .title {
   font-family: var(--font-display);
-  font-size: var(--text-2xl);
+  font-size: var(--text-xl);
   font-weight: 600;
   line-height: 1.05;
   color: var(--ink-900);
 }
 
+/* Cerrar ejecuta: cuadrado de icono con la esquina de la familia, no círculo. */
 .close {
-  flex-shrink: 0;
-  display: grid;
-  place-items: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  border: 0;
-  border-radius: 50%;
-  background: var(--color-surface-muted);
-  color: var(--ink-700);
-}
-
-.close:hover {
-  background: var(--sand-200);
-}
-
-.close svg {
-  width: 1.1rem;
-  height: 1.1rem;
+  composes: base botonIcono conSuperficie from "../../styles/controls.module.css";
 }
 
 .block {
@@ -156,17 +165,9 @@
 }
 
 .moreLink {
+  composes: enlace from "../../styles/controls.module.css";
   padding: 0.35rem 0;
-  border: 0;
-  background: none;
-  color: var(--olive-700);
   font: 600 var(--text-sm) / 1.4 var(--font-sans);
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
-}
-
-.moreLink:hover {
-  color: var(--olive-600);
 }
 
 .version {

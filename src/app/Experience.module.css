@@ -61,7 +61,14 @@
  */
 .topRow {
   --card-pad: 0.45rem;
-  --topbar-height: calc(2.75rem + 2 * var(--card-pad));
+  /*
+   * El alto de la barra sale del alto de control del catálogo, no de un 2.75rem escrito aquí.
+   *
+   * Lo estuvo, y cuando el buscador pasó de 44 a los 40 px de la familia, la tarjeta midió 54 y el
+   * círculo del perfil siguió midiendo 58: cuatro píxeles de desnivel en la fila más visible de la
+   * guía, por un número copiado. Lo fija una prueba (tests/e2e/catalogo.spec.ts).
+   */
+  --topbar-height: calc(var(--control-h) + 2 * var(--card-pad));
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -84,11 +91,10 @@
    */
   padding: var(--card-pad);
   /*
-   * Contenedor, no control. Con `xl` el radio quedaba en la mitad de su alto y se leía como una
-   * cápsula gigante con dos cápsulas dentro: tres formas de control anidadas para una barra que no
-   * se pulsa. `lg` sigue siendo suave y ya no compite con las píldoras que contiene.
+   * 51 px de lado corto. Con `lg` el radio era el 39 % de su propia altura, o sea casi una
+   * cápsula, y la misma cifra estaba haciendo dos cosas distintas aquí y en una hoja de 596.
    */
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   background: var(--color-surface);
   backdrop-filter: var(--blur-surface);
   box-shadow:
@@ -113,27 +119,7 @@
 }
 
 .listButton {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  height: 2.75rem;
-  padding: 0 1rem;
-  border: 0;
-  border-radius: var(--radius-pill);
-  background: var(--olive-600);
-  color: white;
-  font-size: var(--text-sm);
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.listButton svg {
-  width: 1rem;
-  height: 1rem;
-}
-
-.listButton:hover {
-  background: var(--olive-700);
+  composes: base boton principal from "../styles/controls.module.css";
 }
 
 .app[data-layout="mobile"] .topbar {
@@ -174,30 +160,33 @@
 }
 
 .retry {
+  composes: base boton principal from "../styles/controls.module.css";
   margin-top: var(--space-3);
-  height: 2.75rem;
-  padding: 0 1.4rem;
-  border: 0;
-  border-radius: var(--radius-pill);
-  background: var(--olive-600);
-  color: white;
-  font-weight: 600;
 }
 
 /* Visible solo con foco de teclado: primer elemento tabulable, lleva directo al buscador. */
+/*
+ * El enlace de salto. Es un botón y no un `<a href="#...">` a propósito, y es el único sitio donde
+ * la familia (navegar) y el elemento (botón) no coinciden: lo que hace es poner el cursor dentro del
+ * buscador, y un fragmento no mueve el cursor dentro de un campo de forma fiable en todos los
+ * navegadores, además de dejar una entrada en el historial que nadie pidió.
+ *
+ * Invisible hasta que recibe el foco, y entonces botón principal en tinta: es lo primero que se
+ * tabula en la página y tiene que verse sin dudar.
+ */
 .skipLink {
+  composes: base boton principal from "../styles/controls.module.css";
   position: fixed;
   top: calc(var(--space-2) + var(--safe-top));
   left: var(--space-2);
   z-index: calc(var(--z-map-ui) + 10);
-  padding: 0.6rem 1rem;
-  border: 0;
-  border-radius: var(--radius-pill);
   background: var(--ink-900);
   color: var(--sand-50);
-  font-size: var(--text-sm);
-  font-weight: 600;
   transform: translateY(calc(-100% - 2 * var(--space-2) - var(--safe-top)));
+}
+
+.skipLink:hover {
+  background: var(--ink-800);
 }
 
 .skipLink:focus-visible {
@@ -210,7 +199,14 @@
   gap: var(--space-2);
   width: min(100%, 40rem);
   padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
-  border-radius: var(--radius-md);
+
+  /*
+
+   * 44 px de alto.
+
+   */
+
+  border-radius: var(--radius-sm);
   background: var(--ink-900);
   box-shadow: var(--shadow-md);
   color: var(--sand-50);
@@ -222,27 +218,12 @@
   margin: 0;
 }
 
+/* Sobre una superficie de color no se puede teñir de verde: lo que se mueve es la luz. */
 .noticeClose {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 2.75rem;
-  height: 2.75rem;
-  border: 0;
-  border-radius: var(--radius-pill);
-  background: transparent;
-  color: inherit;
+  composes: base botonIcono sobreColor from "../styles/controls.module.css";
 }
 
-.noticeClose svg {
-  width: 1.1rem;
-  height: 1.1rem;
-}
-
-.noticeClose:hover {
-  background: rgb(255 255 255 / 0.12);
-}
-
+/* Transparente sobre el color del aviso: lo que cambia es la luz, no el tono. */
 .noticeIcon {
   flex: none;
   width: 1.1rem;

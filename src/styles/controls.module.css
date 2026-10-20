@@ -1,0 +1,605 @@
+/*
+ * Los interactuables de la guía, una vez y en un sitio.
+ *
+ * Esto es el catálogo de interactuables hecho código (docs/CATALOGO.md). Antes cada módulo dibujaba
+ * sus botones a mano y salían diecinueve valores de esquina, diez tratamientos de hover y diez
+ * piezas sin hover ninguno. Aquí hay cinco familias, una por tipo de acción, y los módulos las
+ * consumen con `composes` en vez de volver a escribirlas:
+ *
+ *   1  elegir de un conjunto  cápsula hueca que se rellena      .pildora
+ *   2  sí o no                interruptor desnudo               .interruptor
+ *   3  ejecutar               rectángulo de esquina de 6 px     .boton .botonIcono .dia
+ *   4  navegar                sin caja, elemento <a> siempre    .enlace .zonaPulsable
+ *   5  escribir               campo de esquina de 6 px          .campo
+ *
+ * Cómo se usa, desde el módulo de una función:
+ *
+ *   .enviar {
+ *     composes: base boton principal from "../../styles/controls.module.css";
+ *     align-self: flex-start;   // solo lo que es propio de este sitio
+ *   }
+ *
+ *
+ * ## Quién gana a quién: una sola regla
+ *
+ * **Todo lo de este archivo vale cero de especificidad, y el módulo que toque una propiedad la
+ * gobierna entera, en todos sus estados.**
+ *
+ * Por eso cada regla va envuelta en `:where()`, los estados incluidos. Dentro del archivo manda el
+ * orden; fuera, cualquier cosa que escriba un módulo gana.
+ *
+ * La consecuencia práctica, que es la parte que hay que recordar: **si un módulo cambia el fondo de
+ * un control, tiene que decir también qué hace ese fondo al pasar por encima.** Si no lo dice, se
+ * queda igual, porque el hover del catálogo ya no puede alcanzarlo.
+ *
+ * Esto nació de dos fallos reales, y los dos venían del mismo sitio. El primero: el buscador
+ * componía `.campo` y le quitaba el fondo, y se quedó con el fondo igualmente, porque las dos
+ * reglas valían lo mismo y decidía el orden en que el empaquetador juntara los archivos. El
+ * segundo: el botón de quitar filtros se ponía verde claro al pasar por encima en vez de olivo
+ * oscuro, y su icono claro desaparecía, porque su `:hover` empataba con el del catálogo y volvía a
+ * decidir el orden. Una precedencia que depende de cómo se parta el paquete no es una precedencia.
+ *
+ * ## El estado visual sale del atributo de accesibilidad
+ *
+ * Lo elegido se dibuja con `[aria-pressed="true"]`, `[aria-checked="true"]` o `:has(input:checked)`,
+ * nunca con un `.elegido` propio. Así no se puede pintar una cápsula como elegida sin que un lector
+ * de pantalla lo diga: la única forma de conseguir el relleno es poner el atributo. Un estado que se
+ * ve pero no se anuncia deja de ser posible por construcción, no por disciplina.
+ *
+ * La geometría propia se queda en el módulo. Aquí vive lo que se repite o lo que el catálogo nombra
+ * como familia; dónde se coloca una pieza y cuánto mide su hueco en su rejilla es de quien la usa.
+ */
+
+/*
+ * La base de las cinco familias: lo que no cambia nunca. Foco, transición y tipografía de control.
+ * Todo lo que se pulsa compone esta clase, incluido lo que no es ninguna de las cinco.
+ */
+:where(.base) {
+  appearance: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: inherit;
+  cursor: pointer;
+  /* Las cifras no bailan al cambiar de valor. */
+  font-variant-numeric: tabular-nums;
+  /* Solo color y sombra. El pulsado es instantáneo a propósito: una escala con transición se siente
+     blanda, y lo que confirma un toque es que responda en el acto. */
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+
+:where(.base:focus-visible) {
+  outline: 2.5px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+:where(.base:disabled) {
+  cursor: default;
+}
+
+/* ====================================================================================
+ * 1 · Elegir de un conjunto
+ *
+ * Cápsula hueca que se rellena al elegirla. Va siempre en grupo, porque una cápsula sola no
+ * comunica que hay alternativas, y es lo único de la interfaz con forma de píldora.
+ * ==================================================================================== */
+
+:where(.pildora) {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  height: var(--control-h);
+  padding: 0 0.8rem;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  line-height: 1;
+  color: var(--ink-700);
+  background: var(--color-surface-solid);
+  box-shadow:
+    inset 0 0 0 1px var(--color-border-strong),
+    0 1px 3px rgb(31 36 25 / 0.1);
+  white-space: nowrap;
+}
+
+:where(.pildora:hover:not(:disabled)) {
+  background: var(--hover-quiet);
+}
+
+:where(.pildora:active:not(:disabled)) {
+  transform: scale(0.98);
+}
+
+/*
+ * Elegida, por las tres vías que son estado de verdad: el atributo de un botón que alterna, el de
+ * uno que forma parte de un grupo, y un radio marcado dentro de la cápsula. La tercera es la de los
+ * formularios, donde la cápsula es una `label` que envuelve un radio escondido: así lo que pinta el
+ * relleno es el propio estado del formulario, que no se puede desincronizar de lo que se ve.
+ */
+:where(.pildora[aria-pressed="true"], .pildora[aria-checked="true"], .pildora:has(input:checked)) {
+  color: var(--sand-25);
+  background: var(--color-accent);
+  /* Rellena pierde el filete: el relleno ya dibuja el borde. */
+  box-shadow: 0 1px 3px rgb(31 36 25 / 0.1);
+}
+
+:where(
+  .pildora[aria-pressed="true"]:hover:not(:disabled),
+  .pildora[aria-checked="true"]:hover:not(:disabled),
+  .pildora:has(input:checked):hover
+) {
+  background: var(--hover-strong);
+}
+
+:where(.pildora) svg {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+/* El radio que vive dentro de la cápsula: existe para el teclado y para el formulario, no se ve. */
+:where(.pildora) input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+:where(.pildora:has(input:focus-visible)) {
+  outline: 2.5px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/*
+ * El disco de la cifra que va dentro de una cápsula.
+ *
+ * El centrado es óptico y no por caja: un dígito no tiene descendentes, así que centrarlo por su
+ * caja de línea lo deja visiblemente bajo. El píxel de abajo lo sube a donde el ojo lo espera.
+ */
+:where(.cifra) {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  /*
+   * Crece con las cifras en vez de recortarlas. Era un cuadrado fijo de 20 px, y "101" se salía por
+   * los lados: el disco es la forma que toma una cifra de un dígito, no una medida. Con `min-width`
+   * igual al alto y el radio de cápsula, un dígito sigue dando el círculo exacto de siempre y tres
+   * se estiran a pastilla.
+   */
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.3rem 1px;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-600);
+  background: var(--color-surface-muted);
+}
+
+/*
+ * Dentro de una cápsula rellena, el disco se invierte: lima viva con la cifra en tinta.
+ *
+ * Lo obvio sería blanco translúcido sobre el olivo, y es lo que decía el catálogo. Da 3,2:1 con la
+ * cifra en blanco, o sea por debajo del 4,5:1 que necesita un texto de 11 px, y axe lo canta. El
+ * código ya tenía esta solución escrita con el motivo al lado, y la primera versión de este archivo
+ * la pisó: no es lo mismo unificar que aplanar.
+ */
+:where(.pildora[aria-pressed="true"], .pildora[aria-checked="true"]) .cifra {
+  color: var(--ink-900);
+  background: var(--lime-500);
+}
+
+/* ====================================================================================
+ * 2 · Sí o no
+ *
+ * Interruptor desnudo: sin pastilla alrededor y sin rótulo. El icono dentro de la perilla lo dice.
+ *
+ * Aquí se sigue a Apple y no a NN/G, y es una decisión tomada con el costo escrito. Apple dice que
+ * a un control que alterna no le hace falta etiqueta porque el icono y el relleno bastan; NN/G dice
+ * que el rótulo debe verse siempre, y cita una prueba donde un reloj resultó indescifrable. El
+ * motivo para seguir a Apple no es de legibilidad sino de forma: con texto hacía falta una pastilla
+ * que lo contuviera, y eso metía una caja dentro de otra, que es justo lo que este catálogo quita.
+ * El costo queda apuntado: el reloj y el corazón tienen que sostenerse solos.
+ * ==================================================================================== */
+
+:where(.interruptor) {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+:where(.via) {
+  position: relative;
+  display: block;
+  /*
+   * 64 x 40: el alto de control, como todo lo demás de la fila. El recorrido sale de la resta y no
+   * de un tanteo: 64 - 34 de perilla - 3 de cada lado = 24.
+   */
+  width: 4rem;
+  height: var(--control-h);
+  border-radius: var(--radius-pill);
+  /*
+   * La misma superficie apagada y el mismo filete que el botón secundario y los cuadrados de icono.
+   * No es un color inventado para el interruptor: es el material que ya tiene la guía para "una
+   * caja neutra que se pulsa", y por eso no desentona.
+   */
+  background: var(--color-surface-muted);
+  box-shadow: inset 0 0 0 1px var(--color-border-strong);
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+/* El mismo verde tenue que cualquier otro filtro al pasar por encima. */
+:where(.interruptor:hover:not(:disabled)) .via {
+  background: var(--hover-quiet);
+}
+
+:where(.interruptor[aria-checked="true"]) .via {
+  background: var(--color-accent);
+}
+
+:where(.interruptor[aria-checked="true"]:hover:not(:disabled)) .via {
+  background: var(--hover-strong);
+}
+
+/*
+ * La perilla. El recorrido son 20 px y sale de la resta, no de un tanteo: la vía mide 52, la perilla
+ * 26 y queda a 3 de cada lado, así que 52 - 26 - 6 = 20. El centrado vertical va por cálculo y no
+ * por caja, porque la perilla está posicionada y su caja no participa del alineado de la vía.
+ */
+:where(.perilla) {
+  position: absolute;
+  top: 50%;
+  left: 3px;
+  display: grid;
+  place-items: center;
+  width: 2.125rem;
+  height: 2.125rem;
+  border-radius: var(--radius-round);
+  /*
+   * Papel y una sombra, sin filete. Es la perilla de siempre, la de cualquier interruptor.
+   *
+   * Y el contraste que pide WCAG 1.4.11 lo lleva **la vía**, no la perilla. La norma pide que los
+   * estados de un control se distingan entre sí, y aquí la vía pasa de arena apagada a olivo: 5,2:1
+   * entre un estado y el otro, en la pieza más grande de las dos. La perilla refuerza con su
+   * posición y con el color de su icono.
+   *
+   * Se probó al revés (el contraste en la perilla) de las tres formas posibles, y las tres fallaban
+   * por el mismo motivo: una vía oscura pesaba, una perilla rellena de tinta gritaba en reposo
+   * (un disco oscuro se lee como "puesto", que es lo contrario de lo que es) y un filete se veía
+   * de más. Cargar el contraste en la pieza grande resuelve las tres a la vez.
+   */
+  color: var(--ink-600);
+  background: var(--sand-25);
+  box-shadow: 0 1px 3px rgb(31 36 25 / 0.18);
+  translate: 0 -50%;
+  transition:
+    translate var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+:where(.interruptor[aria-checked="true"]) .perilla {
+  translate: 1.5rem -50%;
+  color: var(--color-accent);
+  /* Puesta, el papel sobre el olivo da 5,7:1 por relleno: el filete sobra y se quita. */
+  box-shadow: 0 1px 3px rgb(31 36 25 / 0.18);
+}
+
+:where(.perilla) svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+/* ====================================================================================
+ * 3 · Ejecutar
+ *
+ * Rectángulo macizo de esquina de 6 px. Una sola llena por grupo, para que se sepa cuál es la
+ * acción principal sin tener que leer las dos.
+ * ==================================================================================== */
+
+:where(.boton) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  height: var(--control-h);
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-control);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  line-height: 1;
+  color: var(--color-text);
+  /* Un botón nunca parte en dos líneas: deja de leerse como un objeto. */
+  white-space: nowrap;
+}
+
+:where(.boton:active:not(:disabled)) {
+  transform: scale(0.98);
+}
+
+:where(.boton) svg {
+  width: 1.0625rem;
+  height: 1.0625rem;
+  flex-shrink: 0;
+}
+
+:where(.principal) {
+  color: var(--sand-25);
+  background: var(--color-accent);
+}
+
+:where(.principal:hover:not(:disabled)) {
+  background: var(--hover-strong);
+}
+
+:where(.secundario) {
+  color: var(--ink-900);
+  background: var(--color-surface-muted);
+  box-shadow: inset 0 0 0 1px var(--color-border-strong);
+}
+
+:where(.secundario:hover:not(:disabled)) {
+  background: var(--hover-quiet);
+}
+
+:where(.fantasma) {
+  color: var(--ink-700);
+}
+
+:where(.fantasma:hover:not(:disabled)) {
+  background: var(--hover-quiet);
+}
+
+/*
+ * El cuadrado de icono. Mismo radio que el botón de texto, porque hace lo mismo: ejecuta. Lo que
+ * cambia es que el contenido es el icono, así que la caja es cuadrada y el nombre va en aria-label.
+ * Un icono sin nombre accesible no existe para quien no lo ve.
+ */
+:where(.botonIcono) {
+  display: grid;
+  place-items: center;
+  width: var(--control-h);
+  height: var(--control-h);
+  flex-shrink: 0;
+  border-radius: var(--radius-control);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  line-height: 1;
+  color: var(--ink-700);
+}
+
+:where(.botonIcono:hover:not(:disabled)) {
+  background: var(--hover-quiet);
+}
+
+/* Más que en un botón de texto, porque la caja es pequeña y el gesto tiene que notarse igual. */
+:where(.botonIcono:active:not(:disabled)) {
+  transform: scale(0.9);
+}
+
+:where(.botonIcono) svg {
+  width: 1.1875rem;
+  height: 1.1875rem;
+}
+
+/*
+ * El atajo de ratón: las flechas del carril, la cruz del buscador y las del calendario. Redondo y
+ * más pequeño, porque no es una acción de la página sino una ayuda para moverse por ella.
+ */
+:where(.mini) {
+  width: var(--control-h-mini);
+  height: var(--control-h-mini);
+  border-radius: var(--radius-round);
+}
+
+:where(.mini) svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+/*
+ * El día del calendario de visitas. Es de esta familia porque registrar una visita es ejecutar, no
+ * elegir de un conjunto: cada día se marca y se desmarca por su cuenta.
+ */
+:where(.dia) {
+  display: grid;
+  place-items: center;
+  width: 2.125rem;
+  height: 2.125rem;
+  padding-bottom: 1px;
+  border-radius: var(--radius-control);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  line-height: 1;
+  color: var(--ink-700);
+}
+
+:where(.dia:hover:not(:disabled)) {
+  background: var(--hover-quiet);
+}
+
+:where(.dia[aria-pressed="true"]) {
+  /* El peso además del color: un día visitado no se distingue solo por ser verde. */
+  font-weight: 700;
+  color: var(--sand-25);
+  background: var(--color-accent);
+}
+
+:where(.dia[aria-pressed="true"]:hover:not(:disabled)) {
+  background: var(--hover-strong);
+}
+
+:where(.dia:disabled) {
+  color: var(--sand-400);
+}
+
+/* ====================================================================================
+ * 4 · Navegar
+ *
+ * Sin caja, y elemento <a href> siempre. Un destino con dirección propia que se dibuja como botón
+ * no se puede abrir en otra pestaña, ni copiar, ni encontrar desde fuera: eso no es una cuestión de
+ * forma sino de que el enlace funcione.
+ * ==================================================================================== */
+
+:where(.enlace) {
+  color: var(--olive-700);
+  text-decoration: underline;
+  text-decoration-color: var(--sand-400);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+  transition:
+    color var(--duration-fast) var(--ease-out),
+    text-decoration-color var(--duration-fast) var(--ease-out);
+}
+
+:where(.enlace:hover) {
+  color: var(--color-accent);
+  text-decoration-color: var(--color-accent);
+}
+
+/* La flecha de salida, y solo si el enlace sale de la guía. */
+:where(.enlace) svg {
+  width: 0.9375rem;
+  height: 0.9375rem;
+}
+
+/*
+ * Cuando la pieza entera es el enlace: la tarjeta de un lugar, el renglón del índice de zonas, la
+ * cabecera de un grupo de resultados, una columna del podio de Tu Zibatá. Aquí no hay subrayado ni
+ * color de enlace, porque lo que marca que se puede pulsar es que toda la pieza responde.
+ */
+:where(.zonaPulsable) {
+  display: block;
+  width: 100%;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+:where(.zonaPulsable:hover) {
+  background: var(--hover-quiet);
+}
+
+:where(.zonaPulsable:focus-visible) {
+  outline: 2.5px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* ====================================================================================
+ * 5 · Escribir
+ *
+ * Campo de esquina de 6 px, la misma que ejecutar, porque las dos son cajas de trabajo y no
+ * elecciones de un conjunto. Fondo opaco siempre: un campo translúcido sobre el mapa es ilegible.
+ * ==================================================================================== */
+
+:where(.campo) {
+  appearance: none;
+  width: 100%;
+  min-width: 0;
+  height: var(--control-h);
+  margin: 0;
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-control);
+  font-family: var(--font-sans);
+  /* 16 px y no los 14 de la ficha: menos de 16 dispara el zoom de Safari en iPhone. */
+  font-size: var(--text-campo);
+  font-weight: 400;
+  color: var(--color-text);
+  background: var(--color-surface-muted);
+  box-shadow: inset 0 0 0 1px var(--color-border-strong);
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+
+:where(.campo)::placeholder {
+  color: var(--ink-500);
+  opacity: 1;
+}
+
+:where(.campo:hover:not(:focus)) {
+  background: var(--hover-quiet);
+}
+
+/*
+ * Al enfocar cambia el fondo a papel, y nada más. El filete olivo que llevaba aquí se va: sumado al
+ * contorno de foco daban dos aros concéntricos alrededor del mismo campo, que es exactamente la
+ * caja dentro de una caja que este catálogo quita, y además hacía que el foco se viera distinto en
+ * un campo que en cualquier otro control.
+ *
+ * El contorno de `base` es el único indicador de foco de la guía, y vale para los cinco tipos.
+ */
+:where(.campo:focus) {
+  background: var(--color-surface-solid);
+}
+
+/* Un área de texto no tiene alto de control: crece con lo que se escribe. */
+:where(.areaTexto) {
+  height: auto;
+  min-height: 6rem;
+  padding: var(--space-3);
+  line-height: 1.5;
+  resize: vertical;
+}
+
+/* ====================================================================================
+ * Modificadores que cruzan familias
+ *
+ * Van al final porque valen lo mismo que las familias (cero), así que entre ellos y ellas manda el
+ * orden de este archivo: lo que va después gana. Un `.zone` que compone `pildora sobreMapa` tiene
+ * que quedarse con la superficie de `sobreMapa`, no con la de `pildora`.
+ * ==================================================================================== */
+
+/*
+ * Lo que flota sobre el mapa no es transparente. Nada que se lea contra calles, manzanas y arbolado
+ * puede fiarse de lo que haya detrás: lleva superficie sólida y una sombra que lo despega.
+ * "Hueco" sigue existiendo, pero pasa a significar sin el acento, no sin fondo.
+ */
+:where(.sobreMapa) {
+  background: var(--color-surface-solid);
+  box-shadow: 0 1px 3px rgb(31 36 25 / 0.1);
+}
+
+/*
+ * La superficie apagada, y **siempre con su filete**.
+ *
+ * Son la misma materia: un botón de arena sobre papel de arena necesita un canto o no se ve dónde
+ * empieza. Lo llevaba el botón secundario y no lo llevaban los cuadrados de icono, y en la fila de
+ * arriba de la ficha se veían los tres juntos: "Volver" con filete, el corazón y la cruz sin él.
+ * Dos materiales distintos para tres piezas que hacen lo mismo.
+ *
+ * Va aquí y no repetido en ocho módulos, que es donde estaba. Trae su hover puesto, así que quien
+ * la compone ya no tiene que declararlo.
+ */
+:where(.conSuperficie) {
+  background: var(--color-surface-muted);
+  box-shadow: inset 0 0 0 1px var(--color-border-strong);
+}
+
+:where(.conSuperficie:hover:not(:disabled)) {
+  background: var(--hover-quiet);
+}
+
+/*
+ * Y lo transparente encima de una superficie de color: ahí no se puede teñir de verde claro sin
+ * pelearse con el fondo que ya hay, así que lo que se mueve es la luz.
+ */
+:where(.sobreColor) {
+  color: inherit;
+}
+
+:where(.sobreColor:hover:not(:disabled)) {
+  background: var(--hover-ghost);
+}

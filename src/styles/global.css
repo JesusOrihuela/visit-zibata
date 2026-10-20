@@ -95,19 +95,30 @@ svg {
   max-width: 100%;
 }
 
-button,
-input,
-select {
-  font: inherit;
-  color: inherit;
-}
+/*
+ * En una capa, que es lo único que hay por debajo del resto de la guía.
+ *
+ * `button, input, select { font: inherit }` es una regla de elemento, y le ganaba a la tipografía
+ * del catálogo de controles, que para dejar sitio a los módulos vale cero de especificidad (ver
+ * src/styles/controls.module.css). Dentro de una capa pierde contra cualquier regla sin capa, sin
+ * importar lo que valga ninguna de las dos, que es exactamente lo que se quiere de una
+ * normalización: que sea el suelo.
+ */
+@layer reset {
+  button,
+  input,
+  select {
+    font: inherit;
+    color: inherit;
+  }
 
-button {
-  cursor: pointer;
-}
+  button {
+    cursor: pointer;
+  }
 
-a {
-  color: inherit;
+  a {
+    color: inherit;
+  }
 }
 
 :focus-visible {

@@ -74,7 +74,9 @@ describe('ProfileButton', () => {
     const bloque = within(sheet)
       .getByRole('heading', { name: 'Tus tres de siempre' })
       .closest('section') as HTMLElement
-    const filas = within(bloque).getAllByRole('button')
+    // `link` y no `button`: cada columna del podio lleva a la ficha de ese lugar, que tiene
+    // dirección propia, así que es un enlace de verdad y se anuncia como tal.
+    const filas = within(bloque).getAllByRole('link')
     // Primero las notas (5 y 3), luego las visitas; el favorito sin nota ni visitas se queda fuera.
     expect(filas).toHaveLength(3)
     expect(filas[0]).toHaveAccessibleName('Puesto 1. Ver detalles de Trigo')
@@ -95,12 +97,12 @@ describe('ProfileButton', () => {
     const sheet = await openSheet()
 
     await userEvent.click(
-      within(sheet).getByRole('button', { name: 'Puesto 1. Ver detalles de Café Aurora' }),
+      within(sheet).getByRole('link', { name: 'Puesto 1. Ver detalles de Café Aurora' }),
     )
     expect(onOpenPlace).toHaveBeenCalledWith(expect.objectContaining({ id: 'cafe-aurora' }))
 
     await openSheet()
-    await userEvent.click(screen.getByRole('button', { name: 'Sugiere un cambio' }))
+    await userEvent.click(screen.getByRole('link', { name: 'Sugiere un cambio' }))
     expect(onOpenInfo).toHaveBeenCalledWith('sugerir')
   })
 })

@@ -126,6 +126,7 @@ npm run map:fetch && npm run map:build
 | Documento | Contenido |
 | --- | --- |
 | [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md) | Estructura, estado, decisiones de diseño técnico |
+| [docs/CATALOGO.md](docs/CATALOGO.md) | **Catálogo de interfaz**: formas, letra, superficies, color y estados. La fuente única |
 | [docs/DATOS.md](docs/DATOS.md) | Modelo de datos y cómo editarlo |
 | [docs/MAPA.md](docs/MAPA.md) | Decisiones cartográficas (alturas, volúmenes, teselas, cámara) |
 | [docs/PIPELINE-GIS.md](docs/PIPELINE-GIS.md) | Cómo se generan las teselas y el manifiesto |

@@ -11,11 +11,11 @@ test.describe('Información de la guía', () => {
       await page.getByRole('button', { name: 'Tu Zibatá' }).click()
       await page
         .getByRole('dialog', { name: 'Tu Zibatá' })
-        .getByRole('button', { name: 'Privacidad' })
+        .getByRole('link', { name: 'Privacidad' })
         .click()
     } else {
       await expect(page.getByText('Guía independiente de establecimientos')).toBeVisible()
-      await page.getByRole('button', { name: 'Privacidad' }).first().click()
+      await page.getByRole('link', { name: 'Privacidad' }).first().click()
     }
 
     const privacy = page.getByRole('dialog', { name: 'Privacidad y términos' })
@@ -30,11 +30,17 @@ test.describe('Información de la guía', () => {
     await expect(privacy).toContainText('No tiene relación comercial')
     await expect(privacy).toContainText('sin garantía de que cada dato sea exacto hoy')
     await expect(page).toHaveURL(/\/info\/privacidad$/)
-    // Todo lo que dice se cumple aquí dentro: no hay un enlace que mande a leerlo a otro sitio.
-    await expect(privacy.getByRole('link')).toHaveCount(0)
+    /*
+     * Todo lo que dice se cumple aquí dentro: no hay un enlace que mande a leerlo a otro sitio.
+     *
+     * Se mira el destino y no el elemento. Las páginas de información se enlazan entre sí (son
+     * rutas de la guía, así que son enlaces de verdad), y contar `link` a secas haría fallar esto
+     * por el motivo contrario al que protege.
+     */
+    await expect(privacy.locator('a[href^="http"]')).toHaveCount(0)
 
     // Desde una página se llega a las otras dos.
-    await privacy.getByRole('button', { name: 'Sugiere un cambio' }).click()
+    await privacy.getByRole('link', { name: 'Sugiere un cambio' }).click()
     await expect(page.getByRole('dialog', { name: 'Sugiere un cambio' })).toBeVisible()
     await expect(page).toHaveURL(/\/info\/sugerir$/)
 
@@ -64,7 +70,7 @@ test.describe('Información de la guía', () => {
     await expect(page.getByRole('button', { name: 'Saltar' })).toHaveCount(0)
 
     // Y desde que se recuerda por dispositivo, esta es la forma de volver a verlo.
-    await about.getByRole('button', { name: 'Ver el tutorial' }).click()
+    await about.getByRole('link', { name: 'Ver el tutorial' }).click()
     await expect(page.getByRole('button', { name: 'Saltar' })).toBeVisible()
     // Por el id del título: "Explora Zibatá" también es el botón de la barra superior.
     await expect(page.locator('#onboarding-title')).toHaveText('Explora Zibatá')

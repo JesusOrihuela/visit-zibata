@@ -30,29 +30,40 @@
   transition: translate var(--duration-slow) var(--ease-out);
 }
 
+/*
+ * La pila lleva la esquina de control y no la de tarjeta. Llevó `--radius-md`, que son los 14 px de
+ * una tarjeta, y a 40 px de ancho eso no se lee como un contenedor: se lee como un control con una
+ * esquina que no es la de ningún control. La pila ES el control; lo que hay dentro son sus teclas.
+ */
 .stack {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border-radius: var(--radius-md);
+
+  /*
+
+   * 40 px de lado corto. Llevó la esquina de un control, y la pila es una superficie: lo que
+
+   * se pulsa son las teclas de dentro, que no llevan ninguna porque las recorta ella.
+
+   */
+
+  border-radius: var(--radius-sm);
   background: var(--color-surface-solid);
   box-shadow:
     0 0 0 1px var(--color-border),
     var(--shadow-md);
 }
 
+/*
+ * Los controles del mapa son botones de icono, y van en pila dentro de una superficie que es la que
+ * lleva la esquina. Por eso estos pierden la suya: el recorte de la pila ya la dibuja, y un radio
+ * por botón haría cuatro esquinas redondas dentro de una caja redonda.
+ */
 .button {
+  composes: base botonIcono from "../../styles/controls.module.css";
   position: relative;
-  display: grid;
-  place-items: center;
-  width: 2.625rem;
-  height: 2.625rem;
-  border: 0;
-  background: transparent;
-  color: var(--ink-700);
-  transition:
-    background-color var(--duration-fast) var(--ease-out),
-    color var(--duration-fast) var(--ease-out);
+  border-radius: 0;
 }
 
 .button + .button {
@@ -60,15 +71,12 @@
 }
 
 .button svg {
-  width: 1.125rem;
-  height: 1.125rem;
   stroke-width: 1.9;
   transition: transform var(--duration-base) var(--ease-out);
 }
 
-.button:hover {
-  background: var(--lime-50);
-  color: var(--olive-700);
+.button + .button {
+  border-top: 1px solid var(--color-border);
 }
 
 .button:focus-visible {
@@ -92,7 +100,14 @@
   width: max-content;
   max-width: 15rem;
   padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-md);
+
+  /*
+
+   * 34 px de alto.
+
+   */
+
+  border-radius: var(--radius-sm);
   background: var(--ink-900);
   box-shadow: var(--shadow-md);
   color: var(--sand-50);
@@ -100,11 +115,15 @@
 }
 
 /*
- * La brújula se arrastra para girar el mapa, así que el cursor lo anuncia antes de tocarla: es la
- * única pista de que ahí hay un gesto y no solo un botón.
+ * La brújula hace dos cosas: se pulsa para enderezar de 45 en 45, y se arrastra para girar el mapa.
+ *
+ * El cursor anuncia la primera, que es la que usa casi todo el mundo, y por eso es el mismo dedo
+ * que el resto de los controles. Anunció la segunda con la mano de arrastre, y el precio era alto
+ * para lo que daba: la brújula era el único control de la guía que al pasar por encima decía algo
+ * distinto, y eso se lee como un fallo antes que como una pista. El gesto no se pierde, se
+ * descubre al hacerlo, y mientras dura sí cambia a la mano cerrada.
  */
 .button[data-girando] {
-  cursor: grab;
   touch-action: none;
 }
 
@@ -121,19 +140,12 @@
   width: 0.85rem;
   height: 0.85rem;
   border: 2.5px solid white;
-  border-radius: 50%;
+  border-radius: var(--radius-round);
   background: var(--blue-ubicacion);
   box-shadow:
     0 0 0 4px color-mix(in srgb, var(--blue-ubicacion) 18%, transparent),
     0 1px 4px rgb(31 36 25 / 0.35);
   pointer-events: none;
-}
-
-@media (max-width: 899px) {
-  .button {
-    width: 2.5rem;
-    height: 2.5rem;
-  }
 }
 
 /* En pantallas táctiles pequeñas se hace zoom con pellizco: se liberan esos botones del mapa. */

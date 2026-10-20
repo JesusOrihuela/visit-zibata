@@ -10,11 +10,13 @@
  * enlazar y marcado con `aria-current`, y los demás como enlaces con `hreflang` y `rel="alternate"`,
  * que es lo que además le dice a un buscador que son la misma página en otro idioma.
  *
- * Lo que se ve sigue siendo la bandera y el código del idioma en el que estás, que es lo que había
- * y lo que se prefirió al verlo de las dos maneras. La fuente recomienda el nombre nativo del
- * idioma, y la objeción de fondo sigue en pie (una bandera nombra un país, no una lengua), pero eso
- * es una elección de quien firma la guía y no una regla técnica. Lo que sí cambió es lo que no se
- * ve y sí se nota: ahora se puede abrir la versión en inglés en otra pestaña y copiar su dirección.
+ * Lo que se ve es la bandera y el código **del idioma que estás leyendo**, no del que vas a ir. Es
+ * una decisión de quien firma la guía y va contra lo que haría un enlace por su cuenta (un enlace
+ * enseña su destino), así que lo que dice a dónde lleva es la etiqueta accesible, que está escrita
+ * en el idioma de destino. Queda apuntado por si alguna vez se quiere al revés.
+ *
+ * Lo que sí cambió respecto al botón que ciclaba es lo que no se ve y sí se nota: ahora la versión
+ * en inglés tiene su dirección, se abre en otra pestaña y se copia.
  */
 import { LLEVA_AL_IDIOMA, NOMBRE_DEL_IDIOMA } from '../../i18n/cambioDeIdioma.ts'
 import { availableLocales, type Locale, setLocale, t, useLocale } from '../../i18n/index.ts'
@@ -47,17 +49,14 @@ export function LocaleSwitch() {
       <ul>
         {availableLocales.map((locale) =>
           locale === current ? (
-            // El idioma actual no se enlaza: ya estás en él. `aria-current` es lo que lo dice.
-            <li key={locale}>
-              <span className={styles.actual} lang={locale} aria-current="true">
-                <img
-                  className={styles.flag}
-                  src={assetUrl(BANDERA[locale])}
-                  alt=""
-                  width={20}
-                  height={20}
-                />
-                <span className={styles.code}>{t(CORTO[locale])}</span>
+            /*
+             * El idioma actual no se enlaza: ya estás en él, y `aria-current` lo dice. No se
+             * dibuja, porque lo que se ve en su sitio es la bandera del enlace, que por decisión
+             * del proyecto muestra este mismo idioma.
+             */
+            <li key={locale} className={styles.soloParaLectores}>
+              <span lang={locale} aria-current="true">
+                {NOMBRE_DEL_IDIOMA[locale]}
               </span>
             </li>
           ) : (
@@ -93,14 +92,16 @@ export function LocaleSwitch() {
                   void setLocale(locale)
                 }}
               >
+                {/* La bandera y el código son los del idioma que se está leyendo, no los del
+                    destino: a dónde lleva lo dice la etiqueta accesible. */}
                 <img
                   className={styles.flag}
-                  src={assetUrl(BANDERA[locale])}
+                  src={assetUrl(BANDERA[current])}
                   alt=""
                   width={20}
                   height={20}
                 />
-                <span className={styles.code}>{t(CORTO[locale])}</span>
+                <span className={styles.code}>{t(CORTO[current])}</span>
               </a>
             </li>
           ),

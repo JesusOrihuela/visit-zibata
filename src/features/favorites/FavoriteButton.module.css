@@ -1,31 +1,26 @@
+/*
+ * El corazón es un sí o no, pero no lleva interruptor: va encima de una tarjeta y de una ficha, y un
+ * interruptor ahí pediría la caja que este catálogo quita. La forma es el símbolo, y el estado es el
+ * relleno del corazón.
+ *
+ * Dos cuerpos: en la tarjeta es cromo de 36 px sin fondo, al lado de compartir y con su misma
+ * medida, porque cualquier diferencia entre dos iconos vecinos se lee como un descuido. En la ficha
+ * crece al alto de control y toma la esquina y la superficie de la familia.
+ *
+ * Al pasar por encima aparece el fondo, pero el corazón no cambia de color: lo que dice si está
+ * guardado es su relleno, y teñirlo en el hover era prometer un cambio que no iba a pasar.
+ */
 .button {
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
+  composes: base botonIcono from "../../styles/controls.module.css";
   width: 2.25rem;
   height: 2.25rem;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
+  border-radius: var(--radius-round);
   color: var(--ink-500);
-  transition:
-    background-color var(--duration-fast) var(--ease-out),
-    color var(--duration-fast) var(--ease-out),
-    transform var(--duration-fast) var(--ease-out);
 }
 
 .button svg {
   width: 1.125rem;
   height: 1.125rem;
-}
-
-.button:hover {
-  background: var(--lime-50);
-  color: var(--olive-600);
-}
-
-.button:active {
-  transform: scale(0.9);
 }
 
 .button[aria-pressed="true"] {
@@ -35,8 +30,22 @@
 /* En la ficha es uno de los tres botones de cromo, así que lleva su misma esquina. En la tarjeta no:
    ahí no tiene superficie, es el corazón suelto. */
 .button[data-size="md"] {
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: var(--radius-sm);
+  width: var(--control-h);
+  height: var(--control-h);
+  border-radius: var(--radius-control);
   background: var(--color-surface-muted);
+  /* Con su filete, como todo lo que lleva esta superficie: en la fila de arriba de la ficha
+     conviven con "Volver" y sin canto se veían de otro material. */
+  box-shadow: inset 0 0 0 1px var(--color-border-strong);
 }
+
+/* Reemplaza la superficie del catálogo, así que le toca decir qué hace al pasar por encima. */
+.button[data-size="md"]:hover {
+  background: var(--hover-quiet);
+}
+
+/*
+ * Y su hover, que hay que repetir aquí. La regla de arriba tiene la misma especificidad que
+ * `.button:hover` y viene después, así que le ganaba: el corazón de la ficha era el único control
+ * de la guía que no respondía al pasar por encima, y no porque alguien lo decidiera.
+ */

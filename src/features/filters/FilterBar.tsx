@@ -126,13 +126,24 @@ export function FilterBar({
         </div>
 
         {/*
-         * Las dos condiciones: pastillas con su palabra, no interruptores.
+         * Las dos condiciones: interruptores desnudos, y la cuenta como texto suelto al lado.
          *
-         * Fueron interruptores con el icono dentro de la perilla y ningún texto a la vista, y eso
-         * falla por dos sitios. Uno: un interruptor es para una fila de lista, y estos flotan
-         * sobre el mapa; fuera de una lista, lo que toca es un control que alterna y se rellena.
-         * Dos: sin palabra, el único que explicaba qué filtra era un reloj, y un reloj dice tiempo,
-         * no "abierto". Con la palabra puesta, el problema del icono desaparece solo.
+         * El interruptor es la forma de un sí o no y se lee como tal sin que nadie lo explique: una
+         * vía y una perilla que se mueve. Tuvo rótulo y pastilla, y las dos se van juntas, porque
+         * eran la misma pieza: un interruptor con texto al lado necesita algo que los una, y ese
+         * algo era la caja que este catálogo quita.
+         *
+         * El nombre no desaparece, cambia de sitio. Va en `aria-label` con la cuenta dentro, así que
+         * un lector dice "Abierto ahora, 23, interruptor" aunque en pantalla solo haya un reloj. El
+         * costo queda escrito en el catálogo: sin rótulo, el reloj y el corazón se sostienen solos.
+         *
+         * La cuenta tampoco se ve, y es deliberado. Estuvo al lado, suelta y sin fondo, y no decía
+         * nada que hiciera falta: el selector de zona nunca la ha llevado y no se echa en falta,
+         * porque lo que importa de un filtro es si está puesto, no cuántos deja. Lo que sí se ve,
+         * en la fila de abajo, es el número de resultados.
+         *
+         * `role="switch"` y no `aria-pressed`: lo primero es un ajuste que queda puesto, que es lo
+         * que esto es, y lo segundo es un botón que se queda hundido.
          *
          * Cada uno solo aparece si puede dar resultados: a las cuatro de la mañana no hay abiertos y
          * la fila se queda con una sola condición, que sigue leyéndose bien.
@@ -140,28 +151,34 @@ export function FilterBar({
         {(openNowCount > 0 || openNowOnly) && (
           <button
             type="button"
-            className={styles.filtro}
-            data-tono="abierto"
-            aria-pressed={openNowOnly}
+            className={styles.interruptor}
+            role="switch"
+            aria-checked={openNowOnly}
+            aria-label={`${t('filters.openNow')}, ${openNowCount}`}
             onClick={onToggleOpenNow}
           >
-            <Clock aria-hidden="true" />
-            <span>{t('filters.openNow')}</span>
-            <span className={styles.count}>{openNowCount}</span>
+            <span className={styles.via}>
+              <span className={styles.perilla}>
+                <Clock aria-hidden="true" />
+              </span>
+            </span>
           </button>
         )}
 
         {(favoritesCount > 0 || favoritesOnly) && (
           <button
             type="button"
-            className={styles.filtro}
-            data-tono="favorito"
-            aria-pressed={favoritesOnly}
+            className={styles.interruptor}
+            role="switch"
+            aria-checked={favoritesOnly}
+            aria-label={`${t('favorites.filter')}, ${favoritesCount}`}
             onClick={onToggleFavorites}
           >
-            <Heart aria-hidden="true" fill={favoritesOnly ? 'currentColor' : 'none'} />
-            <span>{t('favorites.filter')}</span>
-            <span className={styles.count}>{favoritesCount}</span>
+            <span className={styles.via}>
+              <span className={styles.perilla}>
+                <Heart aria-hidden="true" fill={favoritesOnly ? 'currentColor' : 'none'} />
+              </span>
+            </span>
           </button>
         )}
 

@@ -213,8 +213,6 @@ export const en = {
   'about.tutorialLead': 'The four steps to move around the map, find a place and save it.',
   'about.moreLabel': 'More about the guide',
   'about.independent': 'An independent guide to the area’s businesses and services.',
-  'about.languageEs': 'Español',
-  'about.languageEn': 'English',
 
   'about.aboutLead': 'A guide to what there is in Zibatá, so you can decide where to go.',
   'about.aboutBody':

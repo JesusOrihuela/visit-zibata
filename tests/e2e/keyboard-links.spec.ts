@@ -82,9 +82,9 @@ test.describe('Teclado, enlaces y favoritos', () => {
       ),
     )
     await openApp(page)
-    const toggle = page.getByRole('button', { name: /Favoritos/ })
-    await expect(toggle).toContainText('1')
-    await toggle.click()
+    // La cuenta va en el nombre del control: el interruptor quedo desnudo y la cifra, al lado.
+    const interruptor = page.getByRole('switch', { name: 'Favoritos, 1' })
+    await interruptor.click()
     if (isMobile(page)) {
       await expect(panel(page).getByRole('link', { name: /^Ver detalles de/ })).toHaveCount(1)
     } else {
