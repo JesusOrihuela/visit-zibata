@@ -34,3 +34,17 @@ skills-lock.json
 
 # Estado local de wrangler (base D1 de desarrollo, cachés).
 .wrangler/
+
+# Material auxiliar e interno: no hace falta para que la pagina funcione, asi que no se publica.
+# Sigue en local y hay copia fuera del repositorio.
+/CLAUDE.md
+/AGENTS.md
+/DESIGN.md
+/README.md
+/CONTRIBUTING.md
+/SECURITY.md
+/CHANGELOG.md
+/.impeccable/
+/docs/
+/research/*.md
+/data/research/README.md
