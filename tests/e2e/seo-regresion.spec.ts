@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { expect, test } from '@playwright/test'
 import { MIN_INDEXABLE } from '../../scripts/build/categorias.ts'
+import { bloquea } from '../../scripts/build/robots.ts'
 
 /**
  * Regresión SEO sobre lo que el build **realmente escribió** en `dist/`: el sitemap, el HTML de cada
@@ -263,6 +264,22 @@ test.describe('Sitemap', () => {
     if (locs.some((loc) => /^https?:\/\//.test(loc))) {
       expect(robots).toMatch(/^Sitemap: https:\/\/[^\s]+\/sitemap\.xml$/m)
     }
+  })
+
+  test('robots.txt bloquea el filtro de categoría de una zona y ninguna página del sitemap', () => {
+    const reglas = leer('robots.txt')
+      .split('
+')
+      .filter((linea) => linea.startsWith('Disallow: '))
+      .map((linea) => linea.slice('Disallow: '.length))
+    const bloqueada = (ruta: string) => reglas.some((regla) => bloquea(regla, ruta))
+    // El filtro dentro de una zona, que las cápsulas enlazan, es lo que no se debe rastrear.
+    expect(bloqueada(`${BASE}zona/condesa?categoria=italiana`)).toBe(true)
+    expect(bloqueada(`${BASE}en/area/condesa?category=italian`)).toBe(true)
+    // Y ninguna dirección del sitemap, ni la portada con el parámetro antiguo, queda bloqueada.
+    expect(locs.length).toBeGreaterThan(0)
+    for (const loc of locs) expect(bloqueada(rutaDe(loc) === '/' ? BASE : `${BASE}${rutaDe(loc).slice(1)}`), loc).toBe(false)
+    expect(bloqueada(`${BASE}?categoria=italiana`)).toBe(false)
   })
 })
 
