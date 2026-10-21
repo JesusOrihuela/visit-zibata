@@ -2,6 +2,7 @@ import { readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { expect, test } from '@playwright/test'
+import { MIN_INDEXABLE } from '../../scripts/build/categorias.ts'
 
 /**
  * Regresión SEO sobre lo que el build **realmente escribió** en `dist/`: el sitemap, el HTML de cada
@@ -86,21 +87,19 @@ const girosDe = (lugar: { giros: string[]; secundarios?: string[] }) => [
   ...lugar.giros,
   ...(lugar.secundarios ?? []),
 ]
-/** Las categorías que tienen algún local, con la misma regla que el filtro de la aplicación. */
-const categoriasConLocalesPorIdioma = (idioma: 'es' | 'en') =>
+/** Cuántos locales tiene una categoría, con la misma regla que el filtro de la aplicación. */
+const localesDe = (categoria: (typeof categorias)[number]): number =>
+  lugares.filter((lugar) =>
+    girosDe(lugar).some((giro) => categoria.giros.some((g) => g.id === giro)),
+  ).length
+/** Las que se ofrecen a los buscadores: con locales de sobra. El resto existe, pero con `noindex`. */
+const categoriasIndexables = (idioma: 'es' | 'en') =>
   new Set(
     categorias
-      .filter((categoria) =>
-        lugares.some((lugar) =>
-          girosDe(lugar).some((giro) => categoria.giros.some((g) => g.id === giro)),
-        ),
-      )
+      .filter((categoria) => localesDe(categoria) >= MIN_INDEXABLE)
       .map((categoria) => categoria.slug[idioma]),
   )
-const categoriasConLocales = new Set([
-  ...categoriasConLocalesPorIdioma('es'),
-  ...categoriasConLocalesPorIdioma('en'),
-])
+const categoriasConLocales = new Set([...categoriasIndexables('es'), ...categoriasIndexables('en')])
 const zonas = dato<{ plazas: { id: string; slug: string; active: boolean }[] }>(
   'plazas.json',
 ).plazas
@@ -224,9 +223,13 @@ test.describe('Sitemap', () => {
       expect(rutas.has(`/en/area/${zona.slug}`), `falta /en/area/${zona.slug}`).toBe(true)
     }
     for (const idioma of ['es', 'en'] as const) {
-      for (const slug of categoriasConLocalesPorIdioma(idioma)) {
+      for (const categoria of categorias) {
+        const slug = categoria.slug[idioma]
         const ruta = idioma === 'es' ? `/categoria/${slug}` : `/en/category/${slug}`
-        expect(rutas.has(ruta), `falta ${ruta}`).toBe(true)
+        // En el sitemap, solo las que se ofrecen a los buscadores.
+        expect(rutas.has(ruta), `${ruta}: en el sitemap solo si llega al umbral`).toBe(
+          localesDe(categoria) >= MIN_INDEXABLE,
+        )
       }
     }
     expect(rutas.has('/'), 'falta la portada').toBe(true)
@@ -243,9 +246,7 @@ test.describe('Sitemap', () => {
       if (lugar) expect(activos.has(lugar), `${ruta} no es un local activo`).toBe(true)
       else if (zona) expect(zonasActivas.has(zona), `${ruta} no es una zona activa`).toBe(true)
       else if (categoria) {
-        expect(categoriasConLocales.has(categoria), `${ruta} no es una categoría con locales`).toBe(
-          true,
-        )
+        expect(categoriasConLocales.has(categoria), `${ruta} no llega al umbral`).toBe(true)
       } else expect(ruta, 'ruta fuera de las conocidas').toMatch(/^\/(en)?$|^\/(en\/)?info\//)
     }
   })
@@ -261,6 +262,56 @@ test.describe('Sitemap', () => {
     expect(robots).not.toMatch(/^Disallow:\s*\/\s*$/m)
     if (locs.some((loc) => /^https?:\/\//.test(loc))) {
       expect(robots).toMatch(/^Sitemap: https:\/\/[^\s]+\/sitemap\.xml$/m)
+    }
+  })
+})
+
+test.describe('Las páginas de categoría', () => {
+  const archivoDeCategoria = (idioma: 'es' | 'en', slug: string) =>
+    idioma === 'es' ? `categoria/${slug}.html` : `en/category/${slug}.html`
+
+  test('toda categoría de los datos tiene su página en los dos idiomas, con sus etiquetas una sola vez', () => {
+    for (const idioma of ['es', 'en'] as const) {
+      for (const categoria of categorias) {
+        const archivo = archivoDeCategoria(idioma, categoria.slug[idioma])
+        const html = leer(archivo)
+        for (const [nombre, patron] of [
+          ['title', /<title>/g],
+          ['description', /<meta\s+name="description"/g],
+          ['canonical', /<link\s+rel="canonical"/g],
+          ['h1', /<h1[\s>]/g],
+        ] as const) {
+          expect(html.match(patron)?.length ?? 0, `${nombre} en ${archivo}`).toBe(1)
+        }
+        expect(html, archivo).not.toMatch(/undefined|NaN|null/)
+      }
+    }
+  })
+
+  test('bajo el umbral llevan noindex y no están en el sitemap; sobre el umbral, ni una cosa ni la otra', () => {
+    let bajo = 0
+    for (const idioma of ['es', 'en'] as const) {
+      for (const categoria of categorias) {
+        const archivo = archivoDeCategoria(idioma, categoria.slug[idioma])
+        const robots = etiqueta(leer(archivo), /<meta\s+name="robots"\s+content="([^"]*)"/g)
+        const raro = localesDe(categoria) < MIN_INDEXABLE
+        if (raro) {
+          bajo += 1
+          expect(robots, archivo).toEqual(['noindex, follow'])
+        } else {
+          expect(robots, archivo).toEqual([])
+        }
+      }
+    }
+    // Si el umbral deja de dejar alguna fuera, esta prueba ya no comprueba nada: que avise.
+    expect(bajo, 'ninguna categoría queda bajo el umbral').toBeGreaterThan(0)
+  })
+
+  test('una categoría sin locales no dice "0 lugares" ni lista ejemplos vacíos', () => {
+    for (const categoria of categorias.filter((c) => localesDe(c) === 0)) {
+      const html = leer(archivoDeCategoria('es', categoria.slug.es))
+      expect(html).not.toMatch(/0 lugares|Por ejemplo, \./)
+      expect(html).toContain('todavía no hay lugares')
     }
   })
 })
@@ -481,21 +532,40 @@ test.describe('Lo que no existe y debe seguir sin existir (o avisar)', () => {
 
 test.describe('Estructura ya renderizada', () => {
   /*
-   * Lo que se fija es la estructura de hoy, no la deseable: una vez que React toma el control, el
-   * único `h1` de cualquier página es el lema de la marca (el nombre del local o de la zona pasa a ser
-   * un `h2`), mientras que el HTML servido lleva el nombre como `h1`. Google indexa el DOM
-   * renderizado. Cambiarlo toca la interfaz y no es parte de esta suite. La prueba solo exige UN h1
-   * visible con texto: no fija cuál, así que no avisará de ese cambio.
+   * Google indexa el DOM que queda cuando React toma el control, no el HTML servido. Así que el `h1`
+   * de la página ya renderizada tiene que ser el mismo que trae el archivo: el nombre del local, el de
+   * la zona, el de la categoría o el de la página de información. Es texto escondido a la vista, así que
+   * no cambia lo que se ve. Mientras el catálogo carga, el `h1` es el lema de la marca.
    */
-  for (const ruta of ['', 'zona/condesa', 'lugar/bendito-bocado', 'en/place/bendito-bocado']) {
-    test(`/${ruta}: exactamente un h1 visible, con texto, cuando React toma el control`, async ({
-      page,
-    }) => {
+  const rutas = [
+    '',
+    'en',
+    'zona/condesa',
+    'en/area/condesa',
+    'lugar/bendito-bocado',
+    'en/place/bendito-bocado',
+    'categoria/italiana',
+    'en/category/italian',
+    'categoria/botanas',
+    'info/privacidad',
+    'en/info/privacy',
+    // Un filtro dentro de una zona sigue siendo la zona.
+    'zona/condesa?categoria=italiana',
+  ]
+  for (const ruta of rutas) {
+    test(`/${ruta}: un solo h1, y es el mismo que sirve el archivo`, async ({ page }) => {
+      const archivo = archivoDe(rutaDe(`${BASE}${ruta}`))
+      expect(archivo, `no hay archivo para /${ruta}`).not.toBeNull()
+      const servido = decodificar(
+        (/<h1[^>]*>([\s\S]*?)<\/h1>/.exec(leer(archivo ?? ''))?.[1] ?? '').replace(/<[^>]*>/g, ''),
+      ).trim()
+      expect(servido.length).toBeGreaterThan(0)
+
       await page.addInitScript(() => window.localStorage.setItem('zibata:onboarding-visto', '1'))
       await page.goto(`${BASE}${ruta}`)
-      const h1 = page.locator('h1:visible')
+      const h1 = page.locator('h1')
       await expect(h1).toHaveCount(1)
-      expect(((await h1.textContent()) ?? '').trim().length).toBeGreaterThan(0)
+      await expect(h1).toHaveText(servido)
     })
   }
 })

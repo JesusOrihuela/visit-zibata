@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import type { Category, Place, Plaza } from '../../src/types/domain.ts'
+import { MIN_INDEXABLE } from './categorias.ts'
 import { type Dataset, pagesFor } from './prerender.ts'
 
 /*
@@ -43,17 +44,13 @@ describe.each(idiomas)('metadatos de las páginas (%s)', (idioma) => {
   const todas = paginas[idioma]
   const fichas = data.places.map((place) => ficha(idioma, place.slug))
 
-  it('genera la portada, las zonas, las categorías con locales, las fichas y la información', () => {
-    const conLocales = data.categories.filter((categoria) =>
-      data.places.some((place) =>
-        [...place.giros, ...(place.secundarios ?? [])].some((giro) =>
-          categoria.giros.some((g) => g.id === giro),
-        ),
-      ),
-    ).length
-    expect(conLocales).toBeGreaterThan(0)
+  it('genera la portada, las zonas, una página por cada categoría, las fichas y la información', () => {
     expect(todas).toHaveLength(
-      1 + data.plazas.filter((p) => p.active).length + conLocales + data.places.length + 4,
+      1 +
+        data.plazas.filter((p) => p.active).length +
+        data.categories.length +
+        data.places.length +
+        4,
     )
   })
 
@@ -68,7 +65,9 @@ describe.each(idiomas)('metadatos de las páginas (%s)', (idioma) => {
   it('ningún título ni descripción está vacío ni pasa del tope', () => {
     for (const pagina of todas) {
       expect(pagina.title.length, pagina.href).toBeGreaterThan(0)
-      expect(pagina.title.length, `título de ${pagina.href}`).toBeLessThanOrEqual(60)
+      // Unos 60; las categorías llevan además sus giros y admiten un poco más.
+      const tope = /^\/(?:en\/category|categoria)\//.test(pagina.href) ? 65 : 60
+      expect(pagina.title.length, `título de ${pagina.href}`).toBeLessThanOrEqual(tope)
       expect(pagina.description.length, pagina.href).toBeGreaterThan(0)
       expect(pagina.description.length, `descripción de ${pagina.href}`).toBeLessThanOrEqual(160)
     }
@@ -284,11 +283,46 @@ describe.each(idiomas)('las páginas de categoría (%s)', (idioma) => {
     new Set([...place.giros, ...(place.secundarios ?? [])].map((g) => categoriaDeGiro.get(g)))
   const conLocales = data.categories.filter((c) => data.places.some((p) => idsDe(p).has(c.id)))
 
-  it('hay una por cada categoría con algún local, y ninguna más', () => {
-    expect(conLocales.length).toBeGreaterThan(10)
+  it('hay una por cada categoría de los datos, tenga locales o no, y ninguna más', () => {
+    expect(data.categories.length).toBeGreaterThan(conLocales.length)
     expect(deCategoria.map((p) => p.href).sort()).toEqual(
-      conLocales.map((c) => ruta(c.slug[idioma])).sort(),
+      data.categories.map((c) => ruta(c.slug[idioma])).sort(),
     )
+  })
+
+  it('solo se ofrecen a los buscadores las que llegan al umbral de locales', () => {
+    const bajo: string[] = []
+    for (const categoria of data.categories) {
+      const n = data.places.filter((p) => idsDe(p).has(categoria.id)).length
+      const pagina = de(idioma, ruta(categoria.slug[idioma]))
+      expect(pagina.indexable !== false, categoria.id).toBe(n >= MIN_INDEXABLE)
+      if (n < MIN_INDEXABLE) bajo.push(categoria.id)
+    }
+    // Si ninguna queda bajo el umbral, esta prueba no comprueba nada.
+    expect(bajo.length).toBeGreaterThan(0)
+  })
+
+  it('una categoría sin locales dice que todavía no hay, sin cifras ni ejemplos vacíos', () => {
+    const vacias = data.categories.filter((c) => !conLocales.includes(c))
+    expect(vacias.length).toBeGreaterThan(0)
+    for (const categoria of vacias) {
+      const pagina = de(idioma, ruta(categoria.slug[idioma]))
+      expect(pagina.description).toMatch(idioma === 'es' ? /todavía no hay/ : /no places published/)
+      expect(`${pagina.description} ${pagina.contenido}`).not.toMatch(
+        /0 (lugares|places)|(Por ejemplo|For example), \./,
+      )
+      expect(pagina.jsonLd).toBeUndefined()
+    }
+  })
+
+  it('el título nombra lo que la gente busca cuando la etiqueta es general (hamburguesas, alitas)', () => {
+    const rapida = data.categories.find((c) => c.slug.es === 'hamburguesas')
+    const pagina = de(idioma, ruta(rapida?.slug[idioma] ?? ''))
+    expect(pagina.title).toMatch(idioma === 'es' ? /hamburguesas y alitas/ : /burgers and wings/)
+    // Y nunca nombra un giro con un solo local ("arepas", "memelas").
+    for (const p of todas.filter((x) => x.href.startsWith(ruta('')))) {
+      expect(p.title, p.href).not.toMatch(/arepas|memelas|boba|carnitas/i)
+    }
   })
 
   it('cada una lista exactamente los locales de su categoría, con el mismo criterio que el filtro', () => {
@@ -343,6 +377,10 @@ describe.each(idiomas)('las páginas de categoría (%s)', (idioma) => {
       const destino = ruta(categoria.slug[idioma])
       expect(portada.contenido, `portada -> ${destino}`).toContain(`href="${destino}"`)
     }
+    // Una categoría sin locales no se enlaza desde ningún sitio: no hay a dónde llevar.
+    for (const categoria of data.categories.filter((c) => !conLocales.includes(c))) {
+      expect(portada.contenido).not.toContain(`href="${ruta(categoria.slug[idioma])}"`)
+    }
     for (const place of data.places) {
       const pagina = ficha(idioma, place.slug)
       for (const categoria of data.categories) {
@@ -380,6 +418,6 @@ describe('las páginas de categoría en los dos idiomas', () => {
         .filter(([href]) => /^\/(en\/category|categoria)\//.test(href))
         .map(([, i]) => i)
     expect(posiciones('es')).toEqual(posiciones('en'))
-    expect(posiciones('es').length).toBeGreaterThan(10)
+    expect(posiciones('es').length).toBe(data.categories.length)
   })
 })

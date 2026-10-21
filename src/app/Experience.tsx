@@ -43,6 +43,7 @@ import { type InfoTopic, parsePath, rutaDeCategoria } from '../lib/url-state.ts'
 import type { Catalog, Place } from '../types/domain.ts'
 import { useAppDispatch } from './AppStateContext.tsx'
 import styles from './Experience.module.css'
+import { encabezadoDe } from './encabezado.ts'
 import { useExperience } from './useExperience.ts'
 import { useUrlSync } from './useUrlSync.ts'
 
@@ -465,7 +466,7 @@ function ReadyExperience({ catalog }: { catalog: Catalog }) {
         style={stageStyle}
         data-controls={controlsInRow ? 'row' : 'column'}
       >
-        <h1 className="visually-hidden">{appTitle}</h1>
+        <h1 className="visually-hidden">{encabezadoDe(state, catalog)}</h1>
         <MapErrorBoundary onError={onMapCrash}>
           <Suspense
             fallback={

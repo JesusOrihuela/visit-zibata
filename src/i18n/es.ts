@@ -174,6 +174,9 @@ export const es = {
   'seo.categories': 'Categorías',
   'seo.category.name': '{label} en Zibatá',
   'seo.category.description': '{label} en Zibatá: {lugares} en {zonas}. Por ejemplo, {ejemplos}.',
+  // Con dos o más giros que la etiqueta no dice, el título los nombra: es lo que la gente busca.
+  'seo.category.title': '{label} en Zibatá: {giros}',
+  'seo.category.empty': '{label} en Zibatá: todavía no hay lugares publicados en esta categoría.',
   'seo.category.places': 'Lugares de esta categoría',
   'seo.category.zones': 'Dónde están',
   'seo.category.zoneCount': { one: '{count} zona', other: '{count} zonas' },
