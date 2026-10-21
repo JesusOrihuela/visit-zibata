@@ -333,7 +333,7 @@ describe.each(idiomas)('las páginas de categoría (%s)', (idioma) => {
     for (const categoria of conLocales) {
       const pagina = de(idioma, ruta(categoria.slug[idioma]))
       const n = data.places.filter((p) => idsDe(p).has(categoria.id)).length
-      expect(pagina.description).toMatch(new RegExp('(?<![0-9])' + n + ' (lugares|places)'))
+      expect(pagina.description).toMatch(new RegExp(`(?<![0-9])${n} (lugares|places)`))
     }
   })
 

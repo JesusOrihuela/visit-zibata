@@ -61,7 +61,9 @@ test.describe('Páginas de categoría', () => {
   }) => {
     await openApp(page)
     const antes = await page.evaluate(() => window.history.length)
-    await cápsulas(page).getByRole('link', { name: /^Italiana/ }).click()
+    await cápsulas(page)
+      .getByRole('link', { name: /^Italiana/ })
+      .click()
     await expect(page).toHaveURL(/\/categoria\/italiana$/)
     await cápsulas(page).getByRole('link', { name: /^Bar,/ }).click()
     await expect(page).toHaveURL(/\/categoria\/bar$/)
@@ -88,12 +90,18 @@ test.describe('Páginas de categoría', () => {
   test('dentro de una zona la categoría sigue siendo un filtro de esa zona', async ({ page }) => {
     await openApp(page, { path: 'zona/paseo-zibata' })
     const enlace = cápsulas(page).getByRole('link', { name: /Desayunos y Café/ })
-    await expect(enlace).toHaveAttribute('href', /\/zona\/paseo-zibata\?categoria=desayunos-y-cafe$/)
+    await expect(enlace).toHaveAttribute(
+      'href',
+      /\/zona\/paseo-zibata\?categoria=desayunos-y-cafe$/,
+    )
     await enlace.click()
     await expect(page).toHaveURL(/\/zona\/paseo-zibata\?categoria=desayunos-y-cafe$/)
   })
 
-  test('con Ctrl el enlace no se intercepta: abre una página que existe', async ({ page, context }) => {
+  test('con Ctrl el enlace no se intercepta: abre una página que existe', async ({
+    page,
+    context,
+  }) => {
     await openApp(page)
     const italiana = cápsulas(page).getByRole('link', { name: /^Italiana/ })
     const [nueva] = await Promise.all([
