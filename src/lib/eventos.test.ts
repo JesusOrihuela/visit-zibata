@@ -11,8 +11,8 @@ beforeEach(() => {
   document.documentElement.lang = 'es'
   Object.defineProperty(navigator, 'sendBeacon', {
     configurable: true,
-    value: vi.fn((ruta: string, datos: Blob) => {
-      void datos.text().then((cuerpo) => enviados.push({ ruta, cuerpo }))
+    value: vi.fn((ruta: string, datos: string) => {
+      enviados.push({ ruta, cuerpo: datos })
       return true
     }),
   })
@@ -63,6 +63,30 @@ describe('registrar', () => {
     for (let i = 0; i < 20; i++) registrar('ficha', 'tomassa')
     await vi.waitFor(() => expect(enviados).toHaveLength(1))
     expect(JSON.parse(enviados[0]?.cuerpo ?? '').eventos).toHaveLength(20)
+  })
+
+  it('si sendBeacon falla o lo rechaza, sigue con fetch', async () => {
+    const llamadas: string[] = []
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (ruta: string) => {
+        llamadas.push(ruta)
+        return new Response(null, { status: 204 })
+      }),
+    )
+    for (const sendBeacon of [
+      () => false,
+      () => {
+        throw new Error('bloqueado')
+      },
+    ]) {
+      llamadas.length = 0
+      Object.defineProperty(navigator, 'sendBeacon', { configurable: true, value: sendBeacon })
+      registrar('ficha', 'tomassa')
+      vaciar()
+      await vi.waitFor(() => expect(llamadas).toEqual(['/api/evento']))
+    }
+    vi.unstubAllGlobals()
   })
 
   it('no manda nada si no hay nada', () => {

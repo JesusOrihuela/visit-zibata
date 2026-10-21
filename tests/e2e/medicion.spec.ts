@@ -18,20 +18,6 @@ interface Envio {
 /** Intercepta el endpoint, recuerda los cuerpos y contesta 204 como el Worker. */
 async function capturar(page: Page): Promise<Envio[]> {
   const envios: Envio[] = []
-  // WebKit no deja ver el cuerpo de un `sendBeacon` a la interceptación de Playwright. Se reenvía por
-  // `fetch` con el mismo cuerpo: lo que se comprueba es lo que la guía entrega a `sendBeacon`.
-  await page.addInitScript(() => {
-    navigator.sendBeacon = (url, datos) => {
-      void (datos as Blob).text().then((cuerpo) =>
-        fetch(url, {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: cuerpo,
-        }),
-      )
-      return true
-    }
-  })
   await page.route('**/api/evento', async (route) => {
     envios.push(JSON.parse(route.request().postData() ?? '{}') as Envio)
     await route.fulfill({ status: 204 })

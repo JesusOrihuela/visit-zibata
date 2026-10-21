@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { salidaDe } from '../src/lib/eventos.ts'
 import { atenderApi } from './api.ts'
 import type { Base, Sentencia } from './cuenta.ts'
 import {
@@ -90,6 +91,42 @@ describe('un evento', () => {
     // Una categoría no es una zona ni un lugar.
     expect(eventoDe({ tipo: 'ficha', destino: categoria })).toBeNull()
     expect(eventoDe({ tipo: 'mapa', destino: categoria })).toBeNull()
+  })
+})
+
+describe('lo que la ficha manda y lo que el Worker acepta', () => {
+  // Las claves de los enlaces de contacto de PlaceDetail.tsx. Si se añade uno allí, hay que añadirlo aquí
+  // y en `salidaDe`; esta prueba existe porque un nombre distinto en cada lado se descarta sin avisar.
+  const CLAVES = [
+    'phone',
+    'whatsapp',
+    'website',
+    'instagram',
+    'facebook',
+    'tiktok',
+    'rappi',
+    'uber-eats',
+    'didi-food',
+  ]
+
+  it('cada enlace de contacto se cuenta con un nombre que el Worker guarda', () => {
+    for (const clave of CLAVES) {
+      const salida = salidaDe(clave)
+      expect(salida, `${clave} no tiene nombre de salida`).not.toBeNull()
+      expect(
+        eventoDe({ tipo: 'salida', destino: lugar, detalle: salida }),
+        `${clave} -> ${salida} se descarta`,
+      ).not.toBeNull()
+    }
+  })
+
+  it('y las salidas que el Worker conoce se alcanzan todas: contacto o Cómo llegar', () => {
+    const alcanzables = new Set([...CLAVES.map((clave) => salidaDe(clave)), 'maps'])
+    for (const salida of SALIDAS) expect(alcanzables.has(salida), salida).toBe(true)
+  })
+
+  it('una clave desconocida no se cuenta', () => {
+    expect(salidaDe('myspace')).toBeNull()
   })
 })
 

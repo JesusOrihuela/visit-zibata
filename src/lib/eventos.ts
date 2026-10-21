@@ -65,15 +65,17 @@ export function vaciar(): void {
 }
 
 function enviarLote(cuerpo: string): void {
+  // Texto plano: `text/plain` es una cabecera que el navegador manda sin preguntar, y el Worker lee el
+  // cuerpo como texto sin mirar el tipo. Un `Blob` JSON obligaría a una comprobación previa.
   try {
-    // `Blob` con tipo JSON: `sendBeacon` con texto plano lo mandaría como `text/plain`.
-    const cargado =
-      typeof navigator.sendBeacon === 'function' &&
-      navigator.sendBeacon(RUTA, new Blob([cuerpo], { type: 'application/json' }))
-    if (cargado) return
+    if (typeof navigator.sendBeacon === 'function' && navigator.sendBeacon(RUTA, cuerpo)) return
+  } catch {
+    // Si el navegador lo rechaza, se intenta con `fetch`.
+  }
+  try {
     void fetch(RUTA, {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: { 'content-type': 'text/plain' },
       body: cuerpo,
       keepalive: true,
       // Sin cookies ni credenciales: lo único que viaja es el cuerpo.
@@ -83,6 +85,25 @@ function enviarLote(cuerpo: string): void {
     // Contar es lo accesorio.
   }
 }
+
+/**
+ * Cómo se llama en la medición cada enlace de contacto de una ficha (la lista cerrada `SALIDAS` de
+ * worker/eventos.ts). Lo que no se reconoce devuelve `null` y no se cuenta: mejor perder un clic que
+ * mandar un nombre que el Worker va a descartar.
+ */
+const SALIDA_DE_CONTACTO: Record<string, string> = {
+  phone: 'telefono',
+  whatsapp: 'whatsapp',
+  website: 'web',
+  instagram: 'instagram',
+  facebook: 'facebook',
+  tiktok: 'tiktok',
+  rappi: 'rappi',
+  'uber-eats': 'uber',
+  'didi-food': 'didi',
+}
+
+export const salidaDe = (clave: string): string | null => SALIDA_DE_CONTACTO[clave] ?? null
 
 let escuchando = false
 
