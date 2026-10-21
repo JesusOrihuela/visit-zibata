@@ -1,4 +1,13 @@
-import { createContext, type Dispatch, type ReactNode, useContext, useReducer } from 'react'
+import {
+  createContext,
+  type Dispatch,
+  type ReactNode,
+  useCallback,
+  useContext,
+  useReducer,
+  useRef,
+} from 'react'
+import { medirAccion } from './medicion.ts'
 import { type AppAction, type AppState, appReducer, initialAppState } from './state.ts'
 
 const StateContext = createContext<AppState | null>(null)
@@ -12,8 +21,16 @@ export function AppStateProvider({
   initialState?: AppState
 }) {
   const [state, dispatch] = useReducer(appReducer, initialState)
+  const ultimo = useRef(state)
+  ultimo.current = state
+  // Cada acción pasa por la medición antes de llegar al reductor (ver medicion.ts). La identidad de
+  // la función no cambia nunca, así que quien la use en un efecto no se vuelve a ejecutar.
+  const medido = useCallback((accion: AppAction) => {
+    medirAccion(accion, ultimo.current)
+    dispatch(accion)
+  }, [])
   return (
-    <DispatchContext value={dispatch}>
+    <DispatchContext value={medido}>
       <StateContext value={state}>{children}</StateContext>
     </DispatchContext>
   )

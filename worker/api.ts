@@ -10,7 +10,9 @@
  */
 import { base64url, cumpleLaPrueba, digestDe } from '../src/lib/prueba-de-trabajo.ts'
 import { type EntornoAcceso, puedeVerElPanel } from './acceso.ts'
+import { fechaLocal } from './analitica.ts'
 import { ALTA, type Base, huella, nuevaCuenta, RESOLVER, secretoDe } from './cuenta.ts'
+import { APUNTE_EVENTO, envioDe, MAXIMO_BYTES } from './eventos.ts'
 import {
   ANADIR,
   CUANTOS_TIENE,
@@ -92,6 +94,42 @@ export async function atenderApi(peticion: Request, entorno: EntornoApi): Promis
 
   // Sin base no hay identidad posible. Se dice, en vez de fallar de una forma rara.
   if (!entorno.ANALITICA) return json({ error: 'sin base de datos' }, 503)
+
+  /*
+   * Los eventos de uso (ver worker/eventos.ts). No piden cuenta ni miran quién los manda: ni la
+   * credencial ni el user agent ni la IP entran en la cuenta, y lo que se guarda es un contador por
+   * día. Responde 204 aunque no haya nada que guardar o la tabla no exista todavía: contar es lo
+   * accesorio, y quien lo envía (un `sendBeacon`) ni siquiera lee la respuesta.
+   */
+  if (ruta === '/api/evento' && peticion.method === 'POST') {
+    const declarado = Number(peticion.headers.get('content-length') ?? 0)
+    if (declarado > MAXIMO_BYTES) return new Response(null, { status: 413 })
+    const texto = await peticion.text()
+    if (texto.length > MAXIMO_BYTES) return new Response(null, { status: 413 })
+    let cuerpo: unknown
+    try {
+      cuerpo = JSON.parse(texto)
+    } catch {
+      return new Response(null, { status: 400 })
+    }
+    const envio = envioDe(cuerpo)
+    if (!envio) return new Response(null, { status: 400 })
+    if (envio.eventos.length > 0) {
+      const fecha = fechaLocal(new Date())
+      try {
+        await entorno.ANALITICA.batch(
+          envio.eventos.map((evento) =>
+            (entorno.ANALITICA as Base)
+              .prepare(APUNTE_EVENTO)
+              .bind(fecha, evento.tipo, evento.destino, evento.detalle, envio.idioma),
+          ),
+        )
+      } catch (error) {
+        console.error('[eventos]', error)
+      }
+    }
+    return new Response(null, { status: 204, headers: { 'cache-control': 'no-store' } })
+  }
 
   /*
    * El alta. El secreto lo trae el navegador, no lo reparte el servidor, porque es él quien tuvo que

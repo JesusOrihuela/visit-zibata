@@ -1,6 +1,7 @@
 import { Check, Share2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { t } from '../../i18n/index.ts'
+import { registrar } from '../../lib/eventos.ts'
 import { canShare, placeUrl, type ShareOutcome, share } from '../../lib/share.ts'
 import styles from './ShareButton.module.css'
 
@@ -72,7 +73,11 @@ export function ShareButton({
             title: `${name} · ${t('app.name')}`,
             text: t('share.text', { name, giros, plaza: plazaName }),
             url: placeUrl(slug),
-          }).then(acusar)
+          }).then((salida) => {
+            // Cuenta lo que se llegó a compartir o copiar, no el botón pulsado y cancelado.
+            if (salida === 'shared' || salida === 'copied') registrar('compartir', slug)
+            acusar(salida)
+          })
         }}
       >
         {copiado ? <Check aria-hidden="true" /> : <Share2 aria-hidden="true" />}

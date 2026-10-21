@@ -32,6 +32,31 @@ CREATE TABLE IF NOT EXISTS comparticiones (
   PRIMARY KEY (fecha, ruta)
 );
 
+-- Lo que la gente hace dentro de la guía, contado.
+--
+-- Es la misma promesa que `visitas`: un contador por día, nunca un registro por evento. Cada fila dice
+-- "el 5 de octubre, la ficha de tomassa se abrió 12 veces desde la aplicación, en español". No hay
+-- identificador, ni cuenta, ni texto libre: `tipo` es una lista cerrada, `destino` es un lugar, una
+-- zona o una categoría del catálogo (o una palabra de la lista de su tipo) y `detalle` solo existe en
+-- las salidas (a dónde: maps, web, whatsapp…). Lo que no está en la lista no se guarda
+-- (ver worker/eventos.ts).
+--
+-- `origen` lo apunta el servidor al servir una página: la clase de la que llegó la entrada (buscador,
+-- redes, mensajeria, directo, otro). Se guarda la clase, nunca el sitio ni la dirección.
+--
+-- Los clics de salida son intención, no visita al local.
+CREATE TABLE IF NOT EXISTS eventos (
+  fecha   TEXT    NOT NULL,            -- AAAA-MM-DD, hora de Querétaro
+  tipo    TEXT    NOT NULL,            -- ficha | salida | compartir | busqueda | filtro | mapa | idioma | origen
+  destino TEXT    NOT NULL,            -- slug de lugar o zona, id de categoría, o una palabra de la lista
+  detalle TEXT    NOT NULL DEFAULT '', -- solo en las salidas
+  idioma  TEXT    NOT NULL,            -- es | en
+  cuenta  INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (fecha, tipo, destino, detalle, idioma)
+);
+
+CREATE INDEX IF NOT EXISTS eventos_por_fecha ON eventos (fecha);
+
 -- Las sugerencias de "Sugiere un cambio".
 --
 -- No cuelgan de ninguna cuenta a proposito: mandar un recado no es guardar algo tuyo, y obligar a

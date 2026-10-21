@@ -195,3 +195,56 @@ if (enlaces.length > 0) {
       '  no cuánta gente lo abrió.\n',
   )
 }
+
+/*
+ * Lo que la gente hace dentro de la guía (ver worker/eventos.ts). Son contadores por día: no dicen
+ * quién, y los clics de salida son intención de ir o contactar, no una visita al local.
+ */
+interface FilaEvento {
+  tipo: string
+  destino: string
+  detalle: string
+  veces: number
+}
+
+const eventos = `
+SELECT tipo, destino, detalle, SUM(cuenta) AS veces
+  FROM eventos
+ WHERE fecha >= date('now', '-${dias} days')
+ GROUP BY tipo, destino, detalle
+ ORDER BY tipo, veces DESC
+`.trim()
+
+let usos: FilaEvento[] = []
+try {
+  usos = consultar<FilaEvento>(eventos)
+} catch {
+  // La tabla es posterior a las demás: en una base que no la tiene todavía se sigue sin ella.
+  console.log(
+    'Sin tabla de eventos. Créala con `npm run analitica:esquema` para medir el uso de la guía.\n',
+  )
+}
+
+const TITULOS: Record<string, string> = {
+  origen: 'De dónde llegaron las entradas',
+  ficha: 'Fichas abiertas dentro de la guía (las entradas directas están arriba)',
+  salida: 'Salidas a enlaces (intención, no visita al local)',
+  compartir: 'Lugares compartidos',
+  busqueda: 'Búsquedas (solo si hubo resultados, nunca el texto)',
+  filtro: 'Filtros elegidos',
+  mapa: 'Uso del mapa 3D',
+  idioma: 'Cambios de idioma',
+}
+
+for (const tipo of Object.keys(TITULOS)) {
+  const filasDelTipo = usos.filter((fila) => fila.tipo === tipo)
+  if (filasDelTipo.length === 0) continue
+  const etiqueta = (fila: FilaEvento) =>
+    fila.detalle ? `${fila.destino} -> ${fila.detalle}` : fila.destino
+  const ancho = Math.max(...filasDelTipo.map((fila) => etiqueta(fila).length))
+  console.log(`${TITULOS[tipo]}\n`)
+  for (const fila of filasDelTipo.slice(0, 10)) {
+    console.log(`  ${etiqueta(fila).padEnd(ancho)}  ${String(fila.veces).padStart(5)}`)
+  }
+  console.log('')
+}

@@ -18,6 +18,7 @@ import { DEFAULT_PLAZA_TONE, plazaTones } from '../../config/palette.ts'
 import { useCatalog } from '../../data/CatalogContext.tsx'
 import { locale, localized, t } from '../../i18n/index.ts'
 import { assetUrl } from '../../lib/assets.ts'
+import { registrar } from '../../lib/eventos.ts'
 import { focusPanelHeading } from '../../lib/focus.ts'
 import { placeDirections, telUrl, whatsappUrl } from '../../lib/maps-url.ts'
 import type { LocalizedText, Place, Plaza } from '../../types/domain.ts'
@@ -30,6 +31,13 @@ import styles from './PlaceDetail.module.css'
 import { PlacePicture } from './PlacePicture.tsx'
 import { girosOf, girosSecundariosOf } from './placeIcon.ts'
 import { ShareButton } from './ShareButton.tsx'
+
+/** Cómo se llama cada salida en la medición (lista cerrada de worker/eventos.ts). */
+const SALIDA_MEDIDA: Record<string, string> = {
+  phone: 'telefono',
+  'uber-eats': 'uber',
+  'didi-food': 'didi',
+}
 
 /**
  * El aviso de cierre temporal, antes del horario porque es lo único que hay que leer antes de salir
@@ -345,6 +353,7 @@ export function PlaceDetail({ place, plaza, backLabel, onBack, onClose }: PlaceD
         <a
           className={styles.directions}
           href={directions.url}
+          onClick={() => registrar('salida', place.id, 'maps')}
           target="_blank"
           rel="noopener noreferrer"
           aria-describedby="directions-hint"
@@ -408,6 +417,7 @@ export function PlaceDetail({ place, plaza, backLabel, onBack, onClose }: PlaceD
                   className={styles.link}
                   data-tile={link.tile === true}
                   href={link.href}
+                  onClick={() => registrar('salida', place.id, SALIDA_MEDIDA[link.key] ?? link.key)}
                   aria-label={link.label}
                   title={link.label}
                   {...(link.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}

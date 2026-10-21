@@ -61,7 +61,7 @@ const ROBOTS =
 const ZONA = 'America/Mexico_City'
 
 /** `sv-SE` porque su formato de fecha es exactamente `AAAA-MM-DD`, que es como se ordena solo. */
-const fechaLocal = (ahora: Date): string =>
+export const fechaLocal = (ahora: Date): string =>
   new Intl.DateTimeFormat('sv-SE', { timeZone: ZONA }).format(ahora)
 
 /**

@@ -22,6 +22,7 @@ import {
 } from '../../config/map.ts'
 import { t } from '../../i18n/index.ts'
 import { absoluteAssetUrl } from '../../lib/assets.ts'
+import { registrar } from '../../lib/eventos.ts'
 import type { Plaza } from '../../types/domain.ts'
 import { ComingSoonMarkers } from './ComingSoonMarkers.tsx'
 import { focusPlaza, initialCamera, resetCamera, updatePadding } from './camera.ts'
@@ -141,6 +142,16 @@ export default function MapView({
       })
     }
     instance.on('moveend', keepOverZibata)
+
+    // Si el mapa 3D se usa: el primer gesto de la persona (arrastrar, girar, inclinar o acercar),
+    // una vez por carga. Los movimientos de la propia guía no traen `originalEvent`.
+    const GESTOS = ['dragstart', 'rotatestart', 'pitchstart', 'zoomstart'] as const
+    const alPrimerGesto = (evento: { originalEvent?: unknown }) => {
+      if (!evento.originalEvent) return
+      registrar('mapa', 'explora')
+      for (const nombre of GESTOS) instance.off(nombre, alPrimerGesto)
+    }
+    for (const nombre of GESTOS) instance.on(nombre, alPrimerGesto)
 
     instance.getCanvas().setAttribute('aria-label', t('app.mapLabel'))
     instance.addControl(new AttributionControl({ compact: true }), 'bottom-left')
@@ -318,7 +329,11 @@ export default function MapView({
             selectedPlazaId={selectedPlazaId}
             hoveredPlazaId={hoveredPlazaId}
             onHover={setHoveredPlazaId}
-            onSelect={onSelectPlaza}
+            onSelect={(plazaId) => {
+              // Una zona elegida en el mapa (la misma elección también cuenta como filtro).
+              registrar('mapa', plazaId)
+              onSelectPlaza(plazaId)
+            }}
           />
           <ComingSoonMarkers map={map} plazas={plazas} />
           <MapControls map={map} plazas={plazas} compact={compact} />

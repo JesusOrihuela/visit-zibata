@@ -261,10 +261,10 @@ export const es = {
   /*
    * Desde la v4.8.0 la guía sí cuenta visitas, así que el aviso lo dice. El texto es deliberadamente
    * concreto: una promesa vaga ("respetamos tu privacidad") no se puede comprobar, y esta sí, porque
-   * describe exactamente las cuatro columnas que existen en la base.
+   * describe exactamente lo que guardan las tablas de la base (ver worker/esquema.sql): contadores por día.
    */
   'about.privacyCounts':
-    'Para saber qué lugares interesan, nuestro propio servidor suma una visita por página y por día. Eso es todo lo que se guarda: "esta página se abrió 12 veces hoy". No queda registro de quién, ni desde dónde, ni con qué, así que no hay manera de seguir a nadie entre dos visitas. El dato es nuestro: no se vende ni se comparte.',
+    'Para saber qué lugares interesan, nuestro propio servidor suma una visita por página y por día, y la guía suma, también por día, cuántas veces se abre cada lugar, a qué enlaces se sale (el mapa, la web, el teléfono, WhatsApp…), qué categorías y zonas se eligen, si se usó el mapa o el cambio de idioma y si una búsqueda dio resultados o no. De dónde llegó cada entrada solo se apunta la clase: buscador, red social, mensajería, directo u otro. Todo son contadores: "esta página se abrió 12 veces hoy". No se guarda lo que escribes en el buscador, y no queda registro de quién eres, ni de tu dirección, ni de tu equipo, así que no hay manera de seguir a nadie entre dos visitas. Si tu navegador pide que no se le rastree (Global Privacy Control o No rastrear), la guía no envía nada. El dato es nuestro: no se vende ni se comparte.',
   'about.privacyBody':
     'Los lugares que abres y el idioma se guardan únicamente en este navegador. Tus favoritos, tus calificaciones y las visitas que marcas se guardan aquí y además se envían para que no se pierdan y para que el número de personas que guardaron cada lugar sea cierto: viajan atados a un identificador al azar, sin correo, sin nombre y sin nada que diga quién eres. Tus calificaciones no se publican nunca, ni siquiera como promedio; sirven para ordenar la guía y no salen del servidor. Ese identificador vive solo en este navegador, así que si borras los datos del sitio se pierde y empiezas de cero. Si escribes en "Sugiere un cambio", lo que escribas se guarda para poder atenderlo, junto con el contacto que dejes si decides dejarlo; eso no va atado a ningún identificador.',
   'about.privacyLocation':

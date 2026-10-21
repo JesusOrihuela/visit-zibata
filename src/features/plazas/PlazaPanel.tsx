@@ -5,6 +5,7 @@ import { EmptyState } from '../../components/ui/EmptyState.tsx'
 import { DEFAULT_PLAZA_TONE, plazaTones } from '../../config/palette.ts'
 import { useCatalog } from '../../data/CatalogContext.tsx'
 import { localized, t } from '../../i18n/index.ts'
+import { registrar } from '../../lib/eventos.ts'
 import { focusPanelHeading } from '../../lib/focus.ts'
 import { plazaDirectionsUrl } from '../../lib/maps-url.ts'
 import type { Place, Plaza } from '../../types/domain.ts'
@@ -98,6 +99,7 @@ export function PlazaPanel({
             <a
               className={styles.inlineLink}
               href={plazaDirectionsUrl(plaza)}
+              onClick={() => registrar('salida', plaza.id, 'maps')}
               target="_blank"
               rel="noopener noreferrer"
             >
