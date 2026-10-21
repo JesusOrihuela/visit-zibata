@@ -453,8 +453,8 @@ test.describe('Estructura ya renderizada', () => {
    * Lo que se fija es la estructura de hoy, no la deseable: una vez que React toma el control, el
    * único `h1` de cualquier página es el lema de la marca (el nombre del local o de la zona pasa a ser
    * un `h2`), mientras que el HTML servido lleva el nombre como `h1`. Google indexa el DOM
-   * renderizado. Cambiarlo toca la interfaz y no es parte de esta suite; si se cambia, esta prueba
-   * falla y hay que actualizarla a propósito.
+   * renderizado. Cambiarlo toca la interfaz y no es parte de esta suite. La prueba solo exige UN h1
+   * visible con texto: no fija cuál, así que no avisará de ese cambio.
    */
   for (const ruta of ['', 'zona/condesa', 'lugar/bendito-bocado', 'en/place/bendito-bocado']) {
     test(`/${ruta}: exactamente un h1 visible, con texto, cuando React toma el control`, async ({
