@@ -1,5 +1,5 @@
 import { expect, type Page, test } from '@playwright/test'
-import { openApp, panel } from './helpers.ts'
+import { openApp, panel, waitForMap } from './helpers.ts'
 
 /*
  * La medición propia (worker/eventos.ts y lib/eventos.ts), vista desde el navegador: qué sale, con
@@ -18,6 +18,20 @@ interface Envio {
 /** Intercepta el endpoint, recuerda los cuerpos y contesta 204 como el Worker. */
 async function capturar(page: Page): Promise<Envio[]> {
   const envios: Envio[] = []
+  // WebKit no deja ver el cuerpo de un `sendBeacon` a la interceptación de Playwright. Se reenvía por
+  // `fetch` con el mismo cuerpo: lo que se comprueba es lo que la guía entrega a `sendBeacon`.
+  await page.addInitScript(() => {
+    navigator.sendBeacon = (url, datos) => {
+      void (datos as Blob).text().then((cuerpo) =>
+        fetch(url, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: cuerpo,
+        }),
+      )
+      return true
+    }
+  })
   await page.route('**/api/evento', async (route) => {
     envios.push(JSON.parse(route.request().postData() ?? '{}') as Envio)
     await route.fulfill({ status: 204 })
@@ -136,5 +150,30 @@ test.describe('Medición de uso', () => {
     await expect.poll(() => todos(envios).length).toBeGreaterThan(0)
     expect(todos(envios)).toContainEqual({ tipo: 'idioma', destino: 'en' })
     expect(envios.at(-1)?.idioma).toBe('en')
+  })
+
+  test('arrastrar el mapa 3D cuenta un único gesto de exploración por carga', async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name !== 'desktop', 'el arrastre con ratón es de escritorio')
+    const envios = await capturar(page)
+    await openApp(page)
+    await waitForMap(page)
+    const lienzo = page.locator('canvas.maplibregl-canvas')
+    const caja = await lienzo.boundingBox()
+    if (!caja) throw new Error('el mapa no tiene lienzo')
+    const x = caja.x + caja.width / 2
+    const y = caja.y + caja.height / 2
+    for (let vez = 0; vez < 2; vez++) {
+      await page.mouse.move(x, y)
+      await page.mouse.down()
+      await page.mouse.move(x + 80, y + 40, { steps: 8 })
+      await page.mouse.up()
+    }
+    await ocultarPestana(page)
+    await expect.poll(() => todos(envios).length).toBeGreaterThan(0)
+    expect(todos(envios).filter((e) => e.tipo === 'mapa' && e.destino === 'explora')).toHaveLength(
+      1,
+    )
   })
 })
