@@ -24,9 +24,9 @@ test.describe('Interacción táctil', () => {
   test('las pastillas de categoría y el buscador responden al tacto', async ({ page }) => {
     await openApp(page)
     const categories = page.getByRole('list', { name: 'Categorías' }).first()
-    await categories.getByRole('button', { name: /Postres/ }).tap()
-    await expect(categories.getByRole('button', { name: /Postres/ })).toHaveAttribute(
-      'aria-pressed',
+    await categories.getByRole('link', { name: /Postres/ }).tap()
+    await expect(categories.getByRole('link', { name: /Postres/ })).toHaveAttribute(
+      'aria-current',
       'true',
     )
     const search = page.getByRole('searchbox', { name: 'Buscar lugares' })

@@ -22,6 +22,7 @@ interface PlazaPanelProps {
   filtersActive: boolean
   activeCategoryId: string | null
   onCategoryChange: (categoryId: string | null) => void
+  categoryHref: (categoryId: string | null) => string
   onClearFilters: () => void
   onOpenPlace: (place: Place) => void
   onClose: () => void
@@ -34,6 +35,7 @@ export function PlazaPanel({
   filtersActive,
   activeCategoryId,
   onCategoryChange,
+  categoryHref,
   onClearFilters,
   onOpenPlace,
   onClose,
@@ -117,6 +119,7 @@ export function PlazaPanel({
           totalCount={places.length}
           activeId={activeCategoryId}
           onChange={onCategoryChange}
+          hrefFor={categoryHref}
           label={t('filters.categories')}
         />
       )}

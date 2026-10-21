@@ -4,12 +4,14 @@
  *   /                                 inicio
  *   /zona/paseo-zibata                zona seleccionada
  *   /lugar/tomassa                    ficha de un lugar (su plaza se deduce)
- *   /zona/paseo-zibata?categoria=italiana
+ *   /categoria/italiana               una categoría sola: su propia página
+ *   /zona/paseo-zibata?categoria=italiana   una categoría dentro de una zona: un filtro
  *   /info/privacidad                  una página de información
  *
  *   /en/                              lo mismo en inglés, con los segmentos traducidos
  *   /en/area/paseo-zibata
  *   /en/place/tomassa
+ *   /en/category/italian
  *   /en/area/paseo-zibata?category=italian
  *   /en/info/privacy
  *
@@ -59,7 +61,8 @@ const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
  * y Vite va en modo `mpa` a propósito, sin reserva, para que un camino inventado dé 404 de verdad.
  * Acotarla a estas rutas conserva esa propiedad también mientras se desarrolla.
  */
-export const APP_ROUTE = /^(?:en\/?)?(?:(?:lugar|zona|place|area|info)\/[a-z0-9-]+)?$/
+export const APP_ROUTE =
+  /^(?:en\/?)?(?:(?:lugar|zona|categoria|place|area|category|info)\/[a-z0-9-]+)?$/
 
 export interface UrlState {
   locale: Locale
@@ -105,6 +108,8 @@ export function parsePath(pathname: string, search: string, base: string): UrlSt
   if (slug && SLUG.test(slug)) {
     if (kind === words.plaza) state.plazaSlug = slug
     if (kind === words.place) state.placeSlug = slug
+    // Una categoría sola es una página, con su ruta. Dentro de una zona sigue siendo `?categoria=`.
+    if (kind === words.category) state.categorySlug = slug
     if (kind === words.info) {
       const topic = INFO_TOPICS.find((candidate) => INFO_SLUGS[locale][candidate] === slug)
       if (topic) state.infoTopic = topic
@@ -130,7 +135,22 @@ export function buildPath(state: UrlState, base: string): string {
   let path = prefix
   if (state.placeSlug) path = `${inner}${words.place}/${state.placeSlug}`
   else if (state.plazaSlug) path = `${inner}${words.plaza}/${state.plazaSlug}`
+  // Una categoría sola tiene una única dirección: su página. `?categoria=` se queda para el filtro de
+  // una zona, que no es una página y cuyo canónico es el de la zona.
+  else if (state.categorySlug) return `${inner}${words.category}/${state.categorySlug}`
   return state.categorySlug ? `${path}?${words.category}=${state.categorySlug}` : path
+}
+
+/**
+ * La vista a la que pertenece una ruta, sin la categoría que la filtra. Sirve para decidir si un
+ * cambio de dirección es otra pantalla (una entrada de historial) o un ajuste de la misma: pasar de
+ * `/` a `/categoria/italiana` es filtrar la portada, y atrás no debe recorrer las cápsulas.
+ */
+export function vistaDe(path: string): string {
+  const sinConsulta = path.split('?')[0] ?? path
+  const sinCategoria = sinConsulta.replace(/\/(?:categoria|category)\/[a-z0-9-]+$/, '')
+  // Sin barra final, salvo la raíz: `/en` y `/en/` son la misma vista.
+  return sinCategoria.replace(/\/+$/, '') || '/'
 }
 
 /**
@@ -173,6 +193,18 @@ export function pathFromLegacyHash(hash: string, base: string): string | null {
  */
 export const rutaDeLugar = (slug: string, locale: Locale, base: string): string =>
   buildPath({ locale, placeSlug: slug, plazaSlug: null, categorySlug: null, infoTopic: null }, base)
+
+/**
+ * La dirección tras elegir una categoría desde donde se está: sola, es su página; dentro de una zona,
+ * el filtro de esa zona. Sin categoría es la vista a secas (zona o portada), que es lo que apunta la
+ * cápsula elegida y "Todo".
+ */
+export const rutaDeCategoria = (
+  categorySlug: string | null,
+  plazaSlug: string | null,
+  locale: Locale,
+  base: string,
+): string => buildPath({ locale, placeSlug: null, plazaSlug, categorySlug, infoTopic: null }, base)
 
 export const rutaDeZona = (slug: string, locale: Locale, base: string): string =>
   buildPath({ locale, placeSlug: null, plazaSlug: slug, categorySlug: null, infoTopic: null }, base)

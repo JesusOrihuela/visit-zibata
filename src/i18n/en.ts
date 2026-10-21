@@ -147,6 +147,12 @@ export const en = {
   'seo.nearby': 'More in {plaza}',
   'seo.whatsHere': 'What is here',
   'seo.zones': 'The areas of Zibatá',
+  'seo.categories': 'Categories',
+  'seo.category.name': '{label} in Zibatá',
+  'seo.category.description': '{label} in Zibatá: {lugares} in {zonas}. For example, {ejemplos}.',
+  'seo.category.places': 'Places in this category',
+  'seo.category.zones': 'Where to find them',
+  'seo.category.zoneCount': { one: '{count} area', other: '{count} areas' },
   'seo.backHome': 'See the map of Zibatá',
 
   'share.action': 'Share',

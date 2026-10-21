@@ -19,6 +19,7 @@ async function setup(overrides: Partial<Parameters<typeof PlazaPanel>[0]> = {}) 
     filtersActive: false,
     activeCategoryId: null,
     onCategoryChange: vi.fn(),
+    categoryHref: (id: string | null) => (id ? `/zona/x?categoria=${id}` : '/zona/x'),
     onClearFilters: vi.fn(),
     onOpenPlace: vi.fn(),
     onClose: vi.fn(),
@@ -35,7 +36,7 @@ describe('PlazaPanel', () => {
     expect(screen.getByText('Plaza de prueba')).toBeInTheDocument()
     expect(screen.getByText(/Zona · 3 lugares/)).toBeInTheDocument()
     const categories = screen.getByRole('list', { name: 'Categorías' })
-    expect(within(categories).getAllByRole('button')).toHaveLength(4)
+    expect(within(categories).getAllByRole('link')).toHaveLength(4)
     // El índice es una sola lista: el horario ordena pero ya no parte. Lo que se fija aquí es que
     // estén los tres lugares, en el orden en que queden.
     const indice = screen.getByRole('list', { name: /lugares/i })
@@ -59,15 +60,18 @@ describe('PlazaPanel', () => {
     })
     const chips = within(screen.getByRole('list', { name: 'Categorías' }))
     // "Anuncian" literalmente: la cuenta vive en el nombre accesible, no en la pantalla.
-    expect(chips.getByRole('button', { name: /^Todo/ })).toHaveAccessibleName(/1 lugar/)
-    expect(chips.getByRole('button', { name: /Tacos y antojitos/ })).toHaveAccessibleName(/1 lugar/)
+    expect(chips.getByRole('link', { name: /^Todo/ })).toHaveAccessibleName(/1 lugar/)
+    expect(chips.getByRole('link', { name: /Tacos y antojitos/ })).toHaveAccessibleName(/1 lugar/)
     // Y la que no tiene ninguno no anuncia ninguno: su nombre es solo la categoría.
-    expect(chips.getByRole('button', { name: /Pizza/ })).toHaveAccessibleName('Pizza')
+    expect(chips.getByRole('link', { name: /Pizza/ })).toHaveAccessibleName('Pizza')
   })
 
   it('filtra por categoría dentro de la plaza', async () => {
     const props = await setup()
-    await userEvent.click(screen.getByRole('button', { name: /Tacos y antojitos/ }))
+    const enlace = screen.getByRole('link', { name: /Tacos y antojitos/ })
+    // Dentro de una zona la categoría es un filtro de la zona, no una página aparte.
+    expect(enlace).toHaveAttribute('href', '/zona/x?categoria=tacos-y-antojitos')
+    await userEvent.click(enlace)
     expect(props.onCategoryChange).toHaveBeenCalledWith('tacos-y-antojitos')
   })
 

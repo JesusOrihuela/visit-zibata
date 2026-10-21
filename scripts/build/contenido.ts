@@ -52,6 +52,23 @@ const parrafo = (valor: string | undefined): string => (valor ? `<p>${escaparHtm
 
 const titulo = (valor: string): string => `<h2>${escaparHtml(valor)}</h2>`
 
+/**
+ * Una sección de enlaces: título y lista. Cuando no es el contenido de la página sino una vía para
+ * llegar a otras (las categorías que la cruzan), va en un `data-nosnippet` para que Google no la use
+ * como fragmento; los enlaces se siguen rastreando igual.
+ */
+export interface Seccion {
+  titulo: string
+  enlaces: Enlace[]
+  sinFragmento?: boolean
+}
+
+const seccion = ({ titulo: encabezado, enlaces, sinFragmento }: Seccion): string => {
+  if (enlaces.length === 0) return ''
+  const cuerpo = titulo(encabezado) + lista(enlaces)
+  return sinFragmento ? `<div data-nosnippet>${cuerpo}</div>` : cuerpo
+}
+
 export interface Horario {
   dia: string
   franjas: string[]
@@ -88,6 +105,8 @@ export interface ContenidoDeLugar {
   tituloContacto: string
   vecinos: Enlace[]
   tituloVecinos: string
+  /** Las categorías del local, cada una con su página. */
+  categorias?: Seccion
   volver: Enlace
 }
 
@@ -109,6 +128,7 @@ export function contenidoDeLugar(datos: ContenidoDeLugar): string {
     datos.dias.length > 0 ? titulo(datos.tituloHorario) + horario(datos.dias) : '',
     datos.contacto.length > 0 ? titulo(datos.tituloContacto) + lista(datos.contacto) : '',
     datos.vecinos.length > 0 ? titulo(datos.tituloVecinos) + lista(datos.vecinos) : '',
+    datos.categorias ? seccion(datos.categorias) : '',
     `<p><a href="${escaparHtml(datos.volver.href)}">${escaparHtml(datos.volver.texto)}</a></p>`,
     '</article>',
   ].join('')
@@ -123,6 +143,8 @@ export interface ContenidoDeLista {
   descripcion?: string | string[]
   tituloLista: string
   enlaces: Enlace[]
+  /** Más listas de enlaces debajo de la principal (las categorías, o las zonas de una categoría). */
+  secciones?: Seccion[]
   volver?: Enlace
 }
 
@@ -136,6 +158,7 @@ export function contenidoDeLista(datos: ContenidoDeLista): string {
       .join(''),
     titulo(datos.tituloLista),
     lista(datos.enlaces),
+    (datos.secciones ?? []).map(seccion).join(''),
     datos.volver
       ? `<p><a href="${escaparHtml(datos.volver.href)}">${escaparHtml(datos.volver.texto)}</a></p>`
       : '',

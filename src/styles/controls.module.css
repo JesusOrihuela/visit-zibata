@@ -90,6 +90,8 @@
 
 :where(.pildora) {
   display: inline-flex;
+  /* Una cápsula puede ser un enlace (las categorías tienen página propia). */
+  text-decoration: none;
   align-items: center;
   gap: 0.35rem;
   height: var(--control-h);
@@ -121,7 +123,12 @@
  * formularios, donde la cápsula es una `label` que envuelve un radio escondido: así lo que pinta el
  * relleno es el propio estado del formulario, que no se puede desincronizar de lo que se ve.
  */
-:where(.pildora[aria-pressed="true"], .pildora[aria-checked="true"], .pildora:has(input:checked)) {
+:where(
+  .pildora[aria-pressed="true"],
+  .pildora[aria-checked="true"],
+  .pildora[aria-current="true"],
+  .pildora:has(input:checked)
+) {
   color: var(--sand-25);
   background: var(--color-accent);
   /* Rellena pierde el filete: el relleno ya dibuja el borde. */
@@ -131,6 +138,7 @@
 :where(
   .pildora[aria-pressed="true"]:hover:not(:disabled),
   .pildora[aria-checked="true"]:hover:not(:disabled),
+  .pildora[aria-current="true"]:hover,
   .pildora:has(input:checked):hover
 ) {
   background: var(--hover-strong);

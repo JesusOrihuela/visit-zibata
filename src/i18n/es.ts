@@ -170,6 +170,13 @@ export const es = {
   'seo.whatsHere': 'Qué hay aquí',
   'seo.zones': 'Las zonas de Zibatá',
   'seo.backHome': 'Ver el mapa de Zibatá',
+  // Las páginas de categoría: solo salen en el HTML servido y en los metadatos.
+  'seo.categories': 'Categorías',
+  'seo.category.name': '{label} en Zibatá',
+  'seo.category.description': '{label} en Zibatá: {lugares} en {zonas}. Por ejemplo, {ejemplos}.',
+  'seo.category.places': 'Lugares de esta categoría',
+  'seo.category.zones': 'Dónde están',
+  'seo.category.zoneCount': { one: '{count} zona', other: '{count} zonas' },
 
   'share.action': 'Compartir',
   'share.place': 'Compartir {name}',

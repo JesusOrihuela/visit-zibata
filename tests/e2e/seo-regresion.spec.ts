@@ -76,9 +76,31 @@ const dato = <T>(archivo: string): T =>
       'utf8',
     ),
   ) as T
-const lugares = dato<{ places: { id: string; slug: string; active: boolean }[] }>(
-  'places.json',
-).places
+const lugares = dato<{
+  places: { id: string; slug: string; active: boolean; giros: string[]; secundarios?: string[] }[]
+}>('places.json').places
+const categorias = dato<{
+  categories: { id: string; slug: { es: string; en: string }; giros: { id: string }[] }[]
+}>('categories.json').categories
+const girosDe = (lugar: { giros: string[]; secundarios?: string[] }) => [
+  ...lugar.giros,
+  ...(lugar.secundarios ?? []),
+]
+/** Las categorías que tienen algún local, con la misma regla que el filtro de la aplicación. */
+const categoriasConLocalesPorIdioma = (idioma: 'es' | 'en') =>
+  new Set(
+    categorias
+      .filter((categoria) =>
+        lugares.some((lugar) =>
+          girosDe(lugar).some((giro) => categoria.giros.some((g) => g.id === giro)),
+        ),
+      )
+      .map((categoria) => categoria.slug[idioma]),
+  )
+const categoriasConLocales = new Set([
+  ...categoriasConLocalesPorIdioma('es'),
+  ...categoriasConLocalesPorIdioma('en'),
+])
 const zonas = dato<{ plazas: { id: string; slug: string; active: boolean }[] }>(
   'plazas.json',
 ).plazas
@@ -201,6 +223,12 @@ test.describe('Sitemap', () => {
       expect(rutas.has(`/zona/${zona.slug}`), `falta /zona/${zona.slug}`).toBe(true)
       expect(rutas.has(`/en/area/${zona.slug}`), `falta /en/area/${zona.slug}`).toBe(true)
     }
+    for (const idioma of ['es', 'en'] as const) {
+      for (const slug of categoriasConLocalesPorIdioma(idioma)) {
+        const ruta = idioma === 'es' ? `/categoria/${slug}` : `/en/category/${slug}`
+        expect(rutas.has(ruta), `falta ${ruta}`).toBe(true)
+      }
+    }
     expect(rutas.has('/'), 'falta la portada').toBe(true)
     expect(rutas.has('/en'), 'falta la portada en inglés').toBe(true)
   })
@@ -211,9 +239,14 @@ test.describe('Sitemap', () => {
     for (const { ruta } of paginas) {
       const lugar = /^\/(?:en\/place|lugar)\/(.+)$/.exec(ruta)?.[1]
       const zona = /^\/(?:en\/area|zona)\/(.+)$/.exec(ruta)?.[1]
+      const categoria = /^\/(?:en\/category|categoria)\/(.+)$/.exec(ruta)?.[1]
       if (lugar) expect(activos.has(lugar), `${ruta} no es un local activo`).toBe(true)
       else if (zona) expect(zonasActivas.has(zona), `${ruta} no es una zona activa`).toBe(true)
-      else expect(ruta, 'ruta fuera de las conocidas').toMatch(/^\/(en)?$|^\/(en\/)?info\//)
+      else if (categoria) {
+        expect(categoriasConLocales.has(categoria), `${ruta} no es una categoría con locales`).toBe(
+          true,
+        )
+      } else expect(ruta, 'ruta fuera de las conocidas').toMatch(/^\/(en)?$|^\/(en\/)?info\//)
     }
   })
 
@@ -419,23 +452,21 @@ test.describe('Enlaces internos y recursos', () => {
 })
 
 test.describe('Lo que no existe y debe seguir sin existir (o avisar)', () => {
-  test('?categoria= sirve la misma página con su propio canónico, sin ser una página nueva', async ({
+  test('el filtro de una zona (?categoria=) sigue sirviendo la zona con el canónico de la zona', async ({
     request,
   }) => {
-    // No hay páginas de categoría indexables: el filtro es una vista de la aplicación. Si algún día se
-    // crean (con su canónico propio), esta prueba falla a propósito para que se revise este bloque.
-    const portada = await request.get(BASE)
-    const filtrada = await request.get(`${BASE}?categoria=italiana`)
-    expect(filtrada.status()).toBe(200)
+    // Dentro de una zona la categoría es un filtro, no una página: su canónico es el de la zona. La
+    // redirección de `/?categoria=x` a la página de la categoría la hace el Worker (worker/redireccion.ts),
+    // que `vite preview` no tiene: se prueba aparte, con sus pruebas unitarias.
     const canonico = (html: string) =>
       etiqueta(html, /<link\s+rel="canonical"\s+href="([^"]*)"/g)[0]
-    expect(canonico(await filtrada.text())).toBe(canonico(await portada.text()))
-    const zona = await request.get(`${BASE}zona/condesa?categoria=italiana`)
+    const filtrada = await request.get(`${BASE}zona/condesa?categoria=italiana`)
     const zonaSola = await request.get(`${BASE}zona/condesa`)
-    expect(canonico(await zona.text())).toBe(canonico(await zonaSola.text()))
+    expect(filtrada.status()).toBe(200)
+    expect(canonico(await filtrada.text())).toBe(canonico(await zonaSola.text()))
     expect(
-      locs.some((loc) => loc.includes('categoria')),
-      'el sitemap lista una categoría',
+      locs.some((loc) => loc.includes('?')),
+      'el sitemap lista una URL con parámetros',
     ).toBe(false)
   })
 

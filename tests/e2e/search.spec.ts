@@ -105,7 +105,7 @@ test.describe('Búsqueda y filtros', () => {
       .getByRole('combobox', { name: 'Filtrar por zona' })
       .selectOption({ label: 'Paseo Zibatá' })
     const topCategories = page.getByRole('list', { name: 'Categorías' }).first()
-    await topCategories.getByRole('button', { name: /Desayunos y Café/ }).click()
+    await topCategories.getByRole('link', { name: /Desayunos y Café/ }).click()
 
     const region = panel(page)
     await expect(region.getByRole('heading', { level: 2, name: 'Paseo Zibatá' })).toBeVisible()
@@ -124,17 +124,17 @@ test.describe('Búsqueda y filtros', () => {
      * necesita, porque no puede mirar cuál está llena.
      */
     await expect(
-      topCategories.getByRole('button', { name: /Desayunos y Café/ }),
+      topCategories.getByRole('link', { name: /Desayunos y Café/ }),
     ).toHaveAccessibleName(new RegExp(`${desayunos} lugares`))
-    await expect(topCategories.getByRole('button', { name: /^Todo/ })).toHaveAccessibleName(
+    await expect(topCategories.getByRole('link', { name: /^Todo/ })).toHaveAccessibleName(
       new RegExp(`${placesInPlaza('Paseo Zibatá')} lugares`),
     )
     await expect(page).toHaveURL(/\/zona\/paseo-zibata\?categoria=desayunos-y-cafe$/)
 
     await page.getByRole('button', { name: 'Limpiar filtros' }).first().click()
     await expect(page.getByRole('combobox', { name: 'Filtrar por zona' })).toHaveValue('')
-    await expect(topCategories.getByRole('button', { name: /^Todo/ })).toHaveAttribute(
-      'aria-pressed',
+    await expect(topCategories.getByRole('link', { name: /^Todo/ })).toHaveAttribute(
+      'aria-current',
       'true',
     )
   })
@@ -144,8 +144,10 @@ test.describe('Búsqueda y filtros', () => {
     await page
       .getByRole('list', { name: 'Categorías' })
       .first()
-      .getByRole('button', { name: /^Bar,/ })
+      .getByRole('link', { name: /^Bar,/ })
       .click()
+    // Una categoría sola es su propia página: la barra de direcciones lo dice.
+    await expect(page).toHaveURL(/\/categoria\/bar$/)
     const region = panel(page)
     await expect(region.getByRole('heading', { name: 'Resultados' })).toBeVisible()
     // La cabecera de grupo es un enlace: la zona tiene dirección propia.

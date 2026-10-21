@@ -16,6 +16,7 @@ import {
   parsePath,
   pathFromLegacyHash,
   type UrlState,
+  vistaDe,
 } from '../lib/url-state.ts'
 import type { Catalog, Category } from '../types/domain.ts'
 import { useAppDispatch, useAppState } from './AppStateContext.tsx'
@@ -106,6 +107,21 @@ export function useUrlSync(catalog: Catalog): void {
           ),
         )
       }
+      // El enlace antiguo `/?categoria=x` se lleva a la dirección de la categoría, que es su página.
+      // Solo al cargar: con atrás, reescribirla pelearía con el historial.
+      if (inicial && parsed.categorySlug && category && !place && !plaza && !parsed.infoTopic) {
+        const canonica = buildPath(
+          {
+            locale: localeRef.current,
+            plazaSlug: null,
+            placeSlug: null,
+            categorySlug: category.slug[localeRef.current],
+            infoTopic: null,
+          },
+          BASE,
+        )
+        if (canonica !== currentUrl()) replace(canonica)
+      }
       dispatch({
         type: 'syncFromUrl',
         plazaId: plaza?.active ? plaza.id : null,
@@ -148,8 +164,9 @@ export function useUrlSync(catalog: Catalog): void {
     if (previous === null || path === currentUrl()) return
 
     // Cambiar de plaza, de lugar o de idioma crea una entrada de historial (atrás la deshace); el
-    // filtro de categoría no, porque es un ajuste de la misma vista.
-    const sameView = path.split('?')[0] === previous.split('?')[0]
+    // filtro de categoría no, porque es un ajuste de la misma vista: pasar de `/` a
+    // `/categoria/x` es filtrar la portada, y atrás no debe recorrer las cápsulas una a una.
+    const sameView = vistaDe(path) === vistaDe(previous)
     if (sameView) window.history.replaceState(null, '', path)
     else window.history.pushState(null, '', path)
   }, [

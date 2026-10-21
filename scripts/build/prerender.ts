@@ -23,6 +23,12 @@ import { es } from '../../src/i18n/es.ts'
 import { whatsappUrl } from '../../src/lib/maps-url.ts'
 import { buildPath, INFO_TOPICS, type InfoTopic } from '../../src/lib/url-state.ts'
 import type { Category, Place, Plaza } from '../../src/types/domain.ts'
+import {
+  categoriasDe,
+  conCantidad,
+  lugaresPorCategoria,
+  lista as nombresEnLista,
+} from './categorias.ts'
 import { contenidoDeLista, contenidoDeLugar } from './contenido.ts'
 import { descripcionDeFicha, lugarDe, repetidos } from './metadatos.ts'
 import { bloque, listado, negocio } from './structured-data.ts'
@@ -158,6 +164,20 @@ export function pagesFor(
     )
   const activePlazas = data.plazas.filter((plaza) => plaza.active)
 
+  /*
+   * Cada categoría con algún local tiene su página (`/categoria/x`), y las desde donde se llega a ella
+   * son un enlace de verdad en el HTML servido: la portada, cada zona y cada ficha. Sin esos enlaces
+   * serían páginas huérfanas, que es lo que el sitemap solo no arregla.
+   */
+  const porCategoria = lugaresPorCategoria(data.places, categoryOfGiro)
+  const categoriasConPagina = data.categories.filter(
+    (categoria) => (porCategoria.get(categoria.id)?.length ?? 0) > 0,
+  )
+  const enlaceDeCategoria = (categoria: Category) => ({
+    texto: text(categoria.label, locale),
+    href: route({ categorySlug: categoria.slug[locale] }),
+  })
+
   const pages: Page[] = [
     {
       href: route({}),
@@ -180,6 +200,13 @@ export function pagesFor(
           texto: text(plaza.name, locale),
           href: route({ plazaSlug: plaza.slug }),
         })),
+        secciones: [
+          {
+            titulo: copy['seo.categories'],
+            enlaces: categoriasConPagina.map(enlaceDeCategoria),
+            sinFragmento: true,
+          },
+        ],
       }),
     },
   ]
@@ -217,6 +244,73 @@ export function pagesFor(
           texto: place.name,
           href: route({ placeSlug: place.slug }),
         })),
+        secciones: [
+          {
+            titulo: copy['seo.categories'],
+            enlaces: data.categories
+              .filter((categoria) =>
+                deLaPlaza.some((place) =>
+                  categoriasDe(place, categoryOfGiro).some((otra) => otra.id === categoria.id),
+                ),
+              )
+              .map(enlaceDeCategoria),
+            sinFragmento: true,
+          },
+        ],
+        volver: { texto: copy['seo.backHome'], href: route({}) },
+      }),
+    })
+  }
+
+  for (const categoria of categoriasConPagina) {
+    const lugares = porCategoria.get(categoria.id) ?? []
+    const etiqueta = text(categoria.label, locale)
+    const name = fill(copy['seo.category.name'], { label: etiqueta })
+    const zonas = activePlazas.filter((plaza) =>
+      lugares.some((place) => place.plazaId === plaza.id),
+    )
+    const resumen = fill(copy['seo.category.description'], {
+      label: etiqueta,
+      lugares: conCantidad(copy['places.count'], lugares.length, locale),
+      zonas: conCantidad(copy['seo.category.zoneCount'], zonas.length, locale),
+      ejemplos: nombresEnLista(
+        lugares.slice(0, 3).map((place) => place.name),
+        locale,
+      ),
+    })
+    pages.push({
+      href: route({ categorySlug: categoria.slug[locale] }),
+      lastmod: masReciente(lugares),
+      title: fill(copy['seo.title'], { name }),
+      // Solo lo que dicen los datos: cuántos, en cuántas zonas y tres nombres. Nada de "abierto ahora".
+      description: trim(resumen),
+      jsonLd: listado(
+        name,
+        lugares.map((place) => ({
+          name: place.name,
+          url: absolute(route({ placeSlug: place.slug })),
+        })),
+      ),
+      contenido: contenidoDeLista({
+        nombre: name,
+        descripcion: resumen,
+        tituloLista: copy['seo.category.places'],
+        enlaces: lugares.map((place) => {
+          const zona = plazaById.get(place.plazaId)
+          return {
+            texto: zona ? `${place.name} (${text(zona.name, locale)})` : place.name,
+            href: route({ placeSlug: place.slug }),
+          }
+        }),
+        secciones: [
+          {
+            titulo: copy['seo.category.zones'],
+            enlaces: zonas.map((plaza) => ({
+              texto: text(plaza.name, locale),
+              href: route({ plazaSlug: plaza.slug }),
+            })),
+          },
+        ],
         volver: { texto: copy['seo.backHome'], href: route({}) },
       }),
     })
@@ -342,6 +436,11 @@ export function pagesFor(
         tituloVecinos: fill(copy['seo.nearby'], {
           plaza: plaza ? text(plaza.name, locale) : 'Zibatá',
         }),
+        categorias: {
+          titulo: copy['seo.categories'],
+          enlaces: categoriasDe(place, categoryOfGiro).map(enlaceDeCategoria),
+          sinFragmento: true,
+        },
         volver: { texto: copy['seo.backHome'], href: route({}) },
       }),
     })

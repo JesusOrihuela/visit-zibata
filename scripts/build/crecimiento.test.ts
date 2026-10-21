@@ -66,8 +66,16 @@ describe.each([
   const paginas = pagesFor(idioma, sintetico, '/', '/og/', absoluta)
   const ficha = paginas.find((pagina) => pagina.href === href)
 
-  it('genera la portada, la zona, la ficha y la información', () => {
-    expect(paginas).toHaveLength(1 + 1 + 1 + 4)
+  it('genera la portada, la zona, la categoría, la ficha y la información', () => {
+    expect(paginas).toHaveLength(1 + 1 + 1 + 1 + 4)
+    // La categoría nueva tiene su propia página, con su ruta, y la ficha enlaza a ella.
+    const categoria = paginas.find(
+      (pagina) => pagina.href.includes('belleza') || pagina.href.includes('beauty'),
+    )
+    expect(categoria?.title).toContain(idioma === 'es' ? 'Belleza en Zibatá' : 'Beauty in Zibatá')
+    expect(paginas.find((pagina) => pagina.href.includes('estilo-x'))?.contenido).toContain(
+      categoria?.href ?? 'sin-categoria',
+    )
     expect(ficha).toBeDefined()
   })
 

@@ -25,6 +25,7 @@ import { APUNTE, APUNTE_COMPARTICION, comparticionDe, visitaDe } from './analiti
 import { atenderApi } from './api.ts'
 import type { Base } from './cuenta.ts'
 import { APUNTE_EVENTO, origenDe, pideNoSerMedido } from './eventos.ts'
+import { redireccionDeCategoria } from './redireccion.ts'
 
 /** Lo mínimo de la plataforma que este Worker usa. */
 interface Entorno extends EntornoAcceso {
@@ -86,6 +87,12 @@ export default {
     // Así las 232 páginas y la API conviven sin que ninguna sepa de la otra.
     const api = await atenderApi(peticion, entorno)
     if (api) return api
+
+    // Un enlace antiguo `/?categoria=x` pasa a la página de la categoría (ver redireccion.ts).
+    if (peticion.method === 'GET' || peticion.method === 'HEAD') {
+      const destino = redireccionDeCategoria(new URL(peticion.url))
+      if (destino) return Response.redirect(new URL(destino, peticion.url).href, 301)
+    }
 
     const respuesta = await entorno.ASSETS.fetch(peticion)
     contexto.waitUntil(contar(peticion, respuesta, entorno))
