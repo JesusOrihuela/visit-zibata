@@ -22,7 +22,7 @@ test.describe('Información de la guía', () => {
     await expect(privacy).toBeVisible()
     await expect(privacy).toContainText('no usa cuentas ni cookies de rastreo')
     // Lo que sí se hace también se dice, y en la página que la gente abre, no solo en el repositorio.
-    await expect(privacy).toContainText('una visita por página y por día')
+    await expect(privacy).toContainText('cuántas veces se abre cada página y cada lugar')
     await expect(privacy).toContainText('se envían para que no se pierdan')
     await expect(privacy).toContainText('no se publican nunca, ni siquiera como promedio')
     // Y los términos, en la misma página: una sola dirección que leer antes de usar la guía.

@@ -135,14 +135,15 @@ test.describe('Metadatos del HTML publicado', () => {
     }
   })
 
-  test('en las 234 páginas del sitemap, los títulos y las descripciones no se repiten dentro de un idioma', async ({
+  test('en todas las páginas del sitemap, los títulos y las descripciones no se repiten dentro de un idioma', async ({
     request,
   }) => {
     const sitemap = await (await request.get('sitemap.xml')).text()
     const rutas = [...sitemap.matchAll(/<loc>(?:https?:\/\/[^/]+)?\/([^<]*)<\/loc>/g)].map(
       (m) => m[1] ?? '',
     )
-    expect(rutas).toHaveLength(234)
+    // 234 de siempre y las de categoría: el número exacto lo fija seo-regresion.spec.ts contra los datos.
+    expect(rutas.length).toBeGreaterThan(234)
     const vistos = { es: new Map<string, string>(), en: new Map<string, string>() }
     const repetidos: string[] = []
     for (const ruta of rutas) {
