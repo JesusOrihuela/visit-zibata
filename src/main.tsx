@@ -11,12 +11,16 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { App } from './app/App.tsx'
 import { cargarIdioma, locale } from './i18n/index.ts'
+import { iniciarMedicion } from './lib/eventos.ts'
 
 const root = document.getElementById('root')
 if (!root) throw new Error('No se encontró el elemento #root')
 
 // El idioma del documento sigue al idioma activo: lo usan lectores de pantalla y el propio navegador.
 document.documentElement.lang = locale
+
+// Los eventos de uso salen juntos cuando la pestaña se oculta (ver lib/eventos.ts).
+iniciarMedicion()
 
 /*
  * Se espera al catálogo antes de pintar. Desde que cada idioma viaja por su cuenta, el inglés llega

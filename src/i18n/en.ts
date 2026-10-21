@@ -135,15 +135,26 @@ export const en = {
 
   'brand.by': 'A project by',
 
-  'seo.home.title': 'Visit Zibatá · By locals, for locals',
+  'seo.home.title': 'Visit Zibatá · The local guide to discovering Zibatá',
   'seo.home.description':
-    'Explore Zibatá, Querétaro, on a 3D map and find what each plaza has: hours, contact and directions.',
+    'Discover what is in Zibatá, Querétaro: the businesses and places of each area on a 3D map, with hours, contact and directions.',
   'seo.title': '{name} · Visit Zibatá',
+  'seo.title.zone': '{name} · {plaza} · Visit Zibatá',
   'seo.place.fallback': '{giros} at {plaza}, Zibatá. Hours, contact and directions.',
+  'seo.place.context': '{giros} at {lugar}.',
+  'seo.place.contextLugar': 'At {lugar}.',
   'seo.plaza.fallback': '{name}, Zibatá. What is there, hours and directions.',
   'seo.nearby': 'More in {plaza}',
   'seo.whatsHere': 'What is here',
   'seo.zones': 'The areas of Zibatá',
+  'seo.categories': 'Categories',
+  'seo.category.name': '{label} in Zibatá',
+  'seo.category.description': '{label} in Zibatá: {lugares} in {zonas}. For example, {ejemplos}.',
+  'seo.category.title': '{label} in Zibatá: {giros}',
+  'seo.category.empty': '{label} in Zibatá: there are no places published in this category yet.',
+  'seo.category.places': 'Places in this category',
+  'seo.category.zones': 'Where to find them',
+  'seo.category.zoneCount': { one: '{count} area', other: '{count} areas' },
   'seo.backHome': 'See the map of Zibatá',
 
   'share.action': 'Share',
@@ -225,7 +236,7 @@ export const en = {
   'about.privacyLead':
     'This guide uses no accounts and no tracking cookies, and shares your data with no one. This page also covers the terms of use.',
   'about.privacyCounts':
-    'To know which places people care about, our own server adds one visit per page per day. That is all that is stored: "this page was opened 12 times today". Nothing records who, from where, or with what, so there is no way to follow anyone between two visits. The data is ours: it is neither sold nor shared.',
+    'To understand what users are interested in, we count how many times each page and place is opened, which links are followed, which filters are used, whether a search found results, and what kind of site visitors arrive from. We do not store what you type, your IP, or any identifier, and we neither sell nor share them. If your browser asks not to be tracked, we only count the page visit.',
   'about.privacyBody':
     'The places you open and the language are stored only in this browser. Your favourites, your ratings and the visits you log are stored here and also sent, so they are not lost and so the count of people who saved each place is true: they travel attached to a random identifier, with no email, no name and nothing that says who you are. Your ratings are never published, not even as an average; they help order the guide and never leave the server. That identifier lives only in this browser, so clearing the site data loses it and you start over. If you write in "Suggest a change", what you write is stored so it can be acted on, along with the contact you leave if you choose to; that is not tied to any identifier.',
   'about.privacyLocation':

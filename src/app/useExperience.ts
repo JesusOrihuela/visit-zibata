@@ -1,5 +1,5 @@
 /** Datos derivados del estado: resultados, conteos por plaza y qué muestra el panel. */
-import { useDeferredValue, useEffect, useMemo } from 'react'
+import { useDeferredValue, useEffect, useMemo, useRef } from 'react'
 import { useFavorites } from '../features/favorites/useFavorites.ts'
 import {
   applyFilters,
@@ -14,6 +14,7 @@ import { categoryAffinity } from '../features/ranking/rankPlaces.ts'
 import { usePersonalOrder } from '../features/ranking/usePersonalOrder.ts'
 import { createSearchIndex } from '../features/search/searchIndex.ts'
 import { estaAbierto } from '../lib/estado.ts'
+import { registrar } from '../lib/eventos.ts'
 import { searchTerms } from '../lib/text.ts'
 import type { Catalog, Place, Plaza } from '../types/domain.ts'
 import { useAppState } from './AppStateContext.tsx'
@@ -184,6 +185,21 @@ export function useExperience(catalog: Catalog) {
     `${selectedPlaza?.id ?? ''}|${state.activeCategoryId ?? ''}|${state.favoritesOnly}|${hasQuery}`,
   )
   const listed = hasQuery ? browsing : personal
+
+  /*
+   * La búsqueda se cuenta cuando se asienta (la persona deja de escribir), una vez por texto, y solo
+   * como "con resultados" o "sin resultados": el texto no sale de este componente (ver lib/eventos.ts).
+   */
+  const ultimaBusqueda = useRef('')
+  const hallazgos = matching.length
+  useEffect(() => {
+    if (!hasQuery || query === ultimaBusqueda.current) return
+    const reloj = window.setTimeout(() => {
+      ultimaBusqueda.current = query
+      registrar('busqueda', hallazgos > 0 ? 'con-resultados' : 'sin-resultados')
+    }, 1500)
+    return () => window.clearTimeout(reloj)
+  }, [hasQuery, query, hallazgos])
 
   // Cada ficha abierta alimenta el orden personal (solo en este dispositivo).
   useEffect(() => {

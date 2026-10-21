@@ -39,10 +39,11 @@ import { useElementBottom } from '../hooks/useElementBottom.ts'
 import { useIsDesktop, useMediaQuery } from '../hooks/useMediaQuery.ts'
 import { useOnlineStatus } from '../hooks/useOnlineStatus.ts'
 import { t, useLocale } from '../i18n/index.ts'
-import { type InfoTopic, parsePath } from '../lib/url-state.ts'
+import { type InfoTopic, parsePath, rutaDeCategoria } from '../lib/url-state.ts'
 import type { Catalog, Place } from '../types/domain.ts'
 import { useAppDispatch } from './AppStateContext.tsx'
 import styles from './Experience.module.css'
+import { encabezadoDe } from './encabezado.ts'
 import { useExperience } from './useExperience.ts'
 import { useUrlSync } from './useUrlSync.ts'
 
@@ -184,6 +185,25 @@ function ReadyExperience({ catalog }: { catalog: Catalog }) {
   const veryNarrow = useMediaQuery('(max-width: 439px)')
   const experience = useExperience(catalog)
   const { state, panel, favorites, filtersActive } = experience
+  const locale = useLocale()
+  /*
+   * A dónde lleva cada cápsula de categoría: la dirección del estado que resulta de pulsarla. Sola, la
+   * categoría es su propia página; dentro de una zona, el filtro de esa zona. La cápsula elegida y
+   * "Todo" apuntan a la vista sin categoría.
+   */
+  const categoryHref = useCallback(
+    (categoryId: string | null) => {
+      const category = categoryId ? catalog.categoryById.get(categoryId) : undefined
+      const zona = state.selectedPlazaId ? catalog.plazaById.get(state.selectedPlazaId) : undefined
+      return rutaDeCategoria(
+        category?.slug[locale] ?? null,
+        zona?.slug ?? null,
+        locale,
+        import.meta.env.BASE_URL,
+      )
+    },
+    [catalog, locale, state.selectedPlazaId],
+  )
   const panelWidth = usePanelWidth()
   const viewportHeight = useViewportHeight()
   const sheetPeek = panel.kind === 'idle' ? 'small' : 'medium'
@@ -217,7 +237,10 @@ function ReadyExperience({ catalog }: { catalog: Catalog }) {
       import.meta.env.BASE_URL,
     )
     const isDeepLink =
-      target.plazaSlug !== null || target.placeSlug !== null || target.infoTopic !== null
+      target.plazaSlug !== null ||
+      target.placeSlug !== null ||
+      target.categorySlug !== null ||
+      target.infoTopic !== null
     if (!isDeepLink && !hasSeenOnboarding()) dispatch({ type: 'showTutorial' })
   }, [dispatch])
 
@@ -384,6 +407,7 @@ function ReadyExperience({ catalog }: { catalog: Catalog }) {
           filtersActive={filtersActive}
           activeCategoryId={state.activeCategoryId}
           onCategoryChange={setCategory}
+          categoryHref={categoryHref}
           onClearFilters={clearFilters}
           onOpenPlace={openPlace}
           onClose={closePanel}
@@ -442,7 +466,7 @@ function ReadyExperience({ catalog }: { catalog: Catalog }) {
         style={stageStyle}
         data-controls={controlsInRow ? 'row' : 'column'}
       >
-        <h1 className="visually-hidden">{appTitle}</h1>
+        <h1 className="visually-hidden">{encabezadoDe(state, catalog)}</h1>
         <MapErrorBoundary onError={onMapCrash}>
           <Suspense
             fallback={
@@ -521,6 +545,7 @@ function ReadyExperience({ catalog }: { catalog: Catalog }) {
             totalCount={experience.totalCount}
             activeCategoryId={state.activeCategoryId}
             onCategoryChange={setCategory}
+            categoryHref={categoryHref}
             plazas={experience.activePlazas}
             selectedPlazaId={state.selectedPlazaId}
             onPlazaChange={selectPlaza}

@@ -21,6 +21,7 @@
 import { LLEVA_AL_IDIOMA, NOMBRE_DEL_IDIOMA } from '../../i18n/cambioDeIdioma.ts'
 import { availableLocales, type Locale, setLocale, t, useLocale } from '../../i18n/index.ts'
 import { assetUrl } from '../../lib/assets.ts'
+import { registrar } from '../../lib/eventos.ts'
 import { buildPath, parsePath } from '../../lib/url-state.ts'
 import styles from './LocaleSwitch.module.css'
 
@@ -89,6 +90,7 @@ export function LocaleSwitch() {
                   )
                     return
                   event.preventDefault()
+                  registrar('idioma', locale)
                   void setLocale(locale)
                 }}
               >

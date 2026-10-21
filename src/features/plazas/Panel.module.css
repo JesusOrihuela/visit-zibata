@@ -152,6 +152,11 @@
   gap: 0.3rem;
 }
 
+/* Envoltorio de `data-nosnippet`: sin caja, para que el enlace siga siendo el ítem del `.address`. */
+.sinFragmento {
+  display: contents;
+}
+
 .inlineLink {
   composes: enlace from "../../styles/controls.module.css";
   display: inline-flex;

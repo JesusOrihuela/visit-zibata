@@ -142,7 +142,7 @@ test.describe('capas y alineación', () => {
     await waitForMap(page)
     const region = panel(page)
     const heading = region.getByRole('heading', { level: 2 }).first()
-    const firstChip = region.getByRole('list', { name: 'Categorías' }).getByRole('button').first()
+    const firstChip = region.getByRole('list', { name: 'Categorías' }).getByRole('link').first()
     await expect(firstChip).toBeVisible()
     const [headingBox, chipBox] = [await heading.boundingBox(), await firstChip.boundingBox()]
     expect(Math.abs((chipBox?.x ?? 0) - (headingBox?.x ?? 99))).toBeLessThanOrEqual(1)
@@ -161,7 +161,7 @@ test.describe('capas y alineación', () => {
     await expect(arrow).toBeVisible()
     const [arrowBox, chipBox] = [
       await arrow.boundingBox(),
-      await rail.getByRole('button').first().boundingBox(),
+      await rail.getByRole('link').first().boundingBox(),
     ]
     const centro = (box: { y: number; height: number } | null) =>
       (box?.y ?? 0) + (box?.height ?? 0) / 2

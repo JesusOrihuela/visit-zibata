@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import { makePlaza } from '../test/fixtures.ts'
 import { directionsUrl, plazaDirectionsUrl, telUrl, whatsappUrl } from './maps-url.ts'
-import { buildPath, parsePath, pathFromLegacyHash, type UrlState } from './url-state.ts'
+import {
+  buildPath,
+  parsePath,
+  pathFromLegacyHash,
+  rutaDeCategoria,
+  type UrlState,
+  vistaDe,
+} from './url-state.ts'
 
 describe('Google Maps', () => {
   const plaza = makePlaza({ id: 'plaza-norte', coordinates: { lat: 20.6793, lng: -100.315 } })
@@ -152,5 +159,46 @@ describe('enlaces antiguos con hash', () => {
     expect(pathFromLegacyHash('#seccion', BASE)).toBeNull()
     expect(pathFromLegacyHash('#/otra/cosa', BASE)).toBeNull()
     expect(pathFromLegacyHash('#/plaza/<script>', BASE)).toBeNull()
+  })
+})
+
+describe('una categoría sola es una página', () => {
+  it('tiene una única dirección por idioma, y es reversible', () => {
+    const es: UrlState = { ...VACIO, locale: 'es', categorySlug: 'italiana' }
+    const en: UrlState = { ...VACIO, locale: 'en', categorySlug: 'italian' }
+    expect(buildPath(es, BASE)).toBe('/visit-zibata/categoria/italiana')
+    expect(buildPath(en, BASE)).toBe('/visit-zibata/en/category/italian')
+    expect(parsePath('/visit-zibata/categoria/italiana', '', BASE)).toEqual(es)
+    expect(parsePath('/visit-zibata/en/category/italian', '', BASE)).toEqual(en)
+  })
+
+  it('dentro de una zona sigue siendo un filtro, y un lugar manda sobre la categoría', () => {
+    expect(rutaDeCategoria('italiana', 'condesa', 'es', BASE)).toBe(
+      '/visit-zibata/zona/condesa?categoria=italiana',
+    )
+    expect(rutaDeCategoria('italiana', null, 'es', BASE)).toBe('/visit-zibata/categoria/italiana')
+    expect(rutaDeCategoria(null, 'condesa', 'es', BASE)).toBe('/visit-zibata/zona/condesa')
+    expect(rutaDeCategoria(null, null, 'en', BASE)).toBe('/visit-zibata/en')
+  })
+
+  it('el enlace antiguo con parámetro se sigue entendiendo', () => {
+    expect(parsePath('/visit-zibata/', '?categoria=italiana', BASE).categorySlug).toBe('italiana')
+    expect(parsePath('/visit-zibata/en', '?category=italian', BASE).categorySlug).toBe('italian')
+  })
+
+  it('no mezcla árboles ni acepta slugs inválidos', () => {
+    expect(parsePath('/visit-zibata/en/categoria/italiana', '', BASE).categorySlug).toBeNull()
+    expect(parsePath('/visit-zibata/category/italian', '', BASE).categorySlug).toBeNull()
+    expect(parsePath('/visit-zibata/categoria/<x>', '', BASE).categorySlug).toBeNull()
+  })
+
+  it('filtrar la portada es la misma vista, y una zona o un lugar es otra', () => {
+    expect(vistaDe('/visit-zibata/categoria/italiana')).toBe(vistaDe('/visit-zibata/'))
+    expect(vistaDe('/visit-zibata/en/category/italian')).toBe(vistaDe('/visit-zibata/en'))
+    expect(vistaDe('/visit-zibata/categoria/italiana')).toBe(vistaDe('/visit-zibata'))
+    expect(vistaDe('/visit-zibata/zona/condesa?categoria=bebidas')).toBe(
+      vistaDe('/visit-zibata/zona/condesa'),
+    )
+    expect(vistaDe('/visit-zibata/zona/condesa')).not.toBe(vistaDe('/visit-zibata/'))
   })
 })

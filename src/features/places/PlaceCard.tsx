@@ -120,7 +120,9 @@ export function PlaceCard({ place, onOpen, showPlaza = false }: PlaceCardProps) 
             />
           </span>
           <span className={styles.punto} data-estado={estado}>
-            <span className="visually-hidden">{t(ETIQUETA[estado], { name: place.name })}</span>
+            <span className="visually-hidden" data-nosnippet="">
+              {t(ETIQUETA[estado], { name: place.name })}
+            </span>
           </span>
         </span>
         <span className={styles.body}>

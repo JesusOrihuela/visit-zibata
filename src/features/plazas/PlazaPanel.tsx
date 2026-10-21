@@ -5,6 +5,7 @@ import { EmptyState } from '../../components/ui/EmptyState.tsx'
 import { DEFAULT_PLAZA_TONE, plazaTones } from '../../config/palette.ts'
 import { useCatalog } from '../../data/CatalogContext.tsx'
 import { localized, t } from '../../i18n/index.ts'
+import { registrar } from '../../lib/eventos.ts'
 import { focusPanelHeading } from '../../lib/focus.ts'
 import { plazaDirectionsUrl } from '../../lib/maps-url.ts'
 import type { Place, Plaza } from '../../types/domain.ts'
@@ -21,6 +22,7 @@ interface PlazaPanelProps {
   filtersActive: boolean
   activeCategoryId: string | null
   onCategoryChange: (categoryId: string | null) => void
+  categoryHref: (categoryId: string | null) => string
   onClearFilters: () => void
   onOpenPlace: (place: Place) => void
   onClose: () => void
@@ -33,6 +35,7 @@ export function PlazaPanel({
   filtersActive,
   activeCategoryId,
   onCategoryChange,
+  categoryHref,
   onClearFilters,
   onOpenPlace,
   onClose,
@@ -93,15 +96,19 @@ export function PlazaPanel({
               {plaza.address}
             </span>
           )}
-          <a
-            className={styles.inlineLink}
-            href={plazaDirectionsUrl(plaza)}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {t('plaza.directions')}
-            <ArrowUpRight aria-hidden="true" />
-          </a>
+          {/* `data-nosnippet` no vale en un `<a>`: se envuelve, y el envoltorio no genera caja. */}
+          <span className={styles.sinFragmento} data-nosnippet="">
+            <a
+              className={styles.inlineLink}
+              href={plazaDirectionsUrl(plaza)}
+              onClick={() => registrar('salida', plaza.id, 'maps')}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {t('plaza.directions')}
+              <ArrowUpRight aria-hidden="true" />
+            </a>
+          </span>
         </p>
       </header>
 
@@ -112,6 +119,7 @@ export function PlazaPanel({
           totalCount={places.length}
           activeId={activeCategoryId}
           onChange={onCategoryChange}
+          hrefFor={categoryHref}
           label={t('filters.categories')}
         />
       )}

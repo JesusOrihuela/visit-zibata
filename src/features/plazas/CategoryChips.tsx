@@ -1,6 +1,6 @@
 /** Pastillas de categoría con conteo, reutilizadas en la barra de filtros y dentro de cada plaza. */
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { type MouseEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { CategoryIcon } from '../../components/icons/CategoryIcon.tsx'
 import { localized, t } from '../../i18n/index.ts'
 import type { Category } from '../../types/domain.ts'
@@ -12,6 +12,11 @@ interface CategoryChipsProps {
   totalCount?: number
   activeId: string | null
   onChange: (categoryId: string | null) => void
+  /**
+   * La dirección a la que lleva elegir una categoría (o `null`, quitarla) desde donde se está. Cada
+   * cápsula es un enlace de verdad: tiene su página y se puede abrir aparte, copiar o rastrear.
+   */
+  hrefFor: (categoryId: string | null) => string
   label: string
   variant?: 'floating' | 'inline'
 }
@@ -68,12 +73,23 @@ function useHorizontalScroll(categories: readonly Category[], counts: unknown) {
   return { ref, overflow, sync, scrollBy }
 }
 
+/**
+ * Dentro de la guía se filtra sin recargar; con Ctrl, Cmd, Mayúsculas, Alt o el botón del medio, el
+ * navegador abre la página de la categoría, que existe de verdad. Mismo gesto que el cambio de idioma.
+ */
+const alPulsar = (accion: () => void) => (event: MouseEvent<HTMLAnchorElement>) => {
+  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return
+  event.preventDefault()
+  accion()
+}
+
 export function CategoryChips({
   categories,
   counts,
   totalCount,
   activeId,
   onChange,
+  hrefFor,
   label,
   variant = 'inline',
 }: CategoryChipsProps) {
@@ -85,39 +101,39 @@ export function CategoryChips({
         <ul className={styles.chips} aria-label={label}>
           <li>
             {/* El conteo va en su propio elemento: sin etiqueta accesible, NVDA lee "Todo19". */}
-            <button
-              type="button"
+            <a
               className={styles.chip}
-              aria-pressed={activeId === null}
+              href={hrefFor(null)}
+              aria-current={activeId === null ? 'true' : undefined}
               aria-label={
                 totalCount === undefined
                   ? undefined
                   : `${t('filters.allCategories')}, ${t('places.count', { count: totalCount })}`
               }
-              onClick={() => onChange(null)}
+              onClick={alPulsar(() => onChange(null))}
             >
               {t('filters.allCategories')}
-            </button>
+            </a>
           </li>
           {categories.map((category) => {
             const count = counts?.get(category.id)
             const active = activeId === category.id
             return (
               <li key={category.id}>
-                <button
-                  type="button"
+                <a
                   className={styles.chip}
-                  aria-pressed={active}
+                  href={hrefFor(active ? null : category.id)}
+                  aria-current={active ? 'true' : undefined}
                   aria-label={
                     count === undefined
                       ? undefined
                       : `${localized(category.label)}, ${t('places.count', { count })}`
                   }
-                  onClick={() => onChange(active ? null : category.id)}
+                  onClick={alPulsar(() => onChange(active ? null : category.id))}
                 >
                   <CategoryIcon name={category.icon} size={16} strokeWidth={2} />
                   {localized(category.label)}
-                </button>
+                </a>
               </li>
             )
           })}

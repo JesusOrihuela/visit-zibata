@@ -17,6 +17,7 @@ function setup(overrides: Partial<ComponentProps<typeof FilterBar>> = {}) {
     totalCount: 4,
     activeCategoryId: null,
     onCategoryChange: vi.fn(),
+    categoryHref: (id) => (id ? `/categoria/${id}` : '/'),
     plazas: plazasFixture,
     selectedPlazaId: null,
     onPlazaChange: vi.fn(),
@@ -39,26 +40,31 @@ describe('FilterBar', () => {
     setup()
     const chips = screen.getByRole('list', { name: 'Categorías' })
     expect(chips).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Todo/ })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('link', { name: /Todo/ })).toHaveAttribute('aria-current', 'true')
     /*
      * La cuenta va en el nombre del control, no dentro de él. En la pantalla se quitó por el mismo
      * motivo que en los interruptores: diecinueve cifras repetidas no dicen más que una, y el
      * número de lo que estás viendo ya lo dice la cabecera del panel, junto a la lista que cuenta.
      * Quien no ve la fila sí la necesita, porque no puede mirar cuál está llena.
      */
-    const desayunos = screen.getByRole('button', { name: /Desayunos y café/ })
+    const desayunos = screen.getByRole('link', { name: /Desayunos y café/ })
     expect(desayunos).toHaveAccessibleName('Desayunos y café, 2 lugares')
     expect(desayunos).not.toHaveTextContent('2')
   })
 
   it('selecciona una categoría y al volver a pulsarla la quita', async () => {
     const props = setup()
-    await userEvent.click(screen.getByRole('button', { name: /Pizza/ }))
+    const enlace = screen.getByRole('link', { name: /Pizza/ })
+    // Es un enlace de verdad: tiene su dirección, y un clic normal filtra sin recargar.
+    expect(enlace).toHaveAttribute('href', '/categoria/pizza')
+    await userEvent.click(enlace)
     expect(props.onCategoryChange).toHaveBeenCalledWith('pizza')
 
     const active = setup({ activeCategoryId: 'pizza' })
-    const [, pizzaActive] = screen.getAllByRole('button', { name: /Pizza/ })
-    expect(pizzaActive).toHaveAttribute('aria-pressed', 'true')
+    const [, pizzaActive] = screen.getAllByRole('link', { name: /Pizza/ })
+    expect(pizzaActive).toHaveAttribute('aria-current', 'true')
+    // La elegida apunta a la vista sin categoría: pulsarla la quita.
+    expect(pizzaActive).toHaveAttribute('href', '/')
     await userEvent.click(pizzaActive as HTMLElement)
     expect(active.onCategoryChange).toHaveBeenCalledWith(null)
   })

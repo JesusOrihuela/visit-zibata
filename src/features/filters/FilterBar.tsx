@@ -41,6 +41,7 @@ interface FilterBarProps {
   totalCount: number
   activeCategoryId: string | null
   onCategoryChange: (categoryId: string | null) => void
+  categoryHref: (categoryId: string | null) => string
   plazas: readonly Plaza[]
   selectedPlazaId: string | null
   onPlazaChange: (plazaId: string | null) => void
@@ -61,6 +62,7 @@ export function FilterBar({
   totalCount,
   activeCategoryId,
   onCategoryChange,
+  categoryHref,
   plazas,
   selectedPlazaId,
   onPlazaChange,
@@ -93,6 +95,7 @@ export function FilterBar({
         totalCount={totalCount}
         activeId={activeCategoryId}
         onChange={onCategoryChange}
+        hrefFor={categoryHref}
         label={t('filters.categories')}
         variant="floating"
       />

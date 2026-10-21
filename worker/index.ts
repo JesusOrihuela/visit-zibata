@@ -6,6 +6,11 @@
  * hace: no lee el cuerpo de la petición, no pone cookies, no mira la IP, no toca el user agent salvo
  * para descartar robots, y no guarda nada de nadie. Lo único que ocurre es que un contador sube.
  *
+ * Desde la medición de eventos hay una excepción, la única: se lee la cabecera `Referer` para saber
+ * si la entrada vino de un buscador, de una red, de un mensaje, de ningún sitio o de otro, y de ella
+ * solo se apunta esa clase (ver `origenDe` en worker/eventos.ts). La dirección de la que se vino no
+ * se guarda ni se registra.
+ *
  * Y la regla que manda sobre todas: **contar jamás puede romper la página**. La respuesta se obtiene
  * primero y se devuelve igual aunque la base no exista, esté caída o falle a mitad. Por eso el
  * apunte va en `waitUntil`, fuera del camino de la respuesta, y envuelto en un `try`.
@@ -19,6 +24,8 @@ import type { EntornoAcceso } from './acceso.ts'
 import { APUNTE, APUNTE_COMPARTICION, comparticionDe, visitaDe } from './analitica.ts'
 import { atenderApi } from './api.ts'
 import type { Base } from './cuenta.ts'
+import { APUNTE_EVENTO, origenDe, pideNoSerMedido } from './eventos.ts'
+import { redireccionDeCategoria } from './redireccion.ts'
 
 /** Lo mínimo de la plataforma que este Worker usa. */
 interface Entorno extends EntornoAcceso {
@@ -52,6 +59,16 @@ async function contar(peticion: Request, respuesta: Response, entorno: Entorno):
   try {
     if (visita) {
       await entorno.ANALITICA.prepare(APUNTE).bind(visita.fecha, visita.ruta, visita.idioma).run()
+      // De dónde llegó, en una de cinco clases. El `Referer` se clasifica y se tira: solo se guarda
+      // la clase (ver `origenDe`). Si la entrada viene de la propia guía no se apunta nada.
+      const origen = pideNoSerMedido(peticion.headers)
+        ? null
+        : origenDe(peticion.headers.get('referer'), new URL(peticion.url).hostname)
+      if (origen) {
+        await entorno.ANALITICA.prepare(APUNTE_EVENTO)
+          .bind(visita.fecha, 'origen', origen, '', visita.idioma)
+          .run()
+      }
     } else if (comparticion) {
       await entorno.ANALITICA.prepare(APUNTE_COMPARTICION)
         .bind(comparticion.fecha, comparticion.ruta)
@@ -70,6 +87,12 @@ export default {
     // Así las 232 páginas y la API conviven sin que ninguna sepa de la otra.
     const api = await atenderApi(peticion, entorno)
     if (api) return api
+
+    // Un enlace antiguo `/?categoria=x` pasa a la página de la categoría (ver redireccion.ts).
+    if (peticion.method === 'GET' || peticion.method === 'HEAD') {
+      const destino = redireccionDeCategoria(new URL(peticion.url))
+      if (destino) return Response.redirect(new URL(destino, peticion.url).href, 301)
+    }
 
     const respuesta = await entorno.ASSETS.fetch(peticion)
     contexto.waitUntil(contar(peticion, respuesta, entorno))

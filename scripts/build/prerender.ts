@@ -20,10 +20,22 @@ import { dirname, join } from 'node:path'
 import type { Plugin } from 'vite'
 import { en } from '../../src/i18n/en.ts'
 import { es } from '../../src/i18n/es.ts'
+import { whatsappUrl } from '../../src/lib/maps-url.ts'
 import { buildPath, INFO_TOPICS, type InfoTopic } from '../../src/lib/url-state.ts'
 import type { Category, Place, Plaza } from '../../src/types/domain.ts'
+import {
+  categoriasDe,
+  conCantidad,
+  girosDeCategoria,
+  lugaresPorCategoria,
+  MIN_INDEXABLE,
+  lista as nombresEnLista,
+} from './categorias.ts'
 import { contenidoDeLista, contenidoDeLugar } from './contenido.ts'
+import { descripcionDeFicha, lugarDe, repetidos } from './metadatos.ts'
+import { robotsTxt } from './robots.ts'
 import { bloque, listado, negocio } from './structured-data.ts'
+import { repartirVecinos } from './vecinos.ts'
 
 type Locale = 'es' | 'en'
 const LOCALES: Locale[] = ['es', 'en']
@@ -44,6 +56,11 @@ interface Page {
    * React lo sustituye al montar (ver scripts/build/contenido.ts).
    */
   contenido?: string
+  /**
+   * `false` si la página existe pero no se ofrece a los buscadores: lleva `noindex, follow` y no entra
+   * en el sitemap. Hoy solo las categorías con menos de `MIN_INDEXABLE` locales.
+   */
+  indexable?: boolean
   /**
    * Cuándo cambió de verdad el contenido de esta página, para el `lastmod` del sitemap.
    *
@@ -77,6 +94,9 @@ const trim = (value: string, max = 160): string => {
   return `${cut.slice(0, cut.lastIndexOf(' '))}…`
 }
 
+/** Hasta dónde llega un título antes de que el buscador lo corte. */
+const TOPE_TITULO = 65
+
 /** Orden de la semana tal como se lee, no como lo guarda el JSON. */
 const DIAS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const
 
@@ -102,7 +122,8 @@ function contactoDe(place: Place): { texto: string; href: string }[] {
   ]
   for (const [clave, nombre] of redes) {
     const url = place.links?.[clave]
-    if (url) enlaces.push({ texto: nombre, href: url })
+    // `whatsapp` es un teléfono (E.164), no una URL: sin pasarlo por `wa.me` el enlace salía relativo.
+    if (url) enlaces.push({ texto: nombre, href: clave === 'whatsapp' ? whatsappUrl(url) : url })
   }
   return enlaces
 }
@@ -124,13 +145,13 @@ const fechaLarga = (fecha: string, locale: Locale): string => {
 const escapeHtml = (value: string): string =>
   value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
-interface Dataset {
+export interface Dataset {
   categories: Category[]
   plazas: Plaza[]
   places: Place[]
 }
 
-function pagesFor(
+export function pagesFor(
   locale: Locale,
   data: Dataset,
   base: string,
@@ -154,6 +175,20 @@ function pagesFor(
     )
   const activePlazas = data.plazas.filter((plaza) => plaza.active)
 
+  /*
+   * Cada categoría con algún local tiene su página (`/categoria/x`), y las desde donde se llega a ella
+   * son un enlace de verdad en el HTML servido: la portada, cada zona y cada ficha. Sin esos enlaces
+   * serían páginas huérfanas, que es lo que el sitemap solo no arregla.
+   */
+  const porCategoria = lugaresPorCategoria(data.places, categoryOfGiro)
+  const categoriasConPagina = data.categories.filter(
+    (categoria) => (porCategoria.get(categoria.id)?.length ?? 0) > 0,
+  )
+  const enlaceDeCategoria = (categoria: Category) => ({
+    texto: text(categoria.label, locale),
+    href: route({ categorySlug: categoria.slug[locale] }),
+  })
+
   const pages: Page[] = [
     {
       href: route({}),
@@ -176,6 +211,13 @@ function pagesFor(
           texto: text(plaza.name, locale),
           href: route({ plazaSlug: plaza.slug }),
         })),
+        secciones: [
+          {
+            titulo: copy['seo.categories'],
+            enlaces: categoriasConPagina.map(enlaceDeCategoria),
+            sinFragmento: true,
+          },
+        ],
       }),
     },
   ]
@@ -213,26 +255,184 @@ function pagesFor(
           texto: place.name,
           href: route({ placeSlug: place.slug }),
         })),
+        secciones: [
+          {
+            titulo: copy['seo.categories'],
+            enlaces: data.categories
+              .filter((categoria) =>
+                deLaPlaza.some((place) =>
+                  categoriasDe(place, categoryOfGiro).some((otra) => otra.id === categoria.id),
+                ),
+              )
+              .map(enlaceDeCategoria),
+            sinFragmento: true,
+          },
+        ],
         volver: { texto: copy['seo.backHome'], href: route({}) },
       }),
     })
   }
 
-  for (const place of data.places) {
+  /*
+   * Una página por cada categoría de los datos, tenga locales o no. Así ninguna dirección que Google
+   * haya llegado a conocer pasa a dar 404 si una categoría se queda sin locales, y una que crece se
+   * abre sola: la página es la misma, lo que cambia es si se ofrece a los buscadores (ver
+   * `MIN_INDEXABLE`). Las que no tienen locales no se enlazan desde ningún sitio.
+   */
+  for (const categoria of data.categories) {
+    const lugares = porCategoria.get(categoria.id) ?? []
+    const etiqueta = text(categoria.label, locale)
+    const name = fill(copy['seo.category.name'], { label: etiqueta })
+    const zonas = activePlazas.filter((plaza) =>
+      lugares.some((place) => place.plazaId === plaza.id),
+    )
+    const resumen =
+      lugares.length === 0
+        ? fill(copy['seo.category.empty'], { label: etiqueta })
+        : fill(copy['seo.category.description'], {
+            label: etiqueta,
+            lugares: conCantidad(copy['places.count'], lugares.length, locale),
+            zonas: conCantidad(copy['seo.category.zoneCount'], zonas.length, locale),
+            ejemplos: nombresEnLista(
+              lugares.slice(0, 3).map((place) => place.name),
+              locale,
+            ),
+          })
+    /*
+     * El título nombra lo que la gente busca cuando la etiqueta es más general ("Comida Rápida" se
+     * busca como "hamburguesas" o "alitas"): los dos giros con más locales que la etiqueta no dice.
+     * Con menos de dos no se añade nada, porque un solo giro suelto sonaría a hueco.
+     */
+    const giros = girosDeCategoria(categoria, lugares, locale).slice(0, 2)
+    const conGiros = fill(copy['seo.title'], {
+      name: fill(copy['seo.category.title'], {
+        label: etiqueta,
+        giros: nombresEnLista(giros, locale),
+      }),
+    })
+    const sinGiros = fill(copy['seo.title'], { name })
+    // Solo si caben en un título (unos 60 caracteres): cortado a media palabra sería peor que corto.
+    const titulo = giros.length >= 2 && conGiros.length <= TOPE_TITULO ? conGiros : sinGiros
+    pages.push({
+      href: route({ categorySlug: categoria.slug[locale] }),
+      lastmod: masReciente(lugares),
+      indexable: lugares.length >= MIN_INDEXABLE,
+      title: titulo,
+      // Solo lo que dicen los datos: cuántos, en cuántas zonas y tres nombres. Nada de "abierto ahora".
+      description: trim(resumen),
+      jsonLd:
+        lugares.length === 0
+          ? undefined
+          : listado(
+              name,
+              lugares.map((place) => ({
+                name: place.name,
+                url: absolute(route({ placeSlug: place.slug })),
+              })),
+            ),
+      contenido: contenidoDeLista({
+        nombre: name,
+        descripcion: resumen,
+        tituloLista: copy['seo.category.places'],
+        enlaces: lugares.map((place) => {
+          const zona = plazaById.get(place.plazaId)
+          return {
+            texto: zona ? `${place.name} (${text(zona.name, locale)})` : place.name,
+            href: route({ placeSlug: place.slug }),
+          }
+        }),
+        secciones: [
+          {
+            titulo: copy['seo.category.zones'],
+            enlaces: zonas.map((plaza) => ({
+              texto: text(plaza.name, locale),
+              href: route({ plazaSlug: plaza.slug }),
+            })),
+          },
+        ],
+        volver: { texto: copy['seo.backHome'], href: route({}) },
+      }),
+    })
+  }
+
+  /*
+   * Los metadatos de todas las fichas se deciden juntos y no de una en una: un título o una descripción
+   * solo se puede distinguir de otro mirando la lista entera. Dos locales de una misma cadena
+   * ("Starbucks", "Luka") salían con el mismo título y a veces con la misma descripción.
+   */
+  const fichas = data.places.map((place) => {
     const plaza = plazaById.get(place.plazaId)
     const giros = place.giros.map((id) => giroLabel.get(id) ?? id)
+    const nombrePlaza = plaza ? text(plaza.name, locale) : undefined
+    return {
+      place,
+      plaza,
+      giros,
+      nombrePlaza,
+      descripcion: text(place.description, locale),
+      // El mismo aviso que abre el cuerpo de la ficha, sin la fecha ni la reapertura: cabe en un fragmento.
+      aviso: place.cierre
+        ? `${copy['closure.title']}. ${copy[`closure.${place.cierre.motivo}`]}`
+        : undefined,
+      contexto: {
+        giros: giros.slice(0, 2),
+        lugar: lugarDe(nombrePlaza),
+        conGiros: copy['seo.place.context'],
+        soloLugar: copy['seo.place.contextLugar'],
+      },
+    }
+  })
+
+  // La zona va en el título solo de los locales cuyo nombre se repite: es lo que los distingue.
+  const mismoNombre = repetidos(fichas.map((ficha) => ficha.place.name))
+  const titulos = fichas.map((ficha, indice) =>
+    mismoNombre.has(indice) && ficha.nombrePlaza
+      ? fill(copy['seo.title.zone'], { name: ficha.place.name, plaza: ficha.nombrePlaza })
+      : fill(copy['seo.title'], { name: ficha.place.name }),
+  )
+
+  const componer = (ficha: (typeof fichas)[number], conContexto: boolean): string =>
+    descripcionDeFicha({
+      descripcion: ficha.descripcion,
+      nombre: ficha.place.name,
+      contexto: ficha.contexto,
+      aviso: ficha.aviso,
+      conContexto,
+    })
+  const primeras = fichas.map((ficha) => componer(ficha, false))
+  const mismaDescripcion = repetidos(primeras)
+  const descripciones = fichas.map((ficha, indice) =>
+    mismaDescripcion.has(indice) ? componer(ficha, true) : (primeras[indice] ?? ''),
+  )
+
+  // A qué locales enlaza cada ficha: el mismo bloque de siempre, repartido entre todos (ver vecinos.ts).
+  const placeById = new Map(data.places.map((place) => [place.id, place]))
+  const vecinosDe = repartirVecinos(
+    data.places.map((place) => ({
+      id: place.id,
+      plazaId: place.plazaId,
+      categorias: [
+        ...new Set(
+          [...place.giros, ...(place.secundarios ?? [])].flatMap((giro) => {
+            const categoria = categoryOfGiro.get(giro)
+            return categoria ? [categoria.id] : []
+          }),
+        ),
+      ],
+    })),
+  )
+
+  fichas.forEach(({ place, plaza, giros }, indice) => {
     const image = `${ogDir}${place.slug}.jpg`
     pages.push({
       href: route({ placeSlug: place.slug }),
-      lastmod: place.verification?.lastVerifiedAt,
-      title: fill(copy['seo.title'], { name: place.name }),
-      description: trim(
-        text(place.description, locale) ||
-          fill(copy['seo.place.fallback'], {
-            giros: giros.join(', '),
-            plaza: plaza ? text(plaza.name, locale) : 'Zibatá',
-          }),
-      ),
+      // La última vez que el dato cambió de verdad: la verificación o, si es más reciente, el cierre.
+      lastmod: [place.verification?.lastVerifiedAt, place.cierre?.desde]
+        .filter((fecha): fecha is string => typeof fecha === 'string')
+        .sort()
+        .at(-1),
+      title: titulos[indice] ?? '',
+      description: descripciones[indice] ?? '',
       image,
       jsonLd: negocio({
         place,
@@ -268,17 +468,22 @@ function pagesFor(
         tituloHorario: copy['place.hours'],
         contacto: contactoDe(place),
         tituloContacto: copy['place.contact'],
-        vecinos: data.places
-          .filter((otro) => otro.plazaId === place.plazaId && otro.id !== place.id)
-          .slice(0, 8)
-          .map((otro) => ({ texto: otro.name, href: route({ placeSlug: otro.slug }) })),
+        vecinos: (vecinosDe.get(place.id) ?? []).flatMap((id) => {
+          const otro = placeById.get(id)
+          return otro ? [{ texto: otro.name, href: route({ placeSlug: otro.slug }) }] : []
+        }),
         tituloVecinos: fill(copy['seo.nearby'], {
           plaza: plaza ? text(plaza.name, locale) : 'Zibatá',
         }),
+        categorias: {
+          titulo: copy['seo.categories'],
+          enlaces: categoriasDe(place, categoryOfGiro).map(enlaceDeCategoria),
+          sinFragmento: true,
+        },
         volver: { texto: copy['seo.backHome'], href: route({}) },
       }),
     })
-  }
+  })
 
   const INFO: Record<
     InfoTopic,
@@ -368,6 +573,7 @@ function comprobarUnicas(html: string, href: string): void {
     ['og:url', /<meta\s+property="og:url"/g],
     ['og:image', /<meta\s+property="og:image"\s/g],
     ['canonical', /<link\s+rel="canonical"/g],
+    ['robots', /<meta\s+name="robots"/g],
     ['title', /<title>/g],
   ]
   for (const [nombre, patron] of unicas) {
@@ -406,6 +612,7 @@ export function prerender(options: { base: string; siteUrl?: string }): Plugin {
       )
 
       const written: { href: string; lastmod?: string }[] = []
+      let escritas = 0
       for (const locale of LOCALES) {
         const pages = byLocale.get(locale) ?? []
         pages.forEach((page, index) => {
@@ -464,6 +671,14 @@ export function prerender(options: { base: string; siteUrl?: string }): Plugin {
             /<link\s+rel="canonical"[^>]*\/>/,
             `<link rel="canonical" href="${escapeHtml(absolute(page.href))}" />`,
           )
+          // Una categoría con pocos locales existe y se enlaza, pero no se ofrece a los buscadores.
+          if (page.indexable === false) {
+            html = setTag(
+              html,
+              metaTag('name', 'robots'),
+              '<meta name="robots" content="noindex, follow" />',
+            )
+          }
           html = html.replace('</head>', `  ${alternates.filter(Boolean).join('\n  ')}\n  </head>`)
           if (page.jsonLd) {
             html = html.replace('</head>', `  ${bloque(page.jsonLd)}\n  </head>`)
@@ -481,7 +696,8 @@ export function prerender(options: { base: string; siteUrl?: string }): Plugin {
           const file = join(dist, relative === '' ? 'index.html' : `${relative}.html`)
           mkdirSync(dirname(file), { recursive: true })
           writeFileSync(file, html)
-          written.push({ href: page.href, lastmod: page.lastmod })
+          if (page.indexable !== false) written.push({ href: page.href, lastmod: page.lastmod })
+          escritas += 1
         })
       }
 
@@ -499,9 +715,11 @@ export function prerender(options: { base: string; siteUrl?: string }): Plugin {
       )
       writeFileSync(
         join(dist, 'robots.txt'),
-        `User-agent: *\nAllow: /\n${siteUrl ? `Sitemap: ${new URL('sitemap.xml', siteUrl).href}\n` : ''}`,
+        robotsTxt(base, siteUrl ? new URL('sitemap.xml', siteUrl).href : undefined),
       )
-      console.log(`✓ prerenderizado: ${written.length} páginas, sitemap y robots.txt`)
+      console.log(
+        `✓ prerenderizado: ${escritas} páginas (${written.length} en el sitemap), sitemap y robots.txt`,
+      )
     },
   }
 }
