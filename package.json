@@ -19,6 +19,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "test:seo": "vitest run scripts/build && playwright test seo-regresion metadatos fragmentos sin-javascript --project=desktop",
     "check": "npm run lint && npm run typecheck && npm run test && npm run build",
     "data:validate": "node scripts/data/validate-data.ts",
     "data:import": "node scripts/data/import-csv.ts",
