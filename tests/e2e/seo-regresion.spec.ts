@@ -277,7 +277,10 @@ test.describe('Sitemap', () => {
     expect(bloqueada(`${BASE}en/area/condesa?category=italian`)).toBe(true)
     // Y ninguna dirección del sitemap, ni la portada con el parámetro antiguo, queda bloqueada.
     expect(locs.length).toBeGreaterThan(0)
-    for (const loc of locs) expect(bloqueada(rutaDe(loc) === '/' ? BASE : `${BASE}${rutaDe(loc).slice(1)}`), loc).toBe(false)
+    for (const loc of locs)
+      expect(bloqueada(rutaDe(loc) === '/' ? BASE : `${BASE}${rutaDe(loc).slice(1)}`), loc).toBe(
+        false,
+      )
     expect(bloqueada(`${BASE}?categoria=italiana`)).toBe(false)
   })
 })

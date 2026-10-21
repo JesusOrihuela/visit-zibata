@@ -33,8 +33,8 @@ import {
 } from './categorias.ts'
 import { contenidoDeLista, contenidoDeLugar } from './contenido.ts'
 import { descripcionDeFicha, lugarDe, repetidos } from './metadatos.ts'
-import { bloque, listado, negocio } from './structured-data.ts'
 import { robotsTxt } from './robots.ts'
+import { bloque, listado, negocio } from './structured-data.ts'
 import { repartirVecinos } from './vecinos.ts'
 
 type Locale = 'es' | 'en'
