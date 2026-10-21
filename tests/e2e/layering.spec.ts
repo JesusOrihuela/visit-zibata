@@ -135,6 +135,25 @@ test.describe('capas y alineación', () => {
     expect(tapados).toEqual([])
   })
 
+  test('en la cabecera de una zona, el enlace que baja a otra línea guarda el mismo espacio que el resto', async ({
+    page,
+  }) => {
+    // Lo que se fija es el espacio vertical que calcula el navegador, no dónde cae el salto de línea (que
+    // depende del ancho de cada pantalla): el renglón de la dirección separa sus líneas igual que la
+    // cabecera separa sus bloques. Antes eran 4 px contra 8, y el enlace "Cómo llegar a la zona" quedaba
+    // pegado a la dirección cuando bajaba de línea.
+    await openApp(page, { path: 'zona/xentric-anahuac' })
+    const region = panel(page)
+    await expect(region.getByRole('link', { name: /Cómo llegar a la zona/ })).toBeVisible()
+    const [entreBloques, entreLineas] = await region.evaluate((el) => {
+      const cabecera = el.querySelector('[class*="_header_"]') as HTMLElement
+      const direccion = el.querySelector('[class*="_address_"]') as HTMLElement
+      return [getComputedStyle(cabecera).rowGap, getComputedStyle(direccion).rowGap]
+    })
+    expect(entreBloques).toBe('8px')
+    expect(entreLineas).toBe(entreBloques)
+  })
+
   test('las pastillas de categoría del panel arrancan alineadas con el resto del contenido', async ({
     page,
   }) => {
