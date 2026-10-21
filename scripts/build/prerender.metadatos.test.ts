@@ -309,7 +309,7 @@ describe.each(idiomas)('las páginas de categoría (%s)', (idioma) => {
       const pagina = de(idioma, ruta(categoria.slug[idioma]))
       expect(pagina.description).toMatch(idioma === 'es' ? /todavía no hay/ : /no places published/)
       expect(`${pagina.description} ${pagina.contenido}`).not.toMatch(
-        /0 (lugares|places)|(Por ejemplo|For example), \./,
+        /\b0 (lugares|places)|(Por ejemplo|For example), \./,
       )
       expect(pagina.jsonLd).toBeUndefined()
     }

@@ -283,7 +283,7 @@ test.describe('Las páginas de categoría', () => {
         ] as const) {
           expect(html.match(patron)?.length ?? 0, `${nombre} en ${archivo}`).toBe(1)
         }
-        expect(html, archivo).not.toMatch(/undefined|NaN|null/)
+        expect(html, archivo).not.toMatch(/undefined|NaN|\bnull\b/)
       }
     }
   })
@@ -310,7 +310,7 @@ test.describe('Las páginas de categoría', () => {
   test('una categoría sin locales no dice "0 lugares" ni lista ejemplos vacíos', () => {
     for (const categoria of categorias.filter((c) => localesDe(c) === 0)) {
       const html = leer(archivoDeCategoria('es', categoria.slug.es))
-      expect(html).not.toMatch(/0 lugares|Por ejemplo, \./)
+      expect(html).not.toMatch(/\b0 lugares|Por ejemplo, \./)
       expect(html).toContain('todavía no hay lugares')
     }
   })
