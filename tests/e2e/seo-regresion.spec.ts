@@ -268,8 +268,7 @@ test.describe('Sitemap', () => {
 
   test('robots.txt bloquea el filtro de categoría de una zona y ninguna página del sitemap', () => {
     const reglas = leer('robots.txt')
-      .split('
-')
+      .split(/\r?\n/)
       .filter((linea) => linea.startsWith('Disallow: '))
       .map((linea) => linea.slice('Disallow: '.length))
     const bloqueada = (ruta: string) => reglas.some((regla) => bloquea(regla, ruta))
