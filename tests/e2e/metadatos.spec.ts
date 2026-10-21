@@ -139,8 +139,11 @@ test.describe('Metadatos del HTML publicado', () => {
     request,
   }) => {
     const sitemap = await (await request.get('sitemap.xml')).text()
-    const rutas = [...sitemap.matchAll(/<loc>(?:https?:\/\/[^/]+)?\/([^<]*)<\/loc>/g)].map(
-      (m) => m[1] ?? '',
+    // Relativas a la base: `request.get` ya parte de ella, y con una subruta (`/visit-zibata/`) dejarla
+    // dentro de la ruta la duplicaría.
+    const base = (process.env.BASE_PATH ?? '/').replace(/^\/|\/$/g, '')
+    const rutas = [...sitemap.matchAll(/<loc>(?:https?:\/\/[^/]+)?\/([^<]*)<\/loc>/g)].map((m) =>
+      (m[1] ?? '').replace(new RegExp(`^${base}/?`), ''),
     )
     // 234 de siempre y las de categoría: el número exacto lo fija seo-regresion.spec.ts contra los datos.
     expect(rutas.length).toBeGreaterThan(234)
