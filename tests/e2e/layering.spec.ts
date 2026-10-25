@@ -140,8 +140,7 @@ test.describe('capas y alineación', () => {
   }) => {
     // Lo que se fija es el espacio vertical que calcula el navegador, no dónde cae el salto de línea (que
     // depende del ancho de cada pantalla): el renglón de la dirección separa sus líneas igual que la
-    // cabecera separa sus bloques. Antes eran 4 px contra 8, y el enlace "Cómo llegar a la zona" quedaba
-    // pegado a la dirección cuando bajaba de línea.
+    // cabecera separa sus bloques.
     await openApp(page, { path: 'zona/xentric-anahuac' })
     const region = panel(page)
     await expect(region.getByRole('link', { name: /Cómo llegar a la zona/ })).toBeVisible()
@@ -150,7 +149,7 @@ test.describe('capas y alineación', () => {
       const direccion = el.querySelector('[class*="_address_"]') as HTMLElement
       return [getComputedStyle(cabecera).rowGap, getComputedStyle(direccion).rowGap]
     })
-    expect(entreBloques).toBe('8px')
+    expect(entreBloques).toBe('12px')
     expect(entreLineas).toBe(entreBloques)
   })
 

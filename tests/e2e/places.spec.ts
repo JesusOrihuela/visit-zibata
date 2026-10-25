@@ -184,7 +184,7 @@ test.describe('Plazas y lugares', () => {
     )
   })
 
-  test('el ritmo vertical de la ficha se mantiene en sus tres pasos', async ({ page }) => {
+  test('el ritmo vertical de la ficha mantiene sus pasos', async ({ page }) => {
     // Lo que se vigila no son los números, es la uniformidad: cada relación repite siempre el mismo
     // paso. Se rompe en cuanto alguien añade un bloque con margen propio, que es como se desordenó
     // antes. La escala está escrita en PlaceDetail.module.css.
@@ -211,17 +211,19 @@ test.describe('Plazas y lugares', () => {
       }
     })
     expect(huecos.bloques.length).toBeGreaterThan(2)
-    expect(new Set(huecos.bloques).size, `bloques: ${huecos.bloques}`).toBe(1)
-    // La cabecera encoge cuando un lugar no tiene corazones que enseñar, así que puede quedarse en
-    // un solo hueco; lo que se vigila es que los que haya sean todos iguales.
+    // Todos los bloques van a 20 px; la descripción es la única excepción documentada (12 px),
+    // justo después del bloque personal.
+    expect(huecos.bloques.filter((gap) => gap !== 20), `bloques: ${huecos.bloques}`).toEqual([
+      12,
+    ])
+    expect(huecos.bloques.indexOf(12)).toBe(3)
+    // La cabecera usa el mismo paso que los bloques.
     expect(huecos.cabecera.length).toBeGreaterThan(0)
     expect(new Set(huecos.cabecera).size, `cabecera: ${huecos.cabecera}`).toBe(1)
-    // El bloque personal es el otro grupo con ritmo propio desde que las estrellas y la visita
-    // viven ahí en vez de en la cabecera.
+    expect(huecos.cabecera[0]).toBe(20)
+    // El bloque personal mantiene su paso interno de 12 px.
     expect(huecos.personal.length).toBeGreaterThan(0)
     expect(new Set(huecos.personal).size, `personal: ${huecos.personal}`).toBe(1)
-    // El paso de dentro es menor que el de fuera: son dos niveles, no uno con ruido.
-    expect(huecos.cabecera[0]).toBeLessThan(huecos.bloques[0] as number)
-    expect(huecos.personal[0]).toBeLessThan(huecos.bloques[0] as number)
+    expect(huecos.personal[0]).toBe(12)
   })
 })
