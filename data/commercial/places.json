@@ -1,7 +1,7 @@
 {
   "$schema": "./schemas/places.schema.json",
   "version": 1,
-  "updatedAt": "2026-09-14",
+  "updatedAt": "2026-10-25",
   "places": [
     {
       "id": "carls-jr",
@@ -5668,25 +5668,28 @@
       },
       "hours": {
         "mon": [
-          "12:00-16:00"
+          "12:00-17:00"
         ],
         "tue": [
-          "12:00-16:00"
+          "12:00-17:00"
         ],
         "wed": [
-          "12:00-16:00"
+          "12:00-17:00"
         ],
         "thu": [
-          "12:00-16:00"
+          "12:00-17:00"
         ],
         "fri": [
-          "12:00-16:00"
+          "12:00-17:00"
         ],
         "sat": [],
         "sun": []
       },
-      "location": null,
-      "googleMapsUri": null,
+      "location": {
+        "lat": 20.6840276,
+        "lng": -100.3262362
+      },
+      "googleMapsUri": "https://www.google.com/maps/search/?api=1&query=EL+SAZON+DE+NASSAR&query_place_id=ChIJCbk22-ld04UR5WPRaQ-3_0g",
       "googlePlaceId": null,
       "phone": "+524427845193",
       "photos": [],
@@ -5704,9 +5707,10 @@
       "verification": {
         "status": "likely_active",
         "confidence": "medium",
-        "lastVerifiedAt": "2026-09-14",
+        "lastVerifiedAt": "2026-10-25",
         "sources": [
-          "campo:2026-09-22"
+          "campo:2026-09-22",
+          "https://share.google/IQa7aLRm0iit5ejJi"
         ]
       }
     },
@@ -6471,6 +6475,109 @@
         "lastVerifiedAt": "2026-09-14",
         "sources": [
           "campo:2026-09-22"
+        ]
+      }
+    },
+    {
+      "id": "la-brasa-nortena",
+      "slug": "la-brasa-nortena",
+      "name": "La Brasa Norteña",
+      "plazaId": "plaza-luna",
+      "giros": [
+        "asador",
+        "taqueria"
+      ],
+      "secundarios": [],
+      "description": {
+        "es": "🌵 Tacos estilo Sonora en Querétaro\n🥩 Carne de calidad"
+      },
+      "hours": {
+        "mon": [],
+        "tue": ["13:00-22:00"],
+        "wed": ["13:00-22:00"],
+        "thu": ["13:00-22:00"],
+        "fri": ["13:00-22:00"],
+        "sat": ["13:00-22:00"],
+        "sun": ["13:00-22:00"]
+      },
+      "location": {
+        "lat": 20.6853512,
+        "lng": -100.3254231
+      },
+      "googleMapsUri": "https://maps.app.goo.gl/sLUUHyxBmeb6XQyM7",
+      "googlePlaceId": null,
+      "phone": null,
+      "photos": [],
+      "links": {
+        "website": null,
+        "instagram": "https://www.instagram.com/labrasa.nortena/",
+        "facebook": null,
+        "tiktok": null,
+        "whatsapp": null,
+        "rappi": null,
+        "uberEats": null,
+        "didiFood": null
+      },
+      "active": true,
+      "verification": {
+        "status": "active",
+        "confidence": "medium",
+        "lastVerifiedAt": "2026-10-25",
+        "sources": [
+          "https://maps.app.goo.gl/sLUUHyxBmeb6XQyM7",
+          "https://www.instagram.com/labrasa.nortena/"
+        ]
+      }
+    },
+    {
+      "id": "el-asadero",
+      "slug": "el-asadero",
+      "name": "El Asadero",
+      "plazaId": "plaza-luna",
+      "giros": [
+        "cocina-mexicana",
+        "taqueria",
+        "antojitos-de-masa"
+      ],
+      "secundarios": [],
+      "description": {
+        "es": "Pozole con el mejor sazón, ahora es tradición; somos el lugar preferido de las personas que comen pensando en el sabor donde un barniz especial creado por nosotros, siempre acompaña a tus tacos, brindándote un sabor único."
+      },
+      "hours": {
+        "mon": ["10:30-23:00"],
+        "tue": ["10:30-23:00"],
+        "wed": ["10:30-23:00"],
+        "thu": ["10:30-23:00"],
+        "fri": ["10:30-23:00"],
+        "sat": ["10:30-23:00"],
+        "sun": ["10:30-23:00"]
+      },
+      "location": {
+        "lat": 20.6851989,
+        "lng": -100.3253168
+      },
+      "googleMapsUri": "https://maps.app.goo.gl/tWuJZtUW2y51sxWj7",
+      "googlePlaceId": null,
+      "phone": "+524426394622",
+      "photos": [],
+      "links": {
+        "website": "https://el-asadero.com/",
+        "instagram": null,
+        "facebook": null,
+        "tiktok": null,
+        "whatsapp": null,
+        "rappi": null,
+        "uberEats": null,
+        "didiFood": null
+      },
+      "active": true,
+      "verification": {
+        "status": "active",
+        "confidence": "medium",
+        "lastVerifiedAt": "2026-10-25",
+        "sources": [
+          "https://maps.app.goo.gl/tWuJZtUW2y51sxWj7",
+          "https://el-asadero.com/"
         ]
       }
     }
