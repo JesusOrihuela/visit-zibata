@@ -1,8 +1,13 @@
 # 01 · Línea base
 
-## Versión del informe
+**Última actualización:** 25 de octubre de 2026, sobre `datos/plaza-luna` (después del PR #48).
 
-El informe de Lighthouse analizó estos assets:
+Este documento fija el estado medido del build actual. Todo lo que aparece aquí se ejecutó en esta
+máquina; lo que no se pudo medir está marcado como pendiente.
+
+## Informe original de Lighthouse (no comparable)
+
+El informe que originó la tarea analizó estos assets:
 
 | Asset | Tamaño reportado |
 |---|---:|
@@ -11,84 +16,119 @@ El informe de Lighthouse analizó estos assets:
 | `MapView-Ci-l7e0G.css` | 12.562 KB |
 | `index-BH-J6JjE.css` | 11.786 KB |
 
-Esos hashes **no coinciden** con el build actual. El informe corresponde a una versión anterior a
-los cambios de tipografía y espaciado de esta rama. Por tanto, sus cifras no se usan como
-comparación directa antes/después.
+Esos hashes **no existen en el build actual**: corresponden a una versión anterior a la tipografía
+Archivo, al arreglo del CLS y a las correcciones de accesibilidad. Sus cifras sirven como historia,
+no como comparación directa.
 
 ## Build actual
 
-Medido sobre `dist/` con gzip:
+Medido sobre `dist/` (raw y gzip real, no estimación):
 
 | Asset | Raw | Gzip |
 |---|---:|---:|
-| `MapView-cPq_dXJw.js` | 1030.3 KB | 277.4 KB |
+| `MapView-CJ65O7Pv.js` | 1030.3 KB | 277.4 KB |
 | `maplibre-gl-worker-CD0Mhlp9.js` | 495.9 KB | 141.3 KB |
-| `index-BtaxCfep.js` | 330.1 KB | 105.5 KB |
-| `places-D3LU3oSy.js` | 109.2 KB | 23.7 KB |
+| `index-BDwupRTW.js` | 330.3 KB | 105.6 KB |
+| `places-3Qklao8c.js` | 111.2 KB | 24.2 KB |
 | `MapView-Cei6RhT4.css` | 98.6 KB | 13.5 KB |
-| `index-DISbqTxT.css` | 45.2 KB | 9.2 KB |
+| `index-qPVn5I6R.css` | 45.0 KB | 9.1 KB |
+| `i18n-HP1X7vbV.js` | 28.4 KB | 10.7 KB |
+| `PlaceDetail-CJ1yji9I.js` | 19.8 KB | 7.8 KB |
 
 `npm run perf:budget`:
 
-- `initialJs` 118.2 KB (límite 122)
-- `initialCss` 9.2 KB (límite 11)
-- `mapJs` 277.4 KB (límite 320)
-- `mapCss` 13.5 KB (límite 15)
-- `dataJs` 32.3 KB (límite 34)
-- `tiles` 2306.4 KB (límite 2450)
-- `largestTile` 93.2 KB (límite 140)
+| Medida | Valor | Límite |
+|---|---:|---:|
+| `initialJs` | 118.2 KB | 122 KB |
+| `initialCss` | 9.1 KB | 11 KB |
+| `mapJs` | 277.4 KB | 320 KB |
+| `mapCss` | 13.5 KB | 15 KB |
+| `dataJs` | 32.9 KB | 34 KB |
+| `tiles` | 2306.4 KB | 2450 KB |
+| `largestTile` | 93.2 KB | 140 KB |
+
+Datos: 103 locales, 18 categorías y 15 plazas.
 
 ## Lighthouse local actual
 
-Ruta: `/lugar/al-grano`, emulación móvil por defecto de Lighthouse.
+Lighthouse 13.5.0, perfil móvil por defecto, contra `vite preview` en `http://localhost:4173` con
+Chromium de Playwright y WebGL por software (SwiftShader). El preview sirve con gzip, así que el
+peso transferido se parece al del hosting real.
 
-| Métrica | Valor |
+| Ruta | Performance | Accesibilidad | FCP | LCP | TBT | CLS | Speed Index |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| `/` | 53 | 100 | 2.6 s | 5.1 s | 1,250 ms | 0 | 2.8 s |
+| `/lugar/al-grano` | 52 | 100 | 2.6 s | 4.9 s | 1,430 ms | 0.015 | 2.9 s |
+| `/zona/xentric-zibata` | 51 | 100 | 2.6 s | 4.9 s | 1,310 ms | 0.097 | 2.9 s |
+
+Repeticiones: `/zona/xentric-zibata` se corrió dos veces (TBT 1,310 / 1,210 ms; CLS 0.097 / 0.098).
+El CLS de esa ruta es estable; el TBT no, y por eso no se usa como comparación entre versiones.
+
+### De dónde viene el tiempo
+
+Reparto del hilo principal en `/lugar/al-grano`:
+
+| Grupo | Tiempo |
 |---|---:|
-| Performance | 35 |
-| FCP | 2.6 s |
-| LCP | 5.3 s |
-| TBT | 980 ms |
-| CLS | **0.447** |
-| Speed Index | 2.9 s |
+| Script Evaluation | 4,761 ms |
+| Other | 750 ms |
+| Style & Layout | 478 ms |
+| Rendering | 134 ms |
+| Garbage Collection | 46 ms |
+| Parse HTML & CSS | 13 ms |
+
+`bootup-time`:
+
+| Script | Total | Scripting |
+|---|---:|---:|
+| `MapView-CJ65O7Pv.js` | 4,405 ms | 3,818 ms |
+| `index-BDwupRTW.js` | 1,153 ms | 867 ms |
+
+En la portada el mapa sigue siendo el mayor, con menos peso total: 2,718 ms de `MapView` y 448 ms
+del `index`. La conclusión de la traza anterior sigue en pie: **el coste es el mapa**, no la lista ni
+la hoja.
 
 ### CLS
 
-El `layout-shifts` de Lighthouse atribuye la mayor parte del CLS a la hoja inferior de móvil
-(`section[data-panel]`, “Información de lugares”), cuyo alto crecía de ~158 px a ~676 px en una
-transición de altura después del primer pintado.
+| Ruta | CLS | Causa principal |
+|---|---:|---|
+| `/` | 0 | — |
+| `/lugar/al-grano` | 0.015 | Marcadores del mapa (~0.002 cada uno) |
+| `/zona/xentric-zibata` | 0.097 | Hoja inferior de móvil: un shift de 0.085 |
 
-Causa: el catálogo se carga de forma asíncrona. La ruta se aplicaba en `useUrlSync` cuando el
-catálogo ya estaba listo, así que la hoja ya estaba montada colapsada y el cambio a expandida
-animaba el alto con `transition: height`.
-
-### Después de la corrección del CLS
-
-| Métrica | Antes | Después |
-|---|---:|---:|
-| Performance | 35 | **53** |
-| FCP | 2.6 s | 2.6 s |
-| LCP | 5.3 s | **4.7 s** |
-| TBT | 980 ms | 1,640 ms |
-| CLS | 0.447 | **0.015** |
-
-El TBT varía entre corridas locales; no se usa como comparación definitiva.
+El arreglo del CLS de la hoja cubre el caso de la ficha (la hoja nace expandida cuando la URL es de
+un lugar). En la ruta de una zona la hoja arranca colapsada y su alto se ajusta después del primer
+pintado, así que queda un shift de 0.085 sobre `section[data-panel]`. Está por debajo del umbral de
+0.1, pero es el shift más grande que queda y el único que conviene vigilar.
 
 ## Accesibilidad observada en el build actual
 
-| Control | Texto visible | Nombre accesible actual |
+Puntuación 100 en las tres rutas, sin auditorías de peso fallando.
+
+| Control | Texto visible | Nombre accesible |
 |---|---|---|
-| Marcador de plaza | `25 Xentric Anáhuac` | `Ver Xentric Anáhuac, 25 lugares` |
-| Filtro “Todo” | `Todo` | `Todo, 101 lugares` |
-| Filtro “Desayunos y Café” | `Desayunos y Café` | `Desayunos y Café, 26 lugares` |
-| Botón de visita | `Registrar visita` | `Registrar una visita a Al Grano Maíz & Snacks` |
+| Marcador de plaza | `25` + `Xentric Anáhuac` | `Xentric Anáhuac, 25 lugares` |
+| Filtro “Todo” | `Todo` | `Todo 103` |
+| Filtro “Desayunos y Café” | `Desayunos y Café` | `Desayunos y Café 26` |
+| Botón de visita | `Registrar visita` | `Registrar visita a Al Grano Maíz & Snacks` |
 
-Los tres primeros nombres no empiezan por el texto visible. El cuarto tampoco reproduce
-“Registrar visita” al inicio.
+Los cuatro nombres empiezan por el texto visible. Las pruebas de `FilterBar`, `PlazaPanel`,
+`VisitButton` y `map.spec.ts` fijan ese contrato.
 
-## Hallazgos del informe que no se reproducen igual
+## Diferencias con la versión anterior de este informe
 
-- El informe habla de “Todo 24” visible; en el build actual la cifra no se pinta en la cápsula, solo
-  va en el nombre accesible.
-- El informe habla de “Paseo Zibatá 24”; el orden del DOM actual es cifra y luego nombre.
-- El informe estima 186 KiB de JS no usado. Es una estimación de Lighthouse, no una cifra de ahorro
-  garantizado. El build actual ya es más pequeño que el reportado.
+- **Tipografía:** la interfaz usa Archivo en toda la escala (ver `docs/TIPOGRAFIA.md`). La precarga
+  crítica ya no es Instrument Sans + Fraunces: son Archivo 400, 600 y 700 en `latin` y `latin-ext`
+  (seis archivos), inyectados por `preloadCriticalFonts()`.
+- **Datos:** el catálogo pasó de 101 a 103 locales, así que las cuentas de los nombres accesibles
+  cambiaron (`Todo 103`).
+- **CLS de la ficha:** consolidado en 0.015. La portada queda en 0.
+- **CLS de zona:** aparece como hallazgo nuevo (0.097). En el informe anterior no se había medido la
+  ruta de zona con Lighthouse.
+- **Accesibilidad:** pasó de controles con el nombre accesible desalineado a 100 en las tres rutas.
+
+## Lo que este documento no cubre
+
+- Producción: todas las cifras son locales y con WebGL por software.
+- CrUX: no hay datos de campo en esta máquina.
+- INP: Lighthouse 13 no lo mide en laboratorio; se sigue TBT como aproximación.

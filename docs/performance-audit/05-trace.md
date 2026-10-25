@@ -1,5 +1,10 @@
 # 05 · Traza del hilo principal
 
+**Estado:** capturada sobre un build anterior al PR #48 (tipografía Archivo, arreglo de CLS y
+accesibilidad). **No se volvió a capturar**: las cifras de las secciones siguientes describen ese
+build. La revisión del 25 de octubre de 2026 confirmó la misma conclusión con Lighthouse, y está al
+final del documento.
+
 ## Cómo se capturó
 
 - Playwright + Chrome DevTools Protocol (`Tracing`).
@@ -111,3 +116,27 @@ Por orden de evidencia:
 - El grupo “Other” del informe original (9.42 s) no se reproduce en esta máquina; la traza local
   muestra ~1.5 s. La diferencia es de entorno y de metodología.
 - No se ha implementado ninguna optimización a partir de esta traza.
+
+## Revisión del 25 de octubre de 2026
+
+No se repitió la traza. En su lugar se corrió Lighthouse 13.5.0 (móvil, local) sobre el build actual,
+que reparte el hilo principal así:
+
+| Ruta | Script Evaluation | Other | Style & Layout | Rendering |
+|---|---:|---:|---:|---:|
+| `/lugar/al-grano` | 4,761 ms | 750 ms | 478 ms | 134 ms |
+| `/` | 2,895 ms | 388 ms | 194 ms | 55 ms |
+
+`bootup-time` del mismo build:
+
+| Script | `/lugar/al-grano` | `/` |
+|---|---:|---:|
+| `MapView-*.js` | 4,405 ms (3,818 de scripting) | 2,718 ms (2,480) |
+| `index-*.js` | 1,153 ms (867) | 448 ms (326) |
+
+Tareas largas más grandes: 626 ms, 336 ms y 224 ms, todas de `MapView-*.js`; la más grande de
+`index-*.js` es de 249 ms.
+
+La conclusión no cambia y ahora está medida sobre el build publicado: **el coste es el mapa**. Las
+cuatro líneas de “Qué se puede intentar” siguen vigentes, y ninguna se aplicó porque las variantes
+probadas no mejoraban el TBT lo suficiente para justificar retrasar el mapa (BK-10).
