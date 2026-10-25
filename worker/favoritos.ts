@@ -5,9 +5,9 @@
  * lee bien ("12 vecinos lo guardaron" dice algo verdadero). Las visitas miden curiosidad, se inflan
  * recargando y repiten la misma señal con más ruido (ver docs/CUENTAS.md).
  *
- * Aquí vive la escritura: qué acepta el servidor y con qué topes. La lectura pública (el umbral, la
- * aritmética y el empuje que usa el orden) está en `senales.ts`, que es donde tiene sentido leerla
- * junto con las notas.
+ * Aquí vive la escritura: qué acepta el servidor y con qué topes. La lectura pública (el conteo y
+ * el empuje que usa el orden) está en `senales.ts`, que es donde tiene sentido leerla junto con las
+ * notas.
  *
  * La edad mínima vive aquí porque la usan las dos: es del servidor y no de la interfaz, para que no
  * se pueda saltar desde el navegador.

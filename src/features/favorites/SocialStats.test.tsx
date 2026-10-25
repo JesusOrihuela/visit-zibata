@@ -22,7 +22,13 @@ describe('SocialStats', () => {
     expect(screen.queryByText(/0\.8|4\.6|valoraciones/)).not.toBeInTheDocument()
   })
 
-  it('no dibuja nada mientras el conteo no pase el umbral del servidor', () => {
+  it('muestra también el primer corazón, en singular', () => {
+    setSocialStatsSource({ get: () => ({ favorites: 1, empuje: 0.1 }) })
+    render(<SocialStats placeId="cafe-aurora" />)
+    expect(screen.getByText('1 persona lo guardó')).toBeInTheDocument()
+  })
+
+  it('no dibuja nada si el servidor no manda el conteo', () => {
     setSocialStatsSource({ get: () => ({ favorites: null, empuje: 0.3 }) })
     const { container } = render(<SocialStats placeId="cafe-aurora" />)
     expect(container).toBeEmptyDOMElement()

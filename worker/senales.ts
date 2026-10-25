@@ -30,14 +30,6 @@
  */
 
 /**
- * Por debajo de esto no se publica el número de corazones, y **no sube con el tamaño de la guía a
- * propósito**: es un suelo de privacidad, no un filtro de popularidad. Con uno o dos, el número
- * delata a quien lo guardó, y esa razón no cambia porque haya cien personas o cien mil. Atarlo a la
- * población solo escondería a los locales pequeños justo cuando la guía creciera.
- */
-export const UMBRAL = 5
-
-/**
  * Votos que hacen falta para que la nota de un lugar mande sobre la del catálogo.
  *
  * Es el único número a mano que queda, y es una decisión de política, no una escala: dice cuánta
@@ -58,7 +50,7 @@ export interface FilaNotas {
 }
 
 export interface Senal {
-  /** Para la ficha. Solo si pasa el umbral. */
+  /** Para la ficha: personas que lo guardaron, desde la primera. */
   corazones?: number
   /** Para el orden personal, de 0 a 1. Lleva corazones y notas dentro, ya calibrados. */
   empuje: number
@@ -108,7 +100,13 @@ export function senalesDe(corazones: FilaCorazones[], notas: FilaNotas[]): Recor
 
   for (const fila of corazones) {
     const senal = deLugar(fila.lugar)
-    if (fila.cuantos >= UMBRAL) senal.corazones = fila.cuantos
+    /*
+     * Sin suelo: la ficha enseña el número desde el primer corazón. Antes había un umbral de cinco
+     * para no delatar a quien guardaba un local casi vacío, pero con un catálogo de pocos movimientos
+     * dejaba la ficha muda justo cuando el dato más importa. La edad mínima de la cuenta sigue siendo
+     * la única regla que filtra el conteo.
+     */
+    senal.corazones = fila.cuantos
     senal.empuje += 0.5 * Math.tanh(fila.cuantos / divisor)
   }
 
@@ -131,8 +129,8 @@ export function senalesDe(corazones: FilaCorazones[], notas: FilaNotas[]): Recor
 }
 
 /**
- * Los corazones que pasan la edad mínima. Las dos reglas viven en el SQL y no en la interfaz, para
- * que no haya forma de pedirle al servidor los números que decidió no publicar.
+ * Los corazones que pasan la edad mínima. La regla vive en el SQL y no en la interfaz, para que no
+ * haya forma de pedirle al servidor un corazón que todavía no cuenta.
  */
 export const CONTEO_CORAZONES = `
 SELECT f.lugar_id AS lugar, COUNT(*) AS cuantos

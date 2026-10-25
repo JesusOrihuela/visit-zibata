@@ -167,7 +167,7 @@ function pintar(datos) {
     </section>
 
     <section>
-      <h2>Lugares más guardados <span class="nota">sin umbral, a diferencia de la ficha</span></h2>
+      <h2>Lugares más guardados</h2>
       ${tabla(
         ['Lugar', 'Corazones'],
         (datos.guardados ?? []).map((fila) => ({

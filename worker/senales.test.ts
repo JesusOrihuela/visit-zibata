@@ -1,27 +1,21 @@
 import { describe, expect, it } from 'vitest'
-import { dispersion, percentil75, senalesDe, UMBRAL } from './senales.ts'
+import { dispersion, percentil75, senalesDe } from './senales.ts'
 
 const corazones = (pares: [string, number][]) =>
   pares.map(([lugar, cuantos]) => ({ lugar, cuantos }))
 const notas = (tripletas: [string, number, number][]) =>
   tripletas.map(([lugar, votos, media]) => ({ lugar, votos, media }))
 
-describe('el umbral', () => {
-  it('protege a quien guardó algo que casi nadie guardó', () => {
-    // Con umbral 1 o 2, publicar el número delataría a quien lo guardó.
-    expect(UMBRAL).toBeGreaterThanOrEqual(3)
-  })
-
-  it('calla el número por debajo del umbral, pero el empuje sigue contando', () => {
+describe('el conteo público', () => {
+  it('publica el número desde el primer corazón, y el empuje cuenta igual', () => {
     const senales = senalesDe(
       corazones([
-        ['poco', 2],
+        ['poco', 1],
         ['mucho', 40],
       ]),
       [],
     )
-    expect(senales.poco?.corazones).toBeUndefined()
-    // Dos corazones no se publican y aun así orientan el orden de quien los dio.
+    expect(senales.poco?.corazones).toBe(1)
     expect(senales.poco?.empuje).toBeGreaterThan(0)
     expect(senales.mucho?.corazones).toBe(40)
   })
