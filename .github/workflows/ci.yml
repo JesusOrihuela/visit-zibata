@@ -38,21 +38,20 @@ jobs:
         run: npm run perf:budget
 
   e2e:
-    name: E2E (Playwright, base ${{ matrix.base }})
+    name: E2E (Playwright, base ${{ matrix.base }}, fragmento ${{ matrix.shard }}/2)
     needs: checks
     runs-on: ubuntu-latest
-    # 60 y no 40: al soltar las teselas del mapa (v4.7.0) cada vista pide una veintena de archivos
-    # donde antes hacía unas pocas lecturas por rango, y la suite pasó de 24 a 34-40 minutos aquí.
-    # Es un costo del banco de pruebas, no de la guía publicada: `vite preview` habla HTTP/1.1 y
-    # serializa, mientras que el sitio real se sirve por h2/h3 y esas peticiones van multiplexadas
-    # sobre una sola conexión. Con 40 la ejecución en subruta se canceló por tiempo con todo en verde.
-    timeout-minutes: 60
+    # Dos fragmentos por base. La suite completa tardaba 40-52 minutos por trabajo y se acercaba al
+    # límite de 60: dos ejecuciones se cancelaron por tiempo con todo en verde. Repartida en dos,
+    # cada trabajo queda en 20-25 minutos y el límite deja de ser una lotería.
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
         # El sitio se sirve en la raíz, pero se sigue probando una subruta: es lo que detecta una
         # ruta absoluta mal escrita antes de publicarla, y mantiene el proyecto portable a otro hosting.
         base: ['/', '/visit-zibata/']
+        shard: [1, 2]
     env:
       BASE_PATH: ${{ matrix.base }}
     steps:
@@ -64,7 +63,7 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium webkit
       - run: npm run build
-      - run: npm run test:e2e
+      - run: npx playwright test --shard=${{ matrix.shard }}/2
       - name: Informe de Playwright
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
