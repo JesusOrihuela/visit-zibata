@@ -8,7 +8,6 @@ import {
   countByCategory,
   countByPlaza,
   EMPTY_FILTERS,
-  groupByPlaza,
   hasActiveFilters,
 } from './filters.ts'
 
@@ -89,7 +88,20 @@ describe('utilidades de filtros', () => {
     expect(categoriesOf(pan, catalog)).toEqual(['desayunos-y-cafe', 'tacos-y-antojitos'])
   })
 
-  it('cuenta y agrupa por plaza y categoría', () => {
+  it('sin texto, el local que lleva la categoría de primer giro va antes', () => {
+    // La pastilla de una categoría hace de consulta: el orden es el mismo que el de la búsqueda.
+    const propio = buildCatalog(categoriesFixture, plazasFixture, [
+      makePlace({ id: 'pan-segundo', plazaId: 'plaza-norte', giros: ['pizza', 'panaderia'] }),
+      makePlace({ id: 'pan-primero', plazaId: 'plaza-norte', giros: ['panaderia', 'pizza'] }),
+    ])
+    const result = applyFilters(propio, createSearchIndex(propio), {
+      ...EMPTY_FILTERS,
+      categoryId: 'desayunos-y-cafe',
+    })
+    expect(ids(result)).toEqual(['pan-primero', 'pan-segundo'])
+  })
+
+  it('cuenta por plaza y por categoría', () => {
     const all = applyFilters(catalog, index, EMPTY_FILTERS)
     expect(countByPlaza(all)).toEqual(
       new Map([
@@ -97,10 +109,6 @@ describe('utilidades de filtros', () => {
         ['plaza-sur', 1],
       ]),
     )
-    expect(groupByPlaza(all).map(([plazaId, places]) => [plazaId, places.length])).toEqual([
-      ['plaza-norte', 3],
-      ['plaza-sur', 1],
-    ])
     expect(countByCategory(all, catalog).get('desayunos-y-cafe')).toBe(2)
   })
 })

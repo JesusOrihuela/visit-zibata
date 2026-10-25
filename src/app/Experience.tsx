@@ -416,12 +416,7 @@ function ReadyExperience({ catalog }: { catalog: Catalog }) {
       break
     case 'results':
       content = (
-        <ResultsPanel
-          places={panel.places}
-          onOpenPlace={openPlace}
-          onSelectPlaza={selectPlaza}
-          onClearFilters={closeResults}
-        />
+        <ResultsPanel places={panel.places} onOpenPlace={openPlace} onClearFilters={closeResults} />
       )
       break
     case 'explore':

@@ -1,4 +1,7 @@
+import { MapPin } from 'lucide-react'
+import type { CSSProperties } from 'react'
 import { CategoryIcon } from '../../components/icons/CategoryIcon.tsx'
+import { DEFAULT_PLAZA_TONE, plazaTones } from '../../config/palette.ts'
 import { useCatalog } from '../../data/CatalogContext.tsx'
 import { localized, t, useLocale } from '../../i18n/index.ts'
 import { estadoDe } from '../../lib/estado.ts'
@@ -77,7 +80,14 @@ export function PlaceCard({ place, onOpen, showPlaza = false }: PlaceCardProps) 
   // El número de local y el horario solo los publica una minoría: en la lista crearían filas desiguales
   // (unas con dato, la mayoría sin él). Se muestran en la ficha, donde el dato se entiende con su fuente.
   const idioma = useLocale()
-  const meta = showPlaza && plaza ? plaza.name : null
+  // El tono de la zona, repartido igual que en el mapa (ver config/palette.ts). Solo se calcula cuando
+  // la fila va a llevar zona: en el panel de una plaza sobra.
+  const tone =
+    showPlaza && plaza
+      ? (plazaTones(catalog.plazas.filter((item) => item.active).map((item) => item.id)).get(
+          plaza.id,
+        ) ?? DEFAULT_PLAZA_TONE)
+      : DEFAULT_PLAZA_TONE
 
   return (
     <article className={styles.card}>
@@ -133,8 +143,24 @@ export function PlaceCard({ place, onOpen, showPlaza = false }: PlaceCardProps) 
             ))}
             <span className={styles.categoryText}>{categoryLabel}</span>
             {resto > 0 && <span className={styles.mas}>+{resto}</span>}
-            {meta && <span className={styles.meta}> · {meta}</span>}
           </span>
+          {/*
+           * La zona, en su propia fila. Antes iba al final de la de giros ("Tacos · Plaza Luna") y se
+           * leía como una etiqueta más: parecía que la plaza era algo que se come. Aquí separa los dos
+           * datos y sigue contestando lo único que falta cuando la lista mezcla zonas: si queda lejos.
+           *
+           * En el color de la zona, el mismo con el que se ve en el mapa, para que la lista y el mapa
+           * se lean como el mismo sitio y no como dos inventarios distintos.
+           */}
+          {showPlaza && plaza && (
+            <span
+              className={styles.area}
+              style={{ '--plaza-accent': tone.accent } as CSSProperties}
+            >
+              <MapPin aria-hidden="true" />
+              {plaza.name}
+            </span>
+          )}
         </span>
       </a>
       <FavoriteButton placeId={place.id} placeName={place.name} size="sm" />

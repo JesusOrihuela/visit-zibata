@@ -83,6 +83,23 @@ describe('createSearchIndex', () => {
     expect(index.search('tacos sur')).toEqual([])
   })
 
+  it('ordena por la posición del giro: la primera etiqueta manda sobre la segunda', () => {
+    // Es la regla que hace legible una búsqueda por etiqueta: quien busca "café" quiere ver primero
+    // los cafés, no los locales que lo llevan de tercer renglón.
+    const propio = createSearchIndex(
+      buildCatalog(categoriesFixture, plazasFixture, [
+        makePlace({
+          id: 'cafe-tercero',
+          plazaId: 'plaza-norte',
+          giros: ['pizza', 'taqueria', 'cafeteria'],
+        }),
+        makePlace({ id: 'cafe-segundo', plazaId: 'plaza-norte', giros: ['pizza', 'cafeteria'] }),
+        makePlace({ id: 'cafe-primero', plazaId: 'plaza-norte', giros: ['cafeteria', 'pizza'] }),
+      ]),
+    )
+    expect(propio.search('cafe')).toEqual(['cafe-primero', 'cafe-segundo', 'cafe-tercero'])
+  })
+
   it('no indexa lugares inactivos', () => {
     expect(index.search('cerrado')).toEqual([])
   })

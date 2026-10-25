@@ -22,7 +22,6 @@ export const es = {
 
   'plazas.count': { one: '{count} zona', other: '{count} zonas' },
   'places.count': { one: '{count} lugar', other: '{count} lugares' },
-  'places.matching': { one: '{count} coincide', other: '{count} coinciden' },
 
   'explore.title': 'Explora Zibatá',
   'explore.summary': '{plazas} con {places} en el mapa',
