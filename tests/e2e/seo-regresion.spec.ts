@@ -227,10 +227,27 @@ test.describe('Sitemap', () => {
       for (const categoria of categorias) {
         const slug = categoria.slug[idioma]
         const ruta = idioma === 'es' ? `/categoria/${slug}` : `/en/category/${slug}`
-        // En el sitemap, solo las que se ofrecen a los buscadores.
-        expect(rutas.has(ruta), `${ruta}: en el sitemap solo si llega al umbral`).toBe(
-          localesDe(categoria) >= MIN_INDEXABLE,
-        )
+        const nLocales = localesDe(categoria)
+        if (nLocales === 0) {
+          expect(
+            rutas.has(ruta),
+            `${ruta}: no debería estar en el sitemap si no tiene locales`,
+          ).toBe(false)
+        }
+      }
+      // Las páginas de categoría en el sitemap deben pertenecer a categorías con al menos 1 local
+      for (const ruta of locs) {
+        const match = ruta.match(/^\/(?:en\/category|categoria)\/(.+)$/)
+        if (match) {
+          const slug = match[1]
+          const categoria = categorias.find((c) => c.slug[idioma] === slug)
+          if (categoria) {
+            expect(
+              localesDe(categoria),
+              `${ruta}: pertenece a una categoría con al menos un local`,
+            ).toBeGreaterThan(0)
+          }
+        }
       }
     }
     expect(rutas.has('/'), 'falta la portada').toBe(true)
@@ -289,9 +306,9 @@ test.describe('Las páginas de categoría', () => {
   const archivoDeCategoria = (idioma: 'es' | 'en', slug: string) =>
     idioma === 'es' ? `categoria/${slug}.html` : `en/category/${slug}.html`
 
-  test('toda categoría de los datos tiene su página en los dos idiomas, con sus etiquetas una sola vez', () => {
+  test('toda categoría con locales tiene su página en los dos idiomas, con sus etiquetas una sola vez', () => {
     for (const idioma of ['es', 'en'] as const) {
-      for (const categoria of categorias) {
+      for (const categoria of categorias.filter((c) => localesDe(c) > 0)) {
         const archivo = archivoDeCategoria(idioma, categoria.slug[idioma])
         const html = leer(archivo)
         for (const [nombre, patron] of [
@@ -307,30 +324,35 @@ test.describe('Las páginas de categoría', () => {
     }
   })
 
-  test('bajo el umbral llevan noindex y no están en el sitemap; sobre el umbral, ni una cosa ni la otra', () => {
-    let bajo = 0
+  test('las categorías con al menos un local están indexables; las de 0 locales no tienen página', () => {
+    let sinPagina = 0
+    let conPagina = 0
     for (const idioma of ['es', 'en'] as const) {
       for (const categoria of categorias) {
-        const archivo = archivoDeCategoria(idioma, categoria.slug[idioma])
-        const robots = etiqueta(leer(archivo), /<meta\s+name="robots"\s+content="([^"]*)"/g)
-        const raro = localesDe(categoria) < MIN_INDEXABLE
-        if (raro) {
-          bajo += 1
-          expect(robots, archivo).toEqual(['noindex, follow'])
+        const slug = categoria.slug[idioma]
+        const ruta = idioma === 'es' ? `/categoria/${slug}` : `/en/category/${slug}`
+        const archivo = archivoDe(ruta)
+        const nLocales = localesDe(categoria)
+        if (nLocales === 0) {
+          expect(archivo, `${slug}: no debería tener página HTML`).toBeNull()
+          sinPagina += 1
         } else {
-          expect(robots, archivo).toEqual([])
+          expect(archivo, `${slug}: debería tener página HTML`).not.toBeNull()
+          const html = leer(archivo as string)
+          const robots = etiqueta(html, /<meta\s+name="robots"\s+content="([^"]*)"/g)
+          expect(robots, `${slug}: sin noindex`).toEqual([]) // sin noindex, es indexable
+          conPagina += 1
         }
       }
     }
-    // Si el umbral deja de dejar alguna fuera, esta prueba ya no comprueba nada: que avise.
-    expect(bajo, 'ninguna categoría queda bajo el umbral').toBeGreaterThan(0)
+    expect(sinPagina).toBeGreaterThan(0) // al menos una categoría sin locales
+    expect(conPagina).toBeGreaterThan(0) // al menos una categoría con locales tiene página
   })
 
-  test('una categoría sin locales no dice "0 lugares" ni lista ejemplos vacíos', () => {
+  test('una categoría sin locales no tiene página HTML', () => {
     for (const categoria of categorias.filter((c) => localesDe(c) === 0)) {
-      const html = leer(archivoDeCategoria('es', categoria.slug.es))
-      expect(html).not.toMatch(/\b0 lugares|Por ejemplo, \./)
-      expect(html).toContain('todavía no hay lugares')
+      const ruta = `/categoria/${categoria.slug.es}`
+      expect(archivoDe(ruta), ruta).toBeNull()
     }
   })
 })

@@ -50,49 +50,51 @@ export function VisitButton({
 
   return (
     <div className={styles.visit} data-plano={sinSuperficie}>
-      <span className={styles.control}>
-        <button
-          type="button"
-          className={styles.button}
-          aria-expanded={calendarioAbierto}
-          onClick={() => setCalendarioAbierto((previo) => !previo)}
-          aria-label={t('visit.mark', { name: placeName })}
-        >
-          <CalendarPlus aria-hidden="true" />
-          <span>{t('visit.action')}</span>
-        </button>
-        {calendarioAbierto && (
-          <Suspense fallback={null}>
-            <VisitCalendar
-              fechas={fechas}
-              onToggle={(fecha: string) =>
-                fechas.includes(fecha) ? quitar(placeId, fecha) : registrar(placeId, fecha)
-              }
-              onClose={() => setCalendarioAbierto(false)}
-            />
-          </Suspense>
-        )}
-      </span>
-
-      {fechas.length > 0 && (
-        <p className={styles.hint}>
-          <span>
-            {t('visit.been', { count: fechas.length })}
-            {ultima && t('visit.lastOne', { date: formatVisitDateLong(ultima) })}
-          </span>{' '}
+      <div className={styles.line}>
+        <span className={styles.control}>
           <button
             type="button"
-            className={styles.verTodas}
-            aria-expanded={abierto}
-            aria-controls={listaId}
-            onClick={() => setAbierto((previo) => !previo)}
+            className={styles.button}
+            aria-expanded={calendarioAbierto}
+            onClick={() => setCalendarioAbierto((previo) => !previo)}
+            aria-label={t('visit.mark', { name: placeName })}
           >
-            {abierto ? t('visit.hideAll') : t('visit.seeAll')}
+            <CalendarPlus aria-hidden="true" />
+            <span>{t('visit.action')}</span>
           </button>
-        </p>
-      )}
+          {calendarioAbierto && (
+            <Suspense fallback={null}>
+              <VisitCalendar
+                fechas={fechas}
+                onToggle={(fecha: string) =>
+                  fechas.includes(fecha) ? quitar(placeId, fecha) : registrar(placeId, fecha)
+                }
+                onClose={() => setCalendarioAbierto(false)}
+              />
+            </Suspense>
+          )}
+        </span>
 
-      {fechas.length === 0 && <p className={styles.hint}>{t('visit.first')}</p>}
+        {fechas.length > 0 && (
+          <p className={styles.hint}>
+            <span>
+              {t('visit.been', { count: fechas.length })}
+              {ultima && t('visit.lastOne', { date: formatVisitDateLong(ultima) })}
+            </span>{' '}
+            <button
+              type="button"
+              className={styles.verTodas}
+              aria-expanded={abierto}
+              aria-controls={listaId}
+              onClick={() => setAbierto((previo) => !previo)}
+            >
+              {abierto ? t('visit.hideAll') : t('visit.seeAll')}
+            </button>
+          </p>
+        )}
+
+        {fechas.length === 0 && <p className={styles.hint}>{t('visit.first')}</p>}
+      </div>
 
       {abierto && fechas.length > 0 && (
         <ul id={listaId} className={styles.lista}>

@@ -181,10 +181,9 @@ svg {
 
 .estatico h2 {
   margin: 1.75rem 0 0.5rem;
-  font-size: 1rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--color-text-muted, #6b7260);
+  font-size: 1.0625rem;
+  line-height: 1.2;
+  color: var(--ink-800, #2e3326);
 }
 
 .estatico p {

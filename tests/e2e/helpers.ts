@@ -124,7 +124,7 @@ export const panel = (page: Page) =>
  * que haría alguien que la busca, y se cierra el panel para dejar el mapa como estaba.
  */
 export async function plazaMarker(page: Page, name: string): Promise<Locator> {
-  const marker = page.locator(`button[data-mode][aria-label^="Ver ${name}, "]`)
+  const marker = page.locator(`button[data-mode][aria-label^="${name}, "]`)
   await marker.waitFor({ state: 'attached' })
   for (let attempt = 0; attempt < 3; attempt++) {
     // La colocación de marcadores se estabiliza cuando termina el movimiento de la cámara.

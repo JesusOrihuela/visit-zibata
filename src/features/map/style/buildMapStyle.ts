@@ -2,10 +2,11 @@
  * Construye el estilo completo de MapLibre a partir de los datos propios del proyecto
  * (teselas propias + GeoJSON locales). Sin servidores de mapas externos ni claves.
  */
-import instrumentSans500 from '@fontsource/instrument-sans/files/instrument-sans-latin-500-normal.woff2?url'
-import instrumentSans600 from '@fontsource/instrument-sans/files/instrument-sans-latin-600-normal.woff2?url'
-import instrumentSerifItalic from '@fontsource/instrument-serif/files/instrument-serif-latin-400-italic.woff2?url'
-import instrumentSerif400 from '@fontsource/instrument-serif/files/instrument-serif-latin-400-normal.woff2?url'
+
+import archivo400Italic from '@fontsource/archivo/files/archivo-latin-400-italic.woff2?url'
+import archivo400 from '@fontsource/archivo/files/archivo-latin-400-normal.woff2?url'
+import archivo500 from '@fontsource/archivo/files/archivo-latin-500-normal.woff2?url'
+import archivo600 from '@fontsource/archivo/files/archivo-latin-600-normal.woff2?url'
 import type { Feature, FeatureCollection, Polygon } from 'geojson'
 import type { StyleSpecification } from 'maplibre-gl'
 import type { Bbox } from '../../../config/map.ts'
@@ -77,10 +78,10 @@ export function buildMapStyle(options: MapStyleOptions): StyleSpecification {
     version: 8,
     name: 'Zibatá: maqueta',
     'font-faces': {
-      [FONT.sans]: absolute(instrumentSans500),
-      [FONT.sansStrong]: absolute(instrumentSans600),
-      [FONT.serif]: absolute(instrumentSerif400),
-      [FONT.serifItalic]: absolute(instrumentSerifItalic),
+      [FONT.sans]: absolute(archivo500),
+      [FONT.sansStrong]: absolute(archivo600),
+      [FONT.serif]: absolute(archivo400),
+      [FONT.serifItalic]: absolute(archivo400Italic),
     },
     sources: {
       [SOURCE.base]: {

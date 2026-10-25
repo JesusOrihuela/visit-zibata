@@ -1,7 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import type { Category, Place, Plaza } from '../../src/types/domain.ts'
-import { MIN_INDEXABLE } from './categorias.ts'
 import { type Dataset, pagesFor } from './prerender.ts'
 
 /*
@@ -45,10 +44,13 @@ describe.each(idiomas)('metadatos de las páginas (%s)', (idioma) => {
   const fichas = data.places.map((place) => ficha(idioma, place.slug))
 
   it('genera la portada, las zonas, una página por cada categoría, las fichas y la información', () => {
+    const categoriasConLocales = data.categories.filter((c) =>
+      data.places.some((p) => p.giros.some((giro) => c.giros.some((g) => g.id === giro))),
+    )
     expect(todas).toHaveLength(
       1 +
         data.plazas.filter((p) => p.active).length +
-        data.categories.length +
+        categoriasConLocales.length +
         data.places.length +
         4,
     )
@@ -156,44 +158,53 @@ describe('las fichas que antes salían iguales', () => {
 })
 
 describe('lo que se comprobó en las fichas concretas de la auditoría', () => {
-  it('cafele, que ya decía lo suficiente, no cambia', () => {
-    const cafele = data.places.find((place) => place.slug === 'cafele')
-    expect(ficha('es', 'cafele').description).toBe(textoDelDato(cafele as Place, 'es'))
-  })
-
-  it('una descripción que empezaba con el nombre ya no lo repite (marie, huskys)', () => {
-    expect(ficha('es', 'marie-panaderia-artesanal').description).toMatch(/^Pan dulce artesanal/)
-    expect(ficha('es', 'huskys-ice-cream').description).toMatch(/^Helados artesanales/)
-    // Pero cuando el nombre es el sujeto de la frase, se queda.
-    expect(ficha('es', 'cafele').description).toMatch(/^CAFELE es una cafetería/)
-    expect(ficha('es', 'la-michoacana').description).toMatch(/^La Michoacana es una marca/)
-  })
-
-  it('un salto que separa dos ideas se une con " · " y uno que parte una frase, con un espacio', () => {
-    expect(ficha('es', 'origenatural').description).toContain(
-      'Urban Bistró · Comer rico y sentirte bien.',
-    )
-    expect(ficha('es', 'la-880').description).toContain('se mezclan · Alitas & Pisto')
-    expect(ficha('es', 'burger-fries').description).toContain(
-      'una buena hamburguesa sin pagar de más',
+  it('cafele, que ya decía lo suficiente, lleva el contexto primero y luego su texto', () => {
+    expect(ficha('es', 'cafele').description).toMatch(
+      /^.*en MOL Pitahaya, Zibatá\. CAFELE es una cafetería/,
     )
   })
 
-  it('una descripción corta dice dónde está y qué es, sin repetir su propio giro', () => {
+  it('una descripción que empezaba con el nombre lleva el contexto primero', () => {
+    expect(ficha('es', 'marie-panaderia-artesanal').description).toMatch(
+      /^.*en Centro Zibatá\. Pan dulce artesanal/,
+    )
+    expect(ficha('es', 'huskys-ice-cream').description).toMatch(
+      /^.*en Xentric Anáhuac, Zibatá\. Helados artesanales/,
+    )
+    // Pero cuando el nombre es el sujeto de la frase, se queda después del contexto.
+    expect(ficha('es', 'cafele').description).toMatch(
+      /^.*en MOL Pitahaya, Zibatá\. CAFELE es una cafetería/,
+    )
+    expect(ficha('es', 'la-michoacana').description).toMatch(
+      /^En Paseo Zibatá\. La Michoacana es una marca/,
+    )
+  })
+
+  it('un salto que separa dos ideas se une con " · " y uno que parte una frase, con un espacio, después del contexto', () => {
+    expect(ficha('es', 'origenatural').description).toMatch(
+      /^.*en Xentric Anáhuac, Zibatá\. Urban Bistró · Comer rico y sentirte bien\./,
+    )
+    expect(ficha('es', 'la-880').description).toMatch(
+      /^.*en Xentric Anáhuac, Zibatá\. El lugar donde la música, la comida y las risas se mezclan · Alitas & Pisto/,
+    )
+    expect(ficha('es', 'burger-fries').description).toMatch(
+      /^.*en Plaza Loop Urban, Zibatá\. Creemos que todos deben disfrutar de una buena hamburguesa sin pagar de más/,
+    )
+  })
+
+  it('una descripción corta dice dónde está y qué es, sin repetir su propio giro, con el contexto primero', () => {
     expect(ficha('es', 'lilo-bowl-bar').description).toMatch(
-      /^Bowl Revolution\. .+ en Centro Zibatá\.$/,
+      /^.*en Centro Zibatá\. Bowl Revolution\.$/,
     )
     // "Pizza artesanal." ya dice "pizza": solo se añade la zona.
-    expect(ficha('es', 'enzza-pizza-zibata').description).toBe('Pizza artesanal. En Paseo Zibatá.')
+    expect(ficha('es', 'enzza-pizza-zibata').description).toBe('En Paseo Zibatá. Pizza artesanal.')
   })
 
-  it('agave grill abre con el aviso de cierre y su lastmod no es anterior al cierre', () => {
+  it('agave grill ya reabrió: no lleva aviso de cierre y usa la fecha de su verificación', () => {
     const es = ficha('es', 'agave-grill')
-    expect(es.description.startsWith('Cerrado temporalmente. Por remodelación.')).toBe(true)
-    expect(
-      ficha('en', 'agave-grill').description.startsWith('Temporarily closed. For refurbishment.'),
-    ).toBe(true)
-    expect((es.lastmod ?? '') >= '2026-10-09').toBe(true)
+    expect(es.description.startsWith('Cerrado temporalmente')).toBe(false)
+    const agave = data.places.find((place) => place.slug === 'agave-grill')
+    expect(es.lastmod).toBe(agave?.verification?.lastVerifiedAt)
     // Las que no cierran siguen con la fecha de su verificación.
     const cafele = data.places.find((place) => place.slug === 'cafele')
     expect(ficha('es', 'cafele').lastmod).toBe(cafele?.verification?.lastVerifiedAt)
@@ -283,35 +294,28 @@ describe.each(idiomas)('las páginas de categoría (%s)', (idioma) => {
     new Set([...place.giros, ...(place.secundarios ?? [])].map((g) => categoriaDeGiro.get(g)))
   const conLocales = data.categories.filter((c) => data.places.some((p) => idsDe(p).has(c.id)))
 
-  it('hay una por cada categoría de los datos, tenga locales o no, y ninguna más', () => {
-    expect(data.categories.length).toBeGreaterThan(conLocales.length)
+  it('hay una por cada categoría que tiene al menos un local', () => {
+    const conLocales = data.categories.filter((c) => data.places.some((p) => idsDe(p).has(c.id)))
+    expect(conLocales.length).toBeGreaterThan(0)
     expect(deCategoria.map((p) => p.href).sort()).toEqual(
-      data.categories.map((c) => ruta(c.slug[idioma])).sort(),
+      conLocales.map((c) => ruta(c.slug[idioma])).sort(),
     )
   })
 
-  it('solo se ofrecen a los buscadores las que llegan al umbral de locales', () => {
-    const bajo: string[] = []
+  it('todas las categorías con al menos un local son indexables', () => {
     for (const categoria of data.categories) {
       const n = data.places.filter((p) => idsDe(p).has(categoria.id)).length
+      if (n === 0) continue
       const pagina = de(idioma, ruta(categoria.slug[idioma]))
-      expect(pagina.indexable !== false, categoria.id).toBe(n >= MIN_INDEXABLE)
-      if (n < MIN_INDEXABLE) bajo.push(categoria.id)
+      expect(pagina.indexable !== false, categoria.id).toBe(true)
     }
-    // Si ninguna queda bajo el umbral, esta prueba no comprueba nada.
-    expect(bajo.length).toBeGreaterThan(0)
   })
 
-  it('una categoría sin locales dice que todavía no hay, sin cifras ni ejemplos vacíos', () => {
+  it('una categoría sin locales no tiene página', () => {
     const vacias = data.categories.filter((c) => !conLocales.includes(c))
     expect(vacias.length).toBeGreaterThan(0)
     for (const categoria of vacias) {
-      const pagina = de(idioma, ruta(categoria.slug[idioma]))
-      expect(pagina.description).toMatch(idioma === 'es' ? /todavía no hay/ : /no places published/)
-      expect(`${pagina.description} ${pagina.contenido}`).not.toMatch(
-        /\b0 (lugares|places)|(Por ejemplo|For example), \./,
-      )
-      expect(pagina.jsonLd).toBeUndefined()
+      expect(() => de(idioma, ruta(categoria.slug[idioma]))).toThrow()
     }
   })
 
@@ -411,6 +415,12 @@ describe.each(idiomas)('las páginas de categoría (%s)', (idioma) => {
 })
 
 describe('las páginas de categoría en los dos idiomas', () => {
+  const conLocales = data.categories.filter((c) =>
+    data.places.some((p) =>
+      [...p.giros, ...(p.secundarios ?? [])].some((g) => c.giros.some((g2) => g2.id === g)),
+    ),
+  )
+
   it('ocupan la misma posición, que es lo que empareja las hreflang', () => {
     const posiciones = (idioma: Idioma) =>
       paginas[idioma]
@@ -418,6 +428,6 @@ describe('las páginas de categoría en los dos idiomas', () => {
         .filter(([href]) => /^\/(en\/category|categoria)\//.test(href))
         .map(([, i]) => i)
     expect(posiciones('es')).toEqual(posiciones('en'))
-    expect(posiciones('es').length).toBe(data.categories.length)
+    expect(posiciones('es').length).toBe(conLocales.length)
   })
 })

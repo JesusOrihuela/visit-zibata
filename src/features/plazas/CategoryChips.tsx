@@ -106,9 +106,7 @@ export function CategoryChips({
               href={hrefFor(null)}
               aria-current={activeId === null ? 'true' : undefined}
               aria-label={
-                totalCount === undefined
-                  ? undefined
-                  : `${t('filters.allCategories')}, ${t('places.count', { count: totalCount })}`
+                totalCount === undefined ? undefined : `${t('filters.allCategories')} ${totalCount}`
               }
               onClick={alPulsar(() => onChange(null))}
             >
@@ -125,9 +123,7 @@ export function CategoryChips({
                   href={hrefFor(active ? null : category.id)}
                   aria-current={active ? 'true' : undefined}
                   aria-label={
-                    count === undefined
-                      ? undefined
-                      : `${localized(category.label)}, ${t('places.count', { count })}`
+                    count === undefined ? undefined : `${localized(category.label)} ${count}`
                   }
                   onClick={alPulsar(() => onChange(active ? null : category.id))}
                 >

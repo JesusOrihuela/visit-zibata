@@ -13,7 +13,7 @@
  * cara las usa: la rama ya está escrita.
  *
  * Se renderiza con el navegador de Playwright, que ya es dependencia de desarrollo, y no con la
- * composición de texto de sharp: esa depende de las fuentes instaladas en el sistema, y Fraunces no
+ * composición de texto de sharp: esa depende de las fuentes instaladas en el sistema, y Archivo no
  * está en los runners de CI. Para que no cueste 101 navegaciones, se pinta una sola página con las
  * 101 tarjetas y se captura cada una por separado.
  */
@@ -74,10 +74,10 @@ const tarjetas = places
   .join('\n')
 
 const html = `<!doctype html><meta charset="utf-8"><style>
-@font-face{font-family:Fraunces;font-weight:600;src:url("file:///${fuentes}/fraunces/files/fraunces-latin-600-normal.woff2")format("woff2")}
-@font-face{font-family:"Instrument Sans";font-weight:500;src:url("file:///${fuentes}/instrument-sans/files/instrument-sans-latin-500-normal.woff2")format("woff2")}
+@font-face{font-family:Archivo;font-weight:700;src:url("file:///${fuentes}/archivo/files/archivo-latin-700-normal.woff2")format("woff2")}
+@font-face{font-family:Archivo;font-weight:500;src:url("file:///${fuentes}/archivo/files/archivo-latin-500-normal.woff2")format("woff2")}
 *{margin:0;box-sizing:border-box}
-body{background:#fff;font-family:"Instrument Sans",sans-serif}
+body{background:#fff;font-family:Archivo,sans-serif}
 .c{width:1200px;height:630px;display:grid;grid-template-columns:1fr 440px;background:#F7F4ED;
   position:relative;overflow:hidden}
 .c::before{content:"";position:absolute;inset:0;
@@ -86,7 +86,7 @@ body{background:#fff;font-family:"Instrument Sans",sans-serif}
 .marca{display:flex;align-items:center;gap:12px;font-size:21px;letter-spacing:.14em;
   text-transform:uppercase;color:#536C2A;margin-bottom:10px}
 .marca svg{width:46px;height:46px}
-h1{font-family:Fraunces,serif;font-weight:600;font-size:68px;line-height:1.02;letter-spacing:-.02em;
+h1{font-family:Archivo,sans-serif;font-weight:700;font-size:68px;line-height:1.02;letter-spacing:-.02em;
   color:#22261D;text-wrap:balance}
 .giros{font-size:30px;color:#536C2A}
 .plaza{font-size:25px;color:#8A907C}

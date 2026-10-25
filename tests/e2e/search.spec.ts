@@ -125,9 +125,9 @@ test.describe('Búsqueda y filtros', () => {
      */
     await expect(
       topCategories.getByRole('link', { name: /Desayunos y Café/ }),
-    ).toHaveAccessibleName(new RegExp(`${desayunos} lugares`))
+    ).toHaveAccessibleName(`Desayunos y Café ${desayunos}`)
     await expect(topCategories.getByRole('link', { name: /^Todo/ })).toHaveAccessibleName(
-      new RegExp(`${placesInPlaza('Paseo Zibatá')} lugares`),
+      `Todo ${placesInPlaza('Paseo Zibatá')}`,
     )
     await expect(page).toHaveURL(/\/zona\/paseo-zibata\?categoria=desayunos-y-cafe$/)
 
@@ -144,7 +144,7 @@ test.describe('Búsqueda y filtros', () => {
     await page
       .getByRole('list', { name: 'Categorías' })
       .first()
-      .getByRole('link', { name: /^Bar,/ })
+      .getByRole('link', { name: /^Bar / })
       .click()
     // Una categoría sola es su propia página: la barra de direcciones lo dice.
     await expect(page).toHaveURL(/\/categoria\/bar$/)

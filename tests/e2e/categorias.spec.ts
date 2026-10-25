@@ -65,7 +65,7 @@ test.describe('Páginas de categoría', () => {
       .getByRole('link', { name: /^Italiana/ })
       .click()
     await expect(page).toHaveURL(/\/categoria\/italiana$/)
-    await cápsulas(page).getByRole('link', { name: /^Bar,/ }).click()
+    await cápsulas(page).getByRole('link', { name: /^Bar / }).click()
     await expect(page).toHaveURL(/\/categoria\/bar$/)
     expect(await page.evaluate(() => window.history.length)).toBe(antes)
   })

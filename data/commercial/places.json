@@ -4022,10 +4022,6 @@
         "didiFood": null
       },
       "active": true,
-      "cierre": {
-        "motivo": "remodelacion",
-        "desde": "2026-10-09"
-      },
       "verification": {
         "status": "likely_active",
         "confidence": "medium",

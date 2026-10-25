@@ -20,7 +20,7 @@ describe('VisitButton', () => {
   it('sin visitas, invita a registrar la primera', () => {
     render(<VisitButton placeId="cafe-aurora" placeName="Café Aurora" />)
     expect(screen.getByText('Registra tu primera visita')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Registrar una visita a Café Aurora/ })).toBeVisible()
+    expect(screen.getByRole('button', { name: /Registrar visita a Café Aurora/ })).toBeVisible()
   })
 
   it('cuenta las visitas y dice cuándo fue la última', () => {

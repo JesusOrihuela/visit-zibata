@@ -33,7 +33,5 @@
   margin-top: 0.15rem;
   font-size: var(--text-2xs);
   font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
   color: var(--olive-600);
 }

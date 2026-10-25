@@ -29,3 +29,40 @@
 .status[data-state="closed"] .label {
   color: var(--danger-600);
 }
+
+/* En la fila de hoy, "Hoy" y el estado son una sola píldora. */
+/* En la fila de hoy, "Hoy" y el estado van en píldora, pero con la letra del texto de ayuda. */
+.status[data-today="true"] {
+  gap: 0.3rem;
+  padding: 0.05rem 0.4rem;
+  border-radius: var(--radius-pill);
+  background: var(--lime-100);
+  font-size: var(--text-xs);
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+.status[data-today="true"] .label,
+.status[data-today="true"][data-state="open"] .label,
+.status[data-today="true"][data-state="closed"] .label {
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
+.status[data-today="true"][data-state="closed"] {
+  background: var(--danger-50);
+}
+
+.status[data-today="true"][data-state="closed"] .dot {
+  background: var(--danger-600);
+}
+
+/* Cuando no hay estado en vivo, la fila de hoy conserva su etiqueta. */
+.todayOnly {
+  padding: 0.05rem 0.4rem;
+  border-radius: var(--radius-pill);
+  background: var(--lime-100);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: 400;
+}

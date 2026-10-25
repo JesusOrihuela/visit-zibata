@@ -72,6 +72,13 @@ export function BottomSheet({
 }: BottomSheetProps) {
   const viewport = useViewportHeight()
   const [dragHeight, setDragHeight] = useState<number | null>(null)
+  /*
+   * El primer render no anima el alto. La ruta se aplica en un layout effect y puede pasar la hoja
+   * de colapsada a expandida antes de pintar; si la transición estuviera activa, el navegador
+   * animaría ese primer cambio y Lighthouse lo contaría como layout shift.
+   */
+  const [initial, setInitial] = useState(true)
+  useEffect(() => setInitial(false), [])
   const drag = useRef<{
     startY: number
     startHeight: number
@@ -142,6 +149,7 @@ export function BottomSheet({
       data-panel=""
       data-expanded={expanded}
       data-dragging={dragHeight !== null}
+      data-initial={initial}
       style={{ height }}
       aria-label={t('panel.label')}
     >

@@ -195,13 +195,13 @@ describe('la descripción de una ficha', () => {
 
   it('completa una corta con los giros y la zona, sin tocar lo que dice el negocio', () => {
     expect(descripcionDeFicha({ ...base, descripcion: 'Bowl Revolution.' })).toBe(
-      'Bowl Revolution. Açaí, Jugos en Centro Zibatá.',
+      'Açaí, Jugos en Centro Zibatá. Bowl Revolution.',
     )
   })
 
-  it('pone un punto antes del contexto si la descripción no lo traía', () => {
+  it('pone el contexto primero si la descripción no lo traía', () => {
     expect(descripcionDeFicha({ ...base, descripcion: 'Compartiendo tus mejores momentos' })).toBe(
-      'Compartiendo tus mejores momentos. Açaí, Jugos en Centro Zibatá.',
+      'Açaí, Jugos en Centro Zibatá. Compartiendo tus mejores momentos.',
     )
   })
 
@@ -213,7 +213,9 @@ describe('la descripción de una ficha', () => {
       descripcion: '🌵 Cocina a la parrilla & experiencia gastronómica.',
       contexto: contexto(['Asador y Cortes'], 'Centro Zibatá'),
     })
-    expect(meta.startsWith('Cerrado temporalmente. Por remodelación. 🌵 Cocina')).toBe(true)
+    expect(meta.startsWith('Cerrado temporalmente. Por remodelación.')).toBe(true)
+    expect(meta).toContain('Asador y Cortes en Centro Zibatá.')
+    expect(meta).toContain('🌵 Cocina a la parrilla & experiencia gastronómica.')
     expect(meta.length).toBeLessThanOrEqual(LIMITE_DESCRIPCION)
   })
 
@@ -238,8 +240,8 @@ describe('la descripción de una ficha', () => {
     expect(a).not.toBe(b)
     expect(a.length).toBeLessThanOrEqual(LIMITE_DESCRIPCION)
     expect(b.length).toBeLessThanOrEqual(LIMITE_DESCRIPCION)
-    expect(a).toMatch(/Paseo Zibatá\.$/)
-    expect(b).toMatch(/Xentric Zibatá\.$/)
+    expect(a).toMatch(/^En Paseo Zibatá\./)
+    expect(b).toMatch(/^En Xentric Zibatá\./)
   })
 
   it('si el dato no trae descripción, dice al menos qué es y dónde está', () => {

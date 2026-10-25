@@ -48,7 +48,7 @@ describe('FilterBar', () => {
      * Quien no ve la fila sí la necesita, porque no puede mirar cuál está llena.
      */
     const desayunos = screen.getByRole('link', { name: /Desayunos y café/ })
-    expect(desayunos).toHaveAccessibleName('Desayunos y café, 2 lugares')
+    expect(desayunos).toHaveAccessibleName('Desayunos y café 2')
     expect(desayunos).not.toHaveTextContent('2')
   })
 

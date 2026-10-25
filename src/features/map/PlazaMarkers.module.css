@@ -4,6 +4,11 @@
   flex-direction: column;
   align-items: center;
   pointer-events: none;
+  --lift-dir: -1;
+}
+
+.anchor[data-abajo="true"] {
+  --lift-dir: 1;
 }
 
 /* El botón es exactamente la etiqueta: su área pulsable no tapa otros marcadores ni el mapa. */
@@ -12,10 +17,21 @@
   composes: base from "../../styles/controls.module.css";
   pointer-events: auto;
   display: block;
+  --lift: 0;
+  translate: 0 calc(var(--lift) * var(--lift-dir) * 48px);
   transition:
     opacity var(--duration-base) var(--ease-out),
-    transform var(--duration-base) var(--ease-out),
     translate var(--duration-base) var(--ease-out);
+}
+
+.marker[data-lift="0"] {
+  --lift: 0;
+}
+.marker[data-lift="1"] {
+  --lift: 1;
+}
+.marker[data-lift="2"] {
+  --lift: 2;
 }
 
 .marker:focus-visible {
@@ -121,6 +137,9 @@
 .stem {
   width: 2px;
   height: 0.875rem;
+  --lift: 0;
+  transform-origin: bottom;
+  scale: 1 calc(1 + (var(--lift) * 48px / 0.875rem));
   /*
    * Sólido, no al 85 %. Translúcido sobre la cartografía salía más claro que su propia gota y se
    * leía como de otra zona, que es justo lo contrario de lo que hace un tallo: decir de quién es
@@ -128,8 +147,22 @@
    */
   background: var(--plaza-accent, var(--olive-600));
   transition:
-    height var(--duration-base) var(--ease-out),
+    scale var(--duration-base) var(--ease-out),
     opacity var(--duration-base) var(--ease-out);
+}
+
+.stem[data-lift="0"] {
+  --lift: 0;
+}
+.stem[data-lift="1"] {
+  --lift: 1;
+}
+.stem[data-lift="2"] {
+  --lift: 2;
+}
+
+.anchor[data-abajo="true"] .stem {
+  transform-origin: top;
 }
 
 /* El que vive dentro del marcador de la etiqueta solo ocupa sitio: lo que se ve es su gemelo, que
@@ -144,16 +177,6 @@
   opacity: 0;
 }
 
-/* Etiqueta elevada para no chocar con otra: el tallo se alarga 48 px por nivel (LIFT_STEP) y sigue
-   señalando la plaza. */
-.stem[data-lift="1"] {
-  height: calc(0.875rem + 48px);
-}
-
-.stem[data-lift="2"] {
-  height: calc(0.875rem + 96px);
-}
-
 .marker[data-state="hover"] .label,
 .marker:focus-visible .label {
   filter: drop-shadow(0 4px 9px rgb(31 36 25 / 0.42));
@@ -161,7 +184,17 @@
 
 .marker[data-state="hover"],
 .marker:focus-visible {
-  transform: translateY(-2px);
+  translate: 0 calc(var(--lift) * var(--lift-dir) * 48px - 2px);
+}
+
+.marker[data-mode="full"][data-state="hover"],
+.marker[data-mode="full"]:focus-visible {
+  translate: calc(50% - 15px) calc(var(--lift) * var(--lift-dir) * 48px - 2px);
+}
+
+.marker[data-mode="left"][data-state="hover"],
+.marker[data-mode="left"]:focus-visible {
+  translate: calc(-50% + 15px) calc(var(--lift) * var(--lift-dir) * 48px - 2px);
 }
 
 /* En pantallas táctiles no hay hover: respuesta inmediata al tocar. */
@@ -179,8 +212,16 @@
  * reposo, así que la selección no puede decirse con el relleno; se dice recortando la gota del mapa.
  */
 .marker[data-state="selected"] {
-  transform: translateY(-4px);
+  translate: 0 calc(var(--lift) * var(--lift-dir) * 48px - 4px);
   z-index: 2;
+}
+
+.marker[data-mode="full"][data-state="selected"] {
+  translate: calc(50% - 15px) calc(var(--lift) * var(--lift-dir) * 48px - 4px);
+}
+
+.marker[data-mode="left"][data-state="selected"] {
+  translate: calc(-50% + 15px) calc(var(--lift) * var(--lift-dir) * 48px - 4px);
 }
 
 .marker[data-state="selected"] .gota {
@@ -218,11 +259,11 @@
  * de vuelta (medio ancho de gota) dejan ahí la gota en su lugar.
  */
 .marker[data-mode="full"] {
-  translate: calc(50% - 15px) 0;
+  translate: calc(50% - 15px) calc(var(--lift) * var(--lift-dir) * 48px);
 }
 
 .marker[data-mode="left"] {
-  translate: calc(-50% + 15px) 0;
+  translate: calc(-50% + 15px) calc(var(--lift) * var(--lift-dir) * 48px);
 }
 
 .marker[data-mode="left"] .label {

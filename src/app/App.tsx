@@ -1,8 +1,10 @@
 import { CatalogProvider } from '../data/CatalogContext.tsx'
 import { StaticPlacesRepository } from '../data/StaticPlacesRepository.ts'
 import { cargarSenales, registrarSenales } from '../features/favorites/senales.ts'
+import { parsePath } from '../lib/url-state.ts'
 import { AppStateProvider } from './AppStateContext.tsx'
 import { Experience } from './Experience.tsx'
+import { initialAppState } from './state.ts'
 
 /** Punto de composición: aquí se elige la implementación del repositorio de datos. */
 const repository = new StaticPlacesRepository()
@@ -17,10 +19,26 @@ const repository = new StaticPlacesRepository()
 registrarSenales()
 void cargarSenales()
 
+/*
+ * La hoja inferior arranca expandida si la URL es de una ficha. Si esperásemos al catálogo para
+ * aplicar la ruta, la hoja ya estaría montada colapsada y el cambio a expandida animaría el alto
+ * después del primer pintado, lo que Lighthouse cuenta como CLS.
+ */
+const initialSheetExpanded =
+  typeof window !== 'undefined' &&
+  Boolean(
+    parsePath(window.location.pathname, window.location.search, import.meta.env.BASE_URL).placeSlug,
+  )
+
+const initialState = {
+  ...initialAppState,
+  sheetExpanded: initialSheetExpanded,
+}
+
 export function App() {
   return (
     <CatalogProvider repository={repository}>
-      <AppStateProvider>
+      <AppStateProvider initialState={initialState}>
         <Experience />
       </AppStateProvider>
     </CatalogProvider>
