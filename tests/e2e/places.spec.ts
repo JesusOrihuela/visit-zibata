@@ -213,9 +213,10 @@ test.describe('Plazas y lugares', () => {
     expect(huecos.bloques.length).toBeGreaterThan(2)
     // Todos los bloques van a 20 px; la descripción es la única excepción documentada (12 px),
     // justo después del bloque personal.
-    expect(huecos.bloques.filter((gap) => gap !== 20), `bloques: ${huecos.bloques}`).toEqual([
-      12,
-    ])
+    expect(
+      huecos.bloques.filter((gap) => gap !== 20),
+      `bloques: ${huecos.bloques}`,
+    ).toEqual([12])
     expect(huecos.bloques.indexOf(12)).toBe(3)
     // La cabecera usa el mismo paso que los bloques.
     expect(huecos.cabecera.length).toBeGreaterThan(0)
