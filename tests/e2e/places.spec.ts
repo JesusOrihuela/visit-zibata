@@ -163,7 +163,7 @@ test.describe('Plazas y lugares', () => {
     test.skip(!isMobile(page), 'Solo aplica a la hoja inferior móvil')
     await openApp(page)
     await waitForMap(page)
-    await page.getByRole('button', { name: 'Explora Zibatá' }).click()
+    await page.getByRole('button', { name: 'Ver las zonas' }).click()
     const handle = page.getByRole('button', { name: 'Reducir panel' })
     await expect(handle).toHaveAttribute('aria-expanded', 'true')
     await waitForSheet(page)

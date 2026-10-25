@@ -29,6 +29,7 @@ export const es = {
   'explore.andMore': '{list} y {count} más',
   'explore.list': 'Zonas',
   'explore.openList': 'Explora Zibatá',
+  'explore.expand': 'Ver las zonas',
 
   'results.title': 'Resultados',
   'results.empty.title': 'Sin resultados',
@@ -70,7 +71,6 @@ export const es = {
   'place.didiFood': 'DiDi Food',
   'place.noPhoto': 'Ilustración de la categoría {category}',
   'place.openDetail': 'Ver detalles de {name}',
-  'place.ratingCount': { one: '{count} valoración', other: '{count} valoraciones' },
   'place.savedCount': { one: '{count} persona lo guardó', other: '{count} personas lo guardaron' },
   'place.missingInfo': 'Aún no tenemos más información de este lugar.',
 
@@ -300,7 +300,7 @@ export const es = {
   'about.contributeMeanwhile':
     'Lo que escribas llega directo a quien mantiene la guía, sin pasar por ningún servicio de terceros. No hace falta cuenta ni correo: el contacto es opcional y solo sirve para responderte. La guía se revisa por temporada, y lo que pida corregir un negocio entra en la siguiente actualización.',
 
-  'suggest.title': 'Cuéntame qué cambia o escribe tu mensaje',
+  'suggest.title': 'Cuéntanos qué cambia o escribe tu mensaje',
   'suggest.who': '¿Quién escribe?',
   'suggest.whoNeighbor': 'Vecino',
   'suggest.whoOwner': 'Negocio',
@@ -312,7 +312,7 @@ export const es = {
   'suggest.contactHint': 'Opcional',
   'suggest.send': 'Enviar',
   'suggest.sending': 'Enviando…',
-  'suggest.ok': 'Gracias. Lo reviso y entra en la próxima actualización.',
+  'suggest.ok': 'Gracias. Lo revisamos y entra en la próxima actualización.',
   'suggest.error': 'No se pudo enviar. Inténtalo de nuevo en un rato.',
   'suggest.required': 'Escribe tu mensaje.',
   /* Etiqueta del campo trampa: solo la oyen los lectores de pantalla, y les dice que lo dejen. */
@@ -336,7 +336,7 @@ export const es = {
   },
   'profile.noVisits': 'Todo Zibatá por estrenar: {total} zonas y {places} lugares.',
   'profile.zonesLabel': 'Zonas de Zibatá',
-  'profile.zoneDone': 'estrenada',
+  'profile.zoneDone': 'visitada',
   'profile.podium': 'Tus tres de siempre',
   'profile.position': 'Puesto {position}',
   'profile.tastes': 'Lo que más buscas',

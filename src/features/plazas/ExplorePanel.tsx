@@ -78,7 +78,7 @@ export function ExplorePanel({
         </div>
         {onExpand && (
           <button type="button" className={styles.peekButton} onClick={onExpand}>
-            {t('explore.openList')}
+            {t('explore.expand')}
           </button>
         )}
       </section>

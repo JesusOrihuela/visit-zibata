@@ -314,7 +314,6 @@ export function PlaceDetail({ place, plaza, backLabel, onBack, onClose }: PlaceD
             </p>
           </div>
         </div>
-        <SocialStats placeId={place.id} />
         <p className={styles.location}>
           <MapPin aria-hidden="true" />
           <span>
@@ -378,6 +377,13 @@ export function PlaceDetail({ place, plaza, backLabel, onBack, onClose }: PlaceD
           conNombre
         />
       </div>
+
+      {/*
+       * Los corazones de la comunidad, entre las salidas y lo personal. Va aquí y no en la cabecera
+       * porque es lo último que se mira antes de decidir: primero a dónde voy, después cuánta gente
+       * lo guardó, y al final lo mío (estrellas y visitas). Arriba competía con el nombre del local.
+       */}
+      <SocialStats placeId={place.id} />
 
       {/*
        * Y lo que no sale de aquí. Calificar y registrar una visita solo cambian tu relación con el

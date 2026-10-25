@@ -83,7 +83,8 @@
         "reposteria"
       ],
       "description": {
-        "es": "Conscious food and pastries."
+        "es": "Conscious food and pastries.",
+        "en": "Conscious food and pastries."
       },
       "hours": {
         "mon": [
@@ -219,7 +220,7 @@
       "secundarios": [],
       "description": {
         "es": "Husky’s Ice Cream | Helados artesanales en Querétaro 🍦 Fusión de ice cream americano y gelato italiano. Helado suave, yogurt y paletas de muchos sabores.",
-        "en": "Husky’s Ice Cream | Craft ice cream in Querétaro 🍦 American ice cream meets Italian gelato. Soft serve, frozen yogurt and paletas in many flavors."
+        "en": "Husky’s Ice Cream | Craft ice cream in Querétaro 🍦 American ice cream meets Italian gelato. Soft serve, frozen yogurt and paletas in many flavours."
       },
       "hours": {
         "mon": [
@@ -558,7 +559,7 @@
       ],
       "description": {
         "es": "🥖 Tortas, wraps, ensaladas y mucho más.\n🥗 Sabor único y con ingredientes de la más alta calidad.",
-        "en": "🥖 Tortas, wraps, salads and much more.\n🥗 One of a kind flavor, made with the highest quality ingredients."
+        "en": "🥖 Tortas, wraps, salads and much more.\n🥗 One-of-a-kind flavour, made with the highest quality ingredients."
       },
       "hours": {
         "mon": [
@@ -835,7 +836,8 @@
       ],
       "secundarios": [],
       "description": {
-        "es": "RESTAURANT-BAR."
+        "es": "RESTAURANT-BAR.",
+        "en": "Restaurant bar."
       },
       "hours": {
         "mon": [],
@@ -900,7 +902,7 @@
       "secundarios": [],
       "description": {
         "es": "🍀 | Un verdadero Irish Pub",
-        "en": "🍀 | A true Irish Pub"
+        "en": "🍀 | A true Irish pub"
       },
       "hours": {
         "mon": [
@@ -1430,7 +1432,7 @@
       "secundarios": [],
       "description": {
         "es": "Te ofrecemos deliciosas micheladas, azulitos y tragos nice en un ambiente relajado y agradable, acompañados con nuestros irresistibles snacks: alitas con diversas salsas, boneless, papas a la francesa y aros de cebolla.",
-        "en": "We serve delicious micheladas, azulitos and good drinks in a relaxed, easygoing setting, along with snacks you cannot resist: wings with a range of sauces, boneless wings, french fries and onion rings."
+        "en": "We serve delicious micheladas, azulitos and good drinks in a relaxed, easygoing setting, along with snacks you cannot resist: wings with a range of sauces, boneless wings, French fries and onion rings."
       },
       "hours": {
         "mon": [],
@@ -1627,7 +1629,8 @@
       ],
       "secundarios": [],
       "description": {
-        "es": "JUST POKE & FUN 🍚😎🍚😎\nEst. 2018"
+        "es": "JUST POKE & FUN 🍚😎🍚😎\nEst. 2018",
+        "en": "JUST POKE & FUN 🍚😎🍚😎\nEst. 2018"
       },
       "hours": {
         "mon": [
@@ -2060,7 +2063,7 @@
       "secundarios": [],
       "description": {
         "es": "🌽 Elotes y esquites 💛 Tus nuevos favoritos❤️‍🔥",
-        "en": "🌽 Elotes and esquites 💛 Your new favorites❤️‍🔥"
+        "en": "🌽 Elotes and esquites 💛 Your new favourites❤️‍🔥"
       },
       "hours": {
         "mon": [
@@ -2267,7 +2270,7 @@
       ],
       "description": {
         "es": "¡Llegó la mejor Birria a Querétaro, desde la primera mordida te enamorarás de su gran sabor! 😎🫶🏻🔥",
-        "en": "The best birria has arrived in Querétaro. One bite and you will fall for the flavor! 😎🫶🏻🔥"
+        "en": "The best birria has arrived in Querétaro. One bite and you will fall for the flavour! 😎🫶🏻🔥"
       },
       "hours": {
         "mon": [
@@ -2336,7 +2339,7 @@
       "secundarios": [],
       "description": {
         "es": "Gaspachos tradicionales de fruta estilo Morelia.",
-        "en": "Traditional Morelia style fruit gaspachos."
+        "en": "Traditional Morelia-style fruit gaspachos."
       },
       "hours": {
         "mon": [
@@ -2538,7 +2541,7 @@
       ],
       "description": {
         "es": "Mariscos estilo baja 🦐🐟",
-        "en": "Baja style seafood 🦐🐟"
+        "en": "Baja-style seafood 🦐🐟"
       },
       "hours": {
         "mon": [
@@ -2673,7 +2676,7 @@
       "secundarios": [],
       "description": {
         "es": "Donde se combinan sabores auténticos y recetas artesanales. Todas nuestras masas son de masa madre y nuestras frescas ensaladas elaboradas con la mejor calidad de productos. La especialidad de la casa, las crepas.",
-        "en": "Where authentic flavors meet handmade recipes. All our doughs are sourdough and our fresh salads are made with the best quality produce. The house specialty: crepes."
+        "en": "Where authentic flavours meet handmade recipes. All our doughs are sourdough and our fresh salads are made with the best quality produce. The house specialty: crepes."
       },
       "hours": {
         "mon": [
@@ -3429,7 +3432,7 @@
       "secundarios": [],
       "description": {
         "es": "Cocina Internacional Gourmet\nOfrecemos un menú que combina sabores frescos y creativos para satisfacer todos los paladares.",
-        "en": "Gourmet International Cuisine\nOur menu combines fresh, creative flavors for every palate."
+        "en": "Gourmet International Cuisine\nOur menu combines fresh, creative flavours for every palate."
       },
       "hours": {
         "mon": [
@@ -3636,7 +3639,8 @@
         "papas-fritas"
       ],
       "description": {
-        "es": "Smash Burgers & Hot Dogs"
+        "es": "Smash Burgers & Hot Dogs",
+        "en": "Smash Burgers & Hot Dogs"
       },
       "hours": {
         "mon": [],
@@ -3908,7 +3912,7 @@
       "secundarios": [],
       "description": {
         "es": "Comida deliciosa, excelente compañía y la mejor vista de Querétaro\nEl restaurante favorito de los golfistas 🏌🏼‍♂️⛳️\n¡Te esperamos!",
-        "en": "Great food, great company and the best view in Querétaro\nThe golfers’ favorite restaurant 🏌🏼‍♂️⛳️\nWe are waiting for you!"
+        "en": "Great food, great company and the best view in Querétaro\nThe golfers’ favourite restaurant 🏌🏼‍♂️⛳️\nWe are waiting for you!"
       },
       "hours": {
         "mon": [],
@@ -3978,7 +3982,7 @@
       ],
       "description": {
         "es": "🌵 Cocina a la parrilla & experiencia gastronómica.",
-        "en": "🌵 Grilled cooking & a dining experience."
+        "en": "🌵 Grilled cuisine & a dining experience."
       },
       "hours": {
         "mon": [
@@ -4113,7 +4117,8 @@
       ],
       "secundarios": [],
       "description": {
-        "es": "Bowl Revolution."
+        "es": "Bowl Revolution.",
+        "en": "Bowl Revolution."
       },
       "hours": {
         "mon": [
@@ -4249,7 +4254,8 @@
         "jugos-y-smoothies"
       ],
       "description": {
-        "es": "Happy, fresh & berry 🫐✨\nAçai & fruit bowls\nSmoothies"
+        "es": "Happy, fresh & berry 🫐✨\nAçai & fruit bowls\nSmoothies",
+        "en": "Happy, fresh & berry 🫐✨\nAçai & fruit bowls\nSmoothies"
       },
       "hours": {
         "mon": [
@@ -4381,7 +4387,7 @@
       ],
       "description": {
         "es": "🍳 Desayunos | 🍲 Comida mexicana\nSabor increíble que sí se antoja.\n👨‍🍳 Chef Enrique Jasso",
-        "en": "🍳 Breakfast | 🍲 Mexican food\nIncredible flavor worth craving.\n👨‍🍳 Chef Enrique Jasso"
+        "en": "🍳 Breakfast | 🍲 Mexican food\nIncredible flavour worth craving.\n👨‍🍳 Chef Enrique Jasso"
       },
       "hours": {
         "mon": [
@@ -4713,7 +4719,7 @@
       "secundarios": [],
       "description": {
         "es": "Sede oficial dentro de las instalaciones de la Universidad Anáhuac, en donde saciaremos esa hambre de leones con estos deliciosos productos: hamburguesas, papas fritas, hot dogs, pizzas, alitas, postres y bebidas.",
-        "en": "Official spot inside the Universidad Anáhuac campus, where we take care of that lion sized hunger with burgers, fries, hot dogs, pizza, wings, desserts and drinks."
+        "en": "Official spot inside the Universidad Anáhuac campus, where we take care of that lion-sized hunger with burgers, fries, hot dogs, pizza, wings, desserts and drinks."
       },
       "hours": null,
       "location": null,
@@ -4859,7 +4865,7 @@
       ],
       "description": {
         "es": "🌿🥗 La Barra Verde ofrece comida saludable y jugos cold pressed que llenan de energía y bienestar.💚",
-        "en": "🌿🥗 La Barra Verde serves healthy food and cold pressed juices full of energy and wellbeing.💚"
+        "en": "🌿🥗 La Barra Verde serves healthy food and cold-pressed juices full of energy and wellbeing.💚"
       },
       "hours": null,
       "location": null,
@@ -5212,7 +5218,8 @@
       ],
       "secundarios": [],
       "description": {
-        "es": "You can't buy happiness, but you can buy bagels."
+        "es": "You can't buy happiness, but you can buy bagels.",
+        "en": "You can’t buy happiness, but you can buy bagels."
       },
       "hours": {
         "mon": [
@@ -5347,7 +5354,7 @@
       "secundarios": [],
       "description": {
         "es": "🔥 Taquería Gastronómica de Fuego\nEl ingrediente es el origen.\nEl fuego, nuestro carácter.",
-        "en": "🔥 A taquería of fire and flavor\nThe ingredient is the origin.\nThe fire, our character."
+        "en": "🔥 A taquería of fire and flavour\nThe ingredient is the origin.\nThe fire, our character."
       },
       "hours": {
         "mon": [
@@ -5539,7 +5546,8 @@
       ],
       "secundarios": [],
       "description": {
-        "es": "Fresh drinks\nFresh habits\nFresh mindset 🍃\n🥤 Juice Bar"
+        "es": "Fresh drinks\nFresh habits\nFresh mindset 🍃\n🥤 Juice Bar",
+        "en": "Fresh drinks\nFresh habits\nFresh mindset 🍃\n🥤 Juice Bar"
       },
       "hours": {
         "mon": [
@@ -5601,7 +5609,7 @@
       "secundarios": [],
       "description": {
         "es": "🌮✨ ¡El verdadero sabor está en Kekas Fritas El Xavi! ✨🌮\nVen a probar nuestras quesadillas fritas: doraditas, crujientes y rellenas con los guisados más sabrosos, hechos en casa con puro sazón mexicano.",
-        "en": "🌮✨ The real flavor is at Kekas Fritas El Xavi! ✨🌮\nCome and try our fried quesadillas: golden, crispy and filled with the tastiest homemade stews, with pure Mexican seasoning."
+        "en": "🌮✨ The real flavour is at Kekas Fritas El Xavi! ✨🌮\nCome and try our fried quesadillas: golden, crispy and filled with the tastiest homemade stews, with pure Mexican seasoning."
       },
       "hours": {
         "mon": [],
@@ -5727,7 +5735,7 @@
       ],
       "description": {
         "es": "🥞 La crepería favorita de Zibatá\n✨ Crepas, frappes y snacks irresistibles",
-        "en": "🥞 Zibatá’s favorite creperie\n✨ Crepes, frappes and snacks you cannot resist"
+        "en": "🥞 Zibatá’s favourite creperie\n✨ Crepes, frappes and snacks you cannot resist"
       },
       "hours": {
         "mon": [
@@ -5791,7 +5799,7 @@
       "secundarios": [],
       "description": {
         "es": "En Sana Corazón vivirás una experiencia única con una temática inspirada en un hospital, donde las heridas del amor se alivian bailando, cantando y brindando.",
-        "en": "At Sana Corazón you will find a one of a kind experience themed around a hospital, where the wounds of love are healed by dancing, singing and raising a glass."
+        "en": "At Sana Corazón you will find a one-of-a-kind experience themed around a hospital, where the wounds of love are healed by dancing, singing and raising a glass."
       },
       "hours": {
         "mon": [],
@@ -5977,7 +5985,7 @@
       "secundarios": [],
       "description": {
         "es": "Momentos fríos, sabores increíbles.\nAsí se vive Myköna Frozen Yogurt,\nel sabor que te enamora.🍦💙",
-        "en": "Cold moments, incredible flavors.\nThat is Myköna Frozen Yogurt,\nthe taste you fall for.🍦💙"
+        "en": "Cold moments, incredible flavours.\nThat is Myköna Frozen Yogurt,\nthe taste you fall for.🍦💙"
       },
       "hours": {
         "mon": [
@@ -6106,7 +6114,8 @@
       ],
       "secundarios": [],
       "description": {
-        "es": "Easy bakery & coffee."
+        "es": "Easy bakery & coffee.",
+        "en": "Easy bakery & coffee."
       },
       "hours": {
         "mon": [
@@ -6239,7 +6248,8 @@
       ],
       "secundarios": [],
       "description": {
-        "es": "JUST POKE & FUN 🍚😎🍚😎\nEst. 2018"
+        "es": "JUST POKE & FUN 🍚😎🍚😎\nEst. 2018",
+        "en": "JUST POKE & FUN 🍚😎🍚😎\nEst. 2018"
       },
       "hours": null,
       "location": null,
@@ -6360,7 +6370,8 @@
       ],
       "secundarios": [],
       "description": {
-        "es": "FAST FRENCH 🇫🇷"
+        "es": "FAST FRENCH 🇫🇷",
+        "en": "FAST FRENCH 🇫🇷"
       },
       "hours": {
         "mon": [
@@ -6425,7 +6436,7 @@
       "secundarios": [],
       "description": {
         "es": "Your body asks for it ⚡️\nSmoothies Healthy\nSin Azúcar + Proteína",
-        "en": "Your body asks for it ⚡️\nHealthy smoothies\nSugar free + protein"
+        "en": "Your body asks for it ⚡️\nHealthy smoothies\nSugar-free + protein"
       },
       "hours": {
         "mon": [
@@ -6489,7 +6500,8 @@
       ],
       "secundarios": [],
       "description": {
-        "es": "🌵 Tacos estilo Sonora en Querétaro\n🥩 Carne de calidad"
+        "es": "🌵 Tacos estilo Sonora en Querétaro\n🥩 Carne de calidad",
+        "en": "🌵 Sonora-style tacos in Querétaro\n🥩 Quality beef"
       },
       "hours": {
         "mon": [],
@@ -6541,7 +6553,8 @@
       ],
       "secundarios": [],
       "description": {
-        "es": "Pozole con el mejor sazón, ahora es tradición; somos el lugar preferido de las personas que comen pensando en el sabor donde un barniz especial creado por nosotros, siempre acompaña a tus tacos, brindándote un sabor único."
+        "es": "Pozole con el mejor sazón, ahora es tradición; somos el lugar preferido de las personas que comen pensando en el sabor donde un barniz especial creado por nosotros, siempre acompaña a tus tacos, brindándote un sabor único.",
+        "en": "Pozole with the best seasoning, now a tradition: the favourite spot of people who eat with flavour in mind, where a special glaze of our own always goes with your tacos for a one-of-a-kind taste."
       },
       "hours": {
         "mon": ["10:30-23:00"],

@@ -43,7 +43,7 @@ const ESTILO = `
       main { position: relative; max-width: 30rem; display: grid; justify-items: center; gap: .75rem; }
       img { width: 72px; height: 72px; }
       h1 { font-family: "Archivo", ui-sans-serif, system-ui, sans-serif; font-weight: 700;
-        font-size: 1.75rem; line-height: 1.15; letter-spacing: -.01em; margin-top: .5rem; }
+        font-size: 1.875rem; line-height: 1.15; letter-spacing: -.02em; margin-top: .5rem; }
       p { color: var(--apagado); }
       .en { font-size: .875rem; }
       /* Botón principal del catálogo de interactuables (docs/CATALOGO.md): esquina de 6, relleno de
@@ -88,7 +88,7 @@ export function html404(base: string): string {
       <img src="${base}logo.svg" alt="" width="72" height="72" />
       <h1>Esta página no existe</h1>
       <p>La dirección no corresponde a ningún lugar ni zona de la guía. Puede que esté mal escrita, o que ese lugar ya no esté publicado.</p>
-      <p class="en" lang="en">This address is not part of the guide.</p>
+      <p class="en" lang="en">This page doesn’t exist. The address doesn’t match any place or area in the guide: it may be mistyped, or that place may no longer be listed.</p>
       <a href="${base}">Ir a la guía</a>
     </main>
   </body>

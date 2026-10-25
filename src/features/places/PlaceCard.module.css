@@ -66,6 +66,12 @@
   flex-direction: column;
   gap: 0.15rem;
   min-width: 0;
+  /*
+   * Ocupa todo el ancho que deja la foto. No es cosmético: la fila de giros se mide para decidir
+   * cuántas etiquetas caben, y sin esto mediría su propio contenido —donde siempre cabe lo que ya
+   * tiene— y el número no cambiaría nunca al ensanchar el panel.
+   */
+  flex: 1;
 }
 
 /* La fila del nombre: el nombre se encoge y se recorta, el punto nunca. */

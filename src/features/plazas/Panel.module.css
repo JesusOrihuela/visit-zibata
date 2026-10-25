@@ -321,11 +321,14 @@
 .peekTitle {
   font-family: var(--font-display);
   font-size: var(--text-lg);
-  font-weight: 600;
-  line-height: 1.1;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
 }
 
 .peekText {
+  /* El pie del título, a 4 px: sin esto las dos líneas se leían como un solo párrafo apretado. */
+  margin-top: var(--space-1);
   font-size: var(--text-sm);
   color: var(--color-text-muted);
 }

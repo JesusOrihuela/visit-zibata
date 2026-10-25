@@ -216,7 +216,7 @@ describe('PlaceDetail', () => {
         }),
       )
       expect(screen.getByText('Sourdough bread.')).toBeInTheDocument()
-      expect(screen.getByText('Automatic Translation')).toBeInTheDocument()
+      expect(screen.getByText('Automatic translation')).toBeInTheDocument()
       const ver = screen.getByRole('button', { name: 'View the Spanish original' })
       expect(ver).toHaveAttribute('aria-pressed', 'false')
       await userEvent.click(ver)

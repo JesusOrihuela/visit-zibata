@@ -14,6 +14,7 @@ import {
   type DataIssue,
   syncPlazaDerivedFields,
   validateRelations,
+  validateTranslations,
 } from '../../src/data/relations.ts'
 import { CategoriesFileSchema, PlacesFileSchema, PlazasFileSchema } from '../../src/data/schemas.ts'
 import { variantPath } from '../../src/lib/image-variants.ts'
@@ -65,7 +66,10 @@ try {
   if (!bounds)
     console.warn('⚠ Sin data/geographic/extent.json: no se validan coordenadas (npm run map:build)')
 
-  const issues: DataIssue[] = validateRelations(dataset, bounds)
+  const issues: DataIssue[] = [
+    ...validateRelations(dataset, bounds),
+    ...validateTranslations(dataset),
+  ]
 
   for (const place of dataset.places) {
     for (const photo of place.photos) {

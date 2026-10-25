@@ -51,7 +51,7 @@ const peluqueria = {
   plazaId: 'plaza-prueba',
   giros: ['peluqueria'],
   secundarios: [],
-  description: { es: 'Cortes y color.', en: 'Cuts and colour.' },
+  description: { es: 'Cortes y color.', en: 'Haircuts and colour.' },
   cierre: undefined,
   links: { website: null, instagram: null, facebook: null, tiktok: null, whatsapp: null },
 } as unknown as Place
@@ -61,7 +61,7 @@ const absoluta = (href: string) => `https://visitzibata.com${href}`
 
 describe.each([
   ['es', '/lugar/estilo-x', 'Peluquería en Plaza Prueba, Zibatá. Cortes y color.'],
-  ['en', '/en/place/estilo-x', 'Hair salon at Plaza Prueba, Zibatá. Cuts and colour.'],
+  ['en', '/en/place/estilo-x', 'Hair salon at Plaza Prueba, Zibatá. Haircuts and colour.'],
 ] as const)('una categoría que no es de comida (%s)', (idioma, href, descripcion) => {
   const paginas = pagesFor(idioma, sintetico, '/', '/og/', absoluta)
   const ficha = paginas.find((pagina) => pagina.href === href)

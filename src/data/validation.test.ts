@@ -11,7 +11,12 @@ import {
   plazasFixture,
 } from '../test/fixtures.ts'
 import { buildCatalog } from './catalog.ts'
-import { isInsidePlazaGeometry, syncPlazaDerivedFields, validateRelations } from './relations.ts'
+import {
+  isInsidePlazaGeometry,
+  syncPlazaDerivedFields,
+  validateRelations,
+  validateTranslations,
+} from './relations.ts'
 import {
   CategoriesFileSchema,
   HoursSchema,
@@ -241,16 +246,58 @@ describe('validateRelations', () => {
   })
 })
 
+describe('cobertura de traducciones', () => {
+  it('señala una descripción publicada sin inglés', () => {
+    const dataset = {
+      categories: categoriesFixture,
+      plazas: plazasFixture,
+      places: [
+        makePlace({
+          id: 'sin-ingles',
+          plazaId: 'plaza-norte',
+          description: { es: 'Solo español.' },
+        }),
+      ],
+    }
+    expect(validateTranslations(dataset).map((issue) => issue.id)).toContain('sin-ingles')
+  })
+
+  it('no señala nada cuando todo está traducido', () => {
+    const [category] = categoriesFixture
+    if (!category) throw new Error('Falta la categoría de prueba')
+    const dataset = {
+      categories: [
+        {
+          ...category,
+          label: { es: 'Categoría', en: 'Category' },
+          giros: category.giros.map((giro) => ({
+            ...giro,
+            label: { es: 'Giro', en: 'Tag' },
+          })),
+        },
+      ],
+      plazas: plazasFixture,
+      places: [
+        makePlace({
+          id: 'traducido',
+          plazaId: 'plaza-norte',
+          description: { es: 'Hola.', en: 'Hello.' },
+        }),
+      ],
+    }
+    expect(validateTranslations(dataset)).toEqual([])
+  })
+})
+
 describe('datos reales del repositorio', () => {
   it('cumplen los esquemas y no tienen errores de relaciones', () => {
     const c = CategoriesFileSchema.parse(categories)
     const z = PlazasFileSchema.parse(plazas)
     const p = PlacesFileSchema.parse(places)
     const [west, south, east, north] = extent.areaBbox as [number, number, number, number]
-    const issues = validateRelations(
-      { categories: c.categories, plazas: z.plazas, places: p.places },
-      { west, south, east, north },
-    )
+    const dataset = { categories: c.categories, plazas: z.plazas, places: p.places }
+    const issues = validateRelations(dataset, { west, south, east, north })
     expect(errorsOf(issues)).toEqual([])
+    expect(validateTranslations(dataset)).toEqual([])
   })
 })
