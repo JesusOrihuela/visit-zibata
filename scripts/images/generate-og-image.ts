@@ -42,9 +42,9 @@ try {
       header, aside, footer, fieldset, .maplibregl-ctrl-bottom-left { display: none !important; }
       #og-card { position: fixed; inset: 0; z-index: 100; pointer-events: none;
         background: linear-gradient(90deg, rgb(248 244 237 / 0.97) 0%, rgb(248 244 237 / 0.9) 34%, rgb(248 244 237 / 0) 62%); }
-      #og-card .inner { position: absolute; left: 64px; top: 50%; translate: 0 -50%; width: 440px; color: #1f2419; font-family: 'Instrument Sans', sans-serif; }
+      #og-card .inner { position: absolute; left: 64px; top: 50%; translate: 0 -50%; width: 440px; color: #1f2419; font-family: 'Archivo', sans-serif; }
       #og-card .eyebrow { display: flex; align-items: center; gap: 12px; font-size: 15px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: #536c2a; }
-      #og-card h1 { margin: 18px 0 14px; font-family: 'Instrument Serif', serif; font-weight: 400; font-size: 74px; line-height: .95; letter-spacing: -.02em; text-wrap: balance; }
+      #og-card h1 { margin: 18px 0 14px; font-family: 'Archivo', sans-serif; font-weight: 700; font-size: 68px; line-height: .95; letter-spacing: -.02em; text-wrap: balance; }
       #og-card p { margin: 0; font-size: 24px; line-height: 1.35; color: #454a3b; }
     `,
   })

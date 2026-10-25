@@ -42,7 +42,7 @@ export const en = {
   'plaza.empty': 'No open places listed in this area yet.',
   'plaza.filteredEmpty': 'No place in this area matches the filters.',
   'plaza.showAll': 'See every place in the area',
-  'plaza.select': 'See {name}, {places}',
+  'plaza.select': '{name}, {places}',
   'plaza.directions': 'Directions to the area',
   'plaza.comingSoon': 'Coming soon',
   'plaza.comingSoonList': 'Under construction',
@@ -57,6 +57,8 @@ export const en = {
   'place.machineTranslation': 'Automatic Translation',
   'place.showOriginal': 'View the Spanish original',
   'place.showTranslation': 'View the translation',
+  'place.location': 'Location',
+  'place.description': 'Description',
   'place.hours': 'Hours',
   'place.contact': 'Contact and socials',
   'place.call': 'Call',
@@ -137,9 +139,10 @@ export const en = {
 
   'seo.home.title': 'Visit Zibatá · The local guide to discovering Zibatá',
   'seo.home.description':
-    'Discover what is in Zibatá, Querétaro: the businesses and places of each area on a 3D map, with hours, contact and directions.',
+    'Discover Zibatá: businesses and places in each plaza, with hours, contact ' +
+    'and directions. Explore the locality and decide where to go.',
   'seo.title': '{name} · Visit Zibatá',
-  'seo.title.zone': '{name} · {plaza} · Visit Zibatá',
+  'seo.title.zone': '{name} in {plaza} · Visit Zibatá',
   'seo.place.fallback': '{giros} at {plaza}, Zibatá. Hours, contact and directions.',
   'seo.place.context': '{giros} at {lugar}.',
   'seo.place.contextLugar': 'At {lugar}.',
@@ -149,7 +152,8 @@ export const en = {
   'seo.zones': 'The areas of Zibatá',
   'seo.categories': 'Categories',
   'seo.category.name': '{label} in Zibatá',
-  'seo.category.description': '{label} in Zibatá: {lugares} in {zonas}. For example, {ejemplos}.',
+  'seo.category.description':
+    '{label} is one of the categories of Zibatá. Meet the {lugares} in {zonas} of the locality. Hours, contact and directions to each one.',
   'seo.category.title': '{label} in Zibatá: {giros}',
   'seo.category.empty': '{label} in Zibatá: there are no places published in this category yet.',
   'seo.category.places': 'Places in this category',
@@ -218,7 +222,7 @@ export const en = {
   'about.open': 'About this guide',
   'about.openShort': 'About',
   'about.title': 'About this guide',
-  'about.fix': 'Suggest a change',
+  'about.fix': 'Suggest or contact',
   'about.tutorial': 'See the tutorial',
   'about.tutorialTitle': 'How to use the guide',
   'about.tutorialLead': 'The four steps to move around the map, find a place and save it.',
@@ -238,7 +242,7 @@ export const en = {
   'about.privacyCounts':
     'To understand what users are interested in, we count how many times each page and place is opened, which links are followed, which filters are used, whether a search found results, and what kind of site visitors arrive from. We do not store what you type, your IP, or any identifier, and we neither sell nor share them. If your browser asks not to be tracked, we only count the page visit.',
   'about.privacyBody':
-    'The places you open and the language are stored only in this browser. Your favourites, your ratings and the visits you log are stored here and also sent, so they are not lost and so the count of people who saved each place is true: they travel attached to a random identifier, with no email, no name and nothing that says who you are. Your ratings are never published, not even as an average; they help order the guide and never leave the server. That identifier lives only in this browser, so clearing the site data loses it and you start over. If you write in "Suggest a change", what you write is stored so it can be acted on, along with the contact you leave if you choose to; that is not tied to any identifier.',
+    'The places you open and the language are stored only in this browser. Your favourites, your ratings and the visits you log are stored here and also sent, so they are not lost and so the count of people who saved each place is true: they travel attached to a random identifier, with no email, no name and nothing that says who you are. Your ratings are never published, not even as an average; they help order the guide and never leave the server. That identifier lives only in this browser, so clearing the site data loses it and you start over. If you write in "Suggest a change or contact us", what you write is stored so it can be acted on, along with the contact you leave if you choose to; that is not tied to any identifier. The data controller is Aurariola.com, in Querétaro, México. We do not collect sensitive personal data. We use the information only to make the guide work —language, favourites, ratings, saved visits and anonymous visit counting— and to reply if you write to us. If you want to know what data we hold, correct it, cancel it or object to our use of it, send us a message through "Suggest a change or contact us" with your name, the right you are exercising and a description of the data; you can also delete what is stored in this browser from the browser settings. We will publish any changes to this notice on this page with the update date.',
   'about.privacyLocation':
     'Your location is used only when you press the locate button, to centre the map, and it is never stored or transmitted. The map and the fonts are served from this same site, and saving a place calls no one either, so using the guide makes no third-party requests at all. Links to Google Maps, social accounts or delivery apps open external sites, each with its own policy.',
 
@@ -248,23 +252,24 @@ export const en = {
   'about.termsData':
     'The information comes from public sources and from what each business corrects, and it is reviewed each season. Even so it can be out of date: opening hours change, a phone number stops working, a place closes without notice. The guide is offered as it is, with no guarantee that every detail is accurate today. For anything that matters (the hours before heading out, a price, a booking), confirm it directly with the place.',
   'about.termsFix':
-    'If something about your business is wrong, or you would rather not be listed, write through "Suggest a change" and it is corrected or removed in the next update. No explanation needed: asking is enough.',
+    'If something about your business is wrong, or you would rather not be listed, write through "Suggest a change or contact us" and it is corrected or removed in the next update. No explanation needed: asking is enough.',
   'about.termsContent':
     'The text, the map and the code of this guide belong to whoever maintains it. Each business name, logo and trademark belongs to that business, and is used here only to identify it. Links to Google Maps, social accounts or delivery apps lead to third-party sites, and what happens there follows their own rules.',
 
-  'about.contribute': 'Suggest a change',
-  'about.contributeLead': 'Is a place missing or is something no longer right?',
+  'about.contribute': 'Suggest a change or contact us',
+  'about.contributeLead':
+    'Is a place missing, is something incorrect or would you like to contact us?',
   'about.contributeBody':
-    'Anyone can write, a neighbour, a customer or the business itself: every correction helps, be it opening hours, a phone number, social accounts or the description.',
+    'Anyone can write, a neighbour, a customer or the business itself: every correction helps, be it opening hours, a phone number, social accounts or the description. You can also exercise your ARCO rights or ask us anything.',
   'about.contributeMeanwhile':
     'What you write goes straight to whoever maintains the guide, with no third-party service in between. No account and no email needed: the contact field is optional and only serves to reply to you. The guide is reviewed each season, and anything a business asks to correct enters the next update.',
 
-  'suggest.title': 'Tell me what changes',
+  'suggest.title': 'Tell me what changes or write your message',
   'suggest.who': 'Who is writing?',
   'suggest.whoNeighbor': 'Neighbour',
   'suggest.whoOwner': 'Business',
   'suggest.whoOther': 'Other',
-  'suggest.place': 'Place or area',
+  'suggest.place': 'Place, area or subject',
   'suggest.placeHint': 'Optional',
   'suggest.message': 'Your message',
   'suggest.contact': 'Your email',

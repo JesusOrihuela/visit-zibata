@@ -18,7 +18,8 @@
   touch-action: none;
 }
 
-.sheet[data-dragging="true"] {
+.sheet[data-dragging="true"],
+.sheet[data-initial="true"] {
   transition: none;
 }
 

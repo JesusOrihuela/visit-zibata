@@ -4,10 +4,10 @@ import { SOURCE } from '../ids.ts'
 import { mapTheme as t } from '../theme.ts'
 
 export const FONT = {
-  sans: 'Instrument Sans Medium',
-  sansStrong: 'Instrument Sans SemiBold',
-  serif: 'Instrument Serif Regular',
-  serifItalic: 'Instrument Serif Italic',
+  sans: 'Archivo Medium',
+  sansStrong: 'Archivo SemiBold',
+  serif: 'Archivo Regular',
+  serifItalic: 'Archivo Italic',
 } as const
 
 export function labelLayers(): LayerSpecification[] {

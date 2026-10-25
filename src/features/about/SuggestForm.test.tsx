@@ -24,7 +24,7 @@ describe('SuggestForm', () => {
 
     // Escribe quien sea: aquí, el propio negocio, y eso viaja con el mensaje.
     await userEvent.click(screen.getByRole('radio', { name: 'Negocio' }))
-    await userEvent.type(screen.getByLabelText(/Lugar o zona/), 'Tomassa')
+    await userEvent.type(screen.getByLabelText(/Lugar, zona o asunto/), 'Tomassa')
     await userEvent.type(screen.getByLabelText(/Tu mensaje/), 'Cambió el horario')
     await userEvent.click(screen.getByRole('button', { name: 'Enviar' }))
 

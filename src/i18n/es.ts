@@ -41,7 +41,7 @@ export const es = {
   'plaza.empty': 'Aún no hay lugares activos registrados en esta zona.',
   'plaza.filteredEmpty': 'Ningún lugar de esta zona coincide con los filtros.',
   'plaza.showAll': 'Ver todos los lugares de la zona',
-  'plaza.select': 'Ver {name}, {places}',
+  'plaza.select': '{name}, {places}',
   'plaza.directions': 'Cómo llegar a la zona',
   'plaza.comingSoon': 'Próximamente',
   'plaza.comingSoonList': 'En construcción',
@@ -56,6 +56,8 @@ export const es = {
   'place.machineTranslation': 'Traducción automática',
   'place.showOriginal': 'Ver original en español',
   'place.showTranslation': 'Ver traducción',
+  'place.location': 'Ubicación',
+  'place.description': 'Descripción',
   'place.hours': 'Horario',
   'place.contact': 'Contacto y redes',
   'place.call': 'Llamar',
@@ -109,7 +111,7 @@ export const es = {
   },
 
   'visit.action': 'Registrar visita',
-  'visit.mark': 'Registrar una visita a {name}',
+  'visit.mark': 'Registrar visita a {name}',
   'visit.pickDay': 'Elige el día de la visita',
   'visit.been': { one: 'Has venido una vez', other: 'Has venido {count} veces' },
   'visit.lastOne': ', la última el {date}.',
@@ -154,10 +156,11 @@ export const es = {
    */
   'seo.home.title': 'Visit Zibatá · La guía local para descubrir Zibatá',
   'seo.home.description':
-    'Descubre lo que hay en Zibatá, Querétaro: los negocios y lugares de cada zona en un mapa 3D, con horarios, contacto y cómo llegar.',
+    'Descubre Zibatá: negocios y lugares de cada plaza, con horarios y contacto. ' +
+    'Explora la localidad y decide adónde ir.',
   'seo.title': '{name} · Visit Zibatá',
   // Solo para los locales cuyo nombre se repite (dos sucursales de una misma cadena).
-  'seo.title.zone': '{name} · {plaza} · Visit Zibatá',
+  'seo.title.zone': '{name} en {plaza} · Visit Zibatá',
   'seo.place.fallback': '{giros} en {plaza}, Zibatá. Horario, contacto y cómo llegar.',
   // Lo que se añade a una descripción corta: solo los giros y la zona del propio local.
   'seo.place.context': '{giros} en {lugar}.',
@@ -173,7 +176,8 @@ export const es = {
   // Las páginas de categoría: solo salen en el HTML servido y en los metadatos.
   'seo.categories': 'Categorías',
   'seo.category.name': '{label} en Zibatá',
-  'seo.category.description': '{label} en Zibatá: {lugares} en {zonas}. Por ejemplo, {ejemplos}.',
+  'seo.category.description':
+    '{label} es una de las categorías de Zibatá. Conoce los {lugares} en {zonas} de la localidad. Horarios, contacto y cómo llegar a cada uno.',
   // Con dos o más giros que la etiqueta no dice, el título los nombra: es lo que la gente busca.
   'seo.category.title': '{label} en Zibatá: {giros}',
   'seo.category.empty': '{label} en Zibatá: todavía no hay lugares publicados en esta categoría.',
@@ -243,7 +247,7 @@ export const es = {
   'about.open': 'Acerca de esta guía',
   'about.openShort': 'Acerca',
   'about.title': 'Acerca de esta guía',
-  'about.fix': 'Sugiere un cambio',
+  'about.fix': 'Sugiere o contacta',
   'about.tutorial': 'Ver el tutorial',
   'about.tutorialTitle': 'Cómo usar la guía',
   'about.tutorialLead':
@@ -276,7 +280,7 @@ export const es = {
   'about.privacyCounts':
     'Para saber los intereses del usuario, contamos cuántas veces se abre cada página y cada lugar, a qué enlaces se sale, qué filtros se usan, si una búsqueda encontró resultados y desde qué tipo de sitio se llega. No guardamos lo que escribes, tu IP ni ningún identificador, y no los vendemos ni los compartimos. Si tu navegador pide no ser rastreado, solo contamos la visita a la página.',
   'about.privacyBody':
-    'Los lugares que abres y el idioma se guardan únicamente en este navegador. Tus favoritos, tus calificaciones y las visitas que marcas se guardan aquí y además se envían para que no se pierdan y para que el número de personas que guardaron cada lugar sea cierto: viajan atados a un identificador al azar, sin correo, sin nombre y sin nada que diga quién eres. Tus calificaciones no se publican nunca, ni siquiera como promedio; sirven para ordenar la guía y no salen del servidor. Ese identificador vive solo en este navegador, así que si borras los datos del sitio se pierde y empiezas de cero. Si escribes en "Sugiere un cambio", lo que escribas se guarda para poder atenderlo, junto con el contacto que dejes si decides dejarlo; eso no va atado a ningún identificador.',
+    'Los lugares que abres y el idioma se guardan únicamente en este navegador. Tus favoritos, tus calificaciones y las visitas que marcas se guardan aquí y además se envían para que no se pierdan y para que el número de personas que guardaron cada lugar sea cierto: viajan atados a un identificador al azar, sin correo, sin nombre y sin nada que diga quién eres. Tus calificaciones no se publican nunca, ni siquiera como promedio; sirven para ordenar la guía y no salen del servidor. Ese identificador vive solo en este navegador, así que si borras los datos del sitio se pierde y empiezas de cero. Si escribes en "Sugiere un cambio o contáctanos", lo que escribas se guarda para poder atenderlo, junto con el contacto que dejes si decides dejarlo; eso no va atado a ningún identificador. El responsable de estos datos es Aurariola.com, en Querétaro, México. No recabamos datos sensibles. Usamos la información solo para que la guía funcione —idioma, favoritos, calificaciones, visitas guardadas y conteo anónimo de visitas— y para responderte si nos escribes. Si quieres saber qué datos tenemos, corregirlos, cancelarlos u oponerte a que los usemos, envíanos un mensaje por "Sugiere un cambio o contáctanos" indicando tu nombre, qué derecho ejerces y una descripción de los datos; también puedes borrar lo guardado en este navegador desde la configuración del mismo. Publicaremos cualquier cambio a este aviso en esta página con la fecha de actualización.',
   'about.privacyLocation':
     'Tu ubicación se utiliza solo al pulsar el botón para centrar el mapa y no se guarda ni se transmite. El mapa y las tipografías se sirven desde este mismo sitio, y guardar un lugar tampoco llama a nadie de fuera, de modo que usar la guía no genera ni una petición a terceros. Los enlaces a Google Maps, redes sociales o reparto abren sitios externos, cada uno con su propia política.',
 
@@ -286,23 +290,23 @@ export const es = {
   'about.termsData':
     'La información se reúne de fuentes públicas y de lo que corrige cada negocio, y se revisa por temporada. Aun así puede estar desactualizada: los horarios cambian, un teléfono deja de servir y un local cierra sin avisar. La guía se ofrece tal como está, sin garantía de que cada dato sea exacto hoy. Para algo que importe (el horario antes de salir, un precio, una reserva), confírmalo directo con el lugar.',
   'about.termsFix':
-    'Si un dato de tu negocio está mal, o prefieres no aparecer, escribe por "Sugiere un cambio" y se corrige o se quita en la siguiente actualización. No hace falta explicar por qué: basta con pedirlo.',
+    'Si un dato de tu negocio está mal, o prefieres no aparecer, escribe por "Sugiere un cambio o contáctanos" y se corrige o se quita en la siguiente actualización. No hace falta explicar por qué: basta con pedirlo.',
   'about.termsContent':
     'Los textos, el mapa y el código de la guía son de quien la mantiene. El nombre, el logotipo y la marca de cada negocio son de ese negocio, y aquí se usan solo para identificarlo. Los enlaces a Google Maps, redes sociales o reparto llevan a sitios de terceros, y lo que ocurra ahí se rige por sus propias reglas.',
 
-  'about.contribute': 'Sugiere un cambio',
-  'about.contributeLead': '¿Falta un lugar o hay un dato que ya no es correcto?',
+  'about.contribute': 'Sugiere un cambio o contáctanos',
+  'about.contributeLead': '¿Falta un lugar, hay un dato incorrecto o quieres escribirnos?',
   'about.contributeBody':
-    'Escribe quien sea, vecino, cliente o el propio negocio: toda corrección suma, sea un horario, un teléfono, las redes o la descripción.',
+    'Escribe quien sea, vecino, cliente o el propio negocio: toda corrección suma, sea un horario, un teléfono, las redes o la descripción. También puedes ejercer tus derechos ARCO o hacer cualquier consulta.',
   'about.contributeMeanwhile':
     'Lo que escribas llega directo a quien mantiene la guía, sin pasar por ningún servicio de terceros. No hace falta cuenta ni correo: el contacto es opcional y solo sirve para responderte. La guía se revisa por temporada, y lo que pida corregir un negocio entra en la siguiente actualización.',
 
-  'suggest.title': 'Cuéntame qué cambia',
+  'suggest.title': 'Cuéntame qué cambia o escribe tu mensaje',
   'suggest.who': '¿Quién escribe?',
   'suggest.whoNeighbor': 'Vecino',
   'suggest.whoOwner': 'Negocio',
   'suggest.whoOther': 'Otro',
-  'suggest.place': 'Lugar o zona',
+  'suggest.place': 'Lugar, zona o asunto',
   'suggest.placeHint': 'Opcional',
   'suggest.message': 'Tu mensaje',
   'suggest.contact': 'Tu correo',

@@ -40,16 +40,24 @@ export function useZonedNow() {
  * "Abierto" / "Cerrado". La hora de apertura o cierre no se repite aquí: la tabla de horarios que
  * acompaña al estado ya la muestra. No renderiza nada si no hay horario (nunca muestra huecos).
  */
-export function OpenStatus({ hours }: { hours: Hours | null }) {
+export function OpenStatus({
+  hours,
+  today = false,
+}: {
+  hours: Hours | null
+  /** En la fila de hoy, el estado se une a la etiqueta "Hoy" en una sola píldora. */
+  today?: boolean
+}) {
   const status = getOpenStatus(hours, useZonedNow())
-  if (status.state === 'unknown') return null
+  if (status.state === 'unknown') {
+    return today ? <span className={styles.todayOnly}>{t('hours.today')}</span> : null
+  }
 
+  const label = status.state === 'open' ? t('hours.open') : t('hours.closed')
   return (
-    <span className={styles.status} data-state={status.state}>
+    <span className={styles.status} data-state={status.state} data-today={today}>
       <span className={styles.dot} aria-hidden="true" />
-      <span className={styles.label}>
-        {status.state === 'open' ? t('hours.open') : t('hours.closed')}
-      </span>
+      <span className={styles.label}>{today ? `${t('hours.today')} · ${label}` : label}</span>
     </span>
   )
 }

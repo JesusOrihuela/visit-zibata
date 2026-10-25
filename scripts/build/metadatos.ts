@@ -219,7 +219,7 @@ export function descripcionDeFicha(opciones: OpcionesDescripcion): string {
   if (!base) return recortar(`${delante}${contexto}`, max)
   if (!corta && !conContexto) return `${delante}${recortar(base, max - delante.length)}`
   const cabida = max - delante.length - contexto.length - 1
-  return `${delante}${terminado(recortar(base, cabida))} ${contexto}`
+  return `${delante}${contexto} ${terminado(recortar(base, cabida))}`
 }
 
 /** Dónde está el local, dicho una sola vez: "Plaza Loop Urban, Zibatá", y "Paseo Zibatá" a secas. */

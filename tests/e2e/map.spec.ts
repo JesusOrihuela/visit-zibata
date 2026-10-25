@@ -81,11 +81,9 @@ test.describe('Mapa', () => {
     await expect(canvas).toHaveAttribute('aria-label', 'Mapa 3D interactivo de Zibatá')
     await waitForMap(page)
     // Qué zonas llevan marcador propio depende del tamaño de pantalla; alguna siempre lo tiene.
-    await expect(
-      page.getByRole('button', { name: /^Ver .+, \d+ lugar(es)?$/ }).first(),
-    ).toBeVisible()
+    await expect(page.getByRole('button', { name: /^.+, \d+ lugar(es)?$/ }).first()).toBeVisible()
     await expect((await plazaMarker(page, 'Xentric Anáhuac')).first()).toHaveAccessibleName(
-      `Ver Xentric Anáhuac, ${placesInPlaza('Xentric Anáhuac')} lugares`,
+      `Xentric Anáhuac, ${placesInPlaza('Xentric Anáhuac')} lugares`,
     )
     await expect(
       page.locator('.maplibregl-ctrl-attrib a', { hasText: 'OpenStreetMap' }),
@@ -154,7 +152,7 @@ test.describe('Mapa', () => {
       .toBe(45)
 
     await page.getByRole('button', { name: 'Volver a la vista de Zibatá' }).click()
-    await expect(page.getByRole('button', { name: /^Ver Xentric Anáhuac/ })).toBeVisible()
+    await expect(page.getByRole('button', { name: /^Xentric Anáhuac/ })).toBeVisible()
   })
 
   test('la vista inicial representa todas las plazas activas y la atribución es visible', async ({
@@ -165,7 +163,7 @@ test.describe('Mapa', () => {
     await expect.poll(() => plazasMissingInBand(page)).toEqual([])
     await expect.poll(() => representedPlazas(page)).toBe(await activePlazaCount(page))
     // Paseo Zibatá, la plaza con más locales, nunca debe desaparecer del mapa.
-    await expect(page.getByRole('button', { name: /^Ver Paseo Zibatá/ })).toBeVisible()
+    await expect(page.getByRole('button', { name: /^Paseo Zibatá/ })).toBeVisible()
     const attribution = page.locator('.maplibregl-ctrl-attrib')
     await expect(attribution).toBeInViewport()
     // La atribución de OpenStreetMap no puede quedar debajo de la hoja inferior (solo existe en móvil).
@@ -204,7 +202,7 @@ test.describe('Mapa', () => {
     const dots = page.locator('button[data-mode="dot"]')
     test.skip((await dots.count()) === 0, 'En esta pantalla todas las plazas muestran su etiqueta')
     const dot = dots.first()
-    const name = ((await dot.getAttribute('aria-label')) ?? '').replace(/^Ver (.*), .*$/, '$1')
+    const name = ((await dot.getAttribute('aria-label')) ?? '').replace(/^(.*), .*$/, '$1')
     await expect(dot).toBeVisible()
     await dot.click()
     await expect(panel(page).getByRole('heading', { level: 2, name })).toBeVisible()
@@ -222,7 +220,7 @@ test.describe('Mapa', () => {
     const spread = () =>
       page.evaluate(() => {
         const anchor = (name: string) => {
-          const marker = document.querySelector(`button[data-mode][aria-label^="Ver ${name}, "]`)
+          const marker = document.querySelector(`button[data-mode][aria-label^="${name}, "]`)
           const box = marker?.getBoundingClientRect()
           return box ? { x: box.left + box.width / 2, y: box.bottom } : { x: 0, y: 0 }
         }
@@ -237,7 +235,7 @@ test.describe('Mapa', () => {
     // Con el panel abierto la franja de mapa es demasiado corta para etiquetar todas las plazas; lo que
     // se comprueba aquí es que la cámara vuelve a la vista general sin cerrar la plaza. La garantía de
     // que ninguna plaza desaparece se verifica en la vista inicial (arriba).
-    await expect(page.getByRole('button', { name: /^Ver Plaza Condesa/ })).toBeVisible()
+    await expect(page.getByRole('button', { name: /^Plaza Condesa/ })).toBeVisible()
     await expect(
       panel(page).getByRole('heading', { level: 2, name: 'Plaza Condesa' }),
     ).toBeVisible()
@@ -288,7 +286,7 @@ test.describe('Móvil en horizontal', () => {
     // reducidos a un punto. Lo que sí se exige aquí es que ninguno quede debajo de la hoja, que la plaza
     // con más lugares siga marcada y que el resto se alcance por el selector (se usa justo después).
     await expect.poll(() => coveredBySheet(page)).toEqual([])
-    await expect(page.getByRole('button', { name: /^Ver Xentric Anáhuac/ })).toBeVisible()
+    await expect(page.getByRole('button', { name: /^Xentric Anáhuac/ })).toBeVisible()
     await page
       .getByRole('combobox', { name: 'Filtrar por zona' })
       .selectOption({ label: 'Paseo Zibatá' })

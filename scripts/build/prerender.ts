@@ -28,7 +28,6 @@ import {
   conCantidad,
   girosDeCategoria,
   lugaresPorCategoria,
-  MIN_INDEXABLE,
   lista as nombresEnLista,
 } from './categorias.ts'
 import { contenidoDeLista, contenidoDeLugar } from './contenido.ts'
@@ -313,10 +312,12 @@ export function pagesFor(
     const sinGiros = fill(copy['seo.title'], { name })
     // Solo si caben en un título (unos 60 caracteres): cortado a media palabra sería peor que corto.
     const titulo = giros.length >= 2 && conGiros.length <= TOPE_TITULO ? conGiros : sinGiros
+    if (lugares.length === 0) continue
+
     pages.push({
       href: route({ categorySlug: categoria.slug[locale] }),
       lastmod: masReciente(lugares),
-      indexable: lugares.length >= MIN_INDEXABLE,
+      indexable: true,
       title: titulo,
       // Solo lo que dicen los datos: cuántos, en cuántas zonas y tres nombres. Nada de "abierto ahora".
       description: trim(resumen),
@@ -399,11 +400,7 @@ export function pagesFor(
       aviso: ficha.aviso,
       conContexto,
     })
-  const primeras = fichas.map((ficha) => componer(ficha, false))
-  const mismaDescripcion = repetidos(primeras)
-  const descripciones = fichas.map((ficha, indice) =>
-    mismaDescripcion.has(indice) ? componer(ficha, true) : (primeras[indice] ?? ''),
-  )
+  const descripciones = fichas.map((ficha) => componer(ficha, true))
 
   // A qué locales enlaza cada ficha: el mismo bloque de siempre, repartido entre todos (ver vecinos.ts).
   const placeById = new Map(data.places.map((place) => [place.id, place]))

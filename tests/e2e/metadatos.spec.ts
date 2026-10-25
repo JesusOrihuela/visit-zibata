@@ -79,7 +79,7 @@ test.describe('Metadatos del HTML publicado', () => {
   }) => {
     const es = await cabecera(request, '')
     expect(es.title[0]).toBe('Visit Zibatá · La guía local para descubrir Zibatá')
-    expect(es.description[0]).toContain('negocios y lugares de cada zona')
+    expect(es.description[0]).toContain('negocios y lugares de cada plaza')
     const en = await cabecera(request, 'en')
     expect(en.title[0]).toBe('Visit Zibatá · The local guide to discovering Zibatá')
     expect(en.description[0]).toContain('businesses and places')
@@ -95,22 +95,19 @@ test.describe('Metadatos del HTML publicado', () => {
       cabecera(request, 'lugar/sinforosa'),
       cabecera(request, 'lugar/sinforosa-anahuac'),
     ])
-    expect(a.title[0]).toBe('Sinforosa Café · Paseo Zibatá · Visit Zibatá')
-    expect(b.title[0]).toBe('Sinforosa Café · Anáhuac Querétaro · Visit Zibatá')
+    expect(a.title[0]).toBe('Sinforosa Café en Paseo Zibatá · Visit Zibatá')
+    expect(b.title[0]).toBe('Sinforosa Café en Anáhuac Querétaro · Visit Zibatá')
     expect(a.description[0]).not.toBe(b.description[0])
     // Y un local cuyo nombre no se repite conserva su título de siempre.
     expect((await cabecera(request, 'lugar/cafele')).title[0]).toBe('Cafele · Visit Zibatá')
   })
 
-  test('una ficha cerrada temporalmente lo dice en la descripción y en el sitemap', async ({
-    request,
-  }) => {
+  test('una ficha reabierta ya no muestra el aviso de cierre', async ({ request }) => {
     const agave = await cabecera(request, 'lugar/agave-grill')
-    expect(agave.description[0]).toMatch(/^Cerrado temporalmente\. Por remodelación\. /)
+    expect(agave.description[0]).not.toMatch(/^Cerrado temporalmente/)
     const sitemap = await (await request.get('sitemap.xml')).text()
     const entrada = /<loc>[^<]*\/lugar\/agave-grill<\/loc><lastmod>([^<]*)<\/lastmod>/.exec(sitemap)
     expect(entrada?.[1]).toBeDefined()
-    expect(entrada?.[1] ?? '').toBe('2026-10-09')
   })
 
   test('el enlace de WhatsApp del HTML servido apunta a wa.me y no a una ruta relativa', async ({

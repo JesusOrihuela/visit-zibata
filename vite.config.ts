@@ -1,5 +1,5 @@
-import { existsSync, readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { join, resolve } from 'node:path'
 import react from '@vitejs/plugin-react'
 import type { Plugin } from 'vite'
 import { defineConfig } from 'vitest/config'
@@ -205,6 +205,80 @@ function cloudflareHeaders(): Plugin {
 }
 
 /**
+ * Fuentes críticas para la primera pintura: cuerpo (Archivo 400), énfasis (600) y títulos (700).
+ * Se precargan latin y latin-ext porque el español usa tildes y eñe. Kode Mono se deja fuera: solo
+ * sirve a la firma de autoría, que no está en el texto inicial.
+ */
+const CRITICAL_FONT_PATTERNS = [
+  /archivo-latin-400-normal/,
+  /archivo-latin-ext-400-normal/,
+  /archivo-latin-600-normal/,
+  /archivo-latin-ext-600-normal/,
+  /archivo-latin-700-normal/,
+  /archivo-latin-ext-700-normal/,
+]
+
+function findHtmlFiles(dir: string): string[] {
+  const result: string[] = []
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const path = join(dir, entry.name)
+    if (entry.isDirectory()) {
+      result.push(...findHtmlFiles(path))
+    } else if (entry.name.endsWith('.html')) {
+      result.push(path)
+    }
+  }
+  return result
+}
+
+/**
+ * Precarga las fuentes críticas en cada página HTML para que el navegador las descubra antes de
+ * parsear el CSS. Reduce el tiempo hasta que el texto se pinta con la tipografía definitiva.
+ */
+function preloadCriticalFonts(): Plugin {
+  let outDir = 'dist'
+  return {
+    name: 'zibata-preload-fonts',
+    apply: 'build',
+    configResolved(config) {
+      outDir = resolve(config.root, config.build.outDir)
+    },
+    writeBundle() {
+      const criticalPreloads = new Map<string, string>()
+      for (const htmlPath of findHtmlFiles(outDir)) {
+        let html = readFileSync(htmlPath, 'utf8')
+        const cssMatch = html.match(
+          /<link rel="stylesheet"[^>]*href="(\/assets\/index-[A-Za-z0-9_-]+\.css)"/,
+        )
+        if (!cssMatch) continue
+        const cssHref = cssMatch[1]
+        if (!cssHref) continue
+        let preloads = criticalPreloads.get(cssHref)
+        if (!preloads) {
+          const css = readFileSync(join(outDir, cssHref), 'utf8')
+          const woff2Urls = [...css.matchAll(/url\((\/assets\/[^)]+\.woff2)\)/g)]
+            .map((m) => m[1])
+            .filter((url): url is string => typeof url === 'string')
+          const criticalUrls = woff2Urls.filter((url) =>
+            CRITICAL_FONT_PATTERNS.some((pattern) => pattern.test(url)),
+          )
+          preloads = criticalUrls
+            .map(
+              (url) =>
+                `    <link rel="preload" href="${url}" as="font" type="font/woff2" crossorigin>`,
+            )
+            .join('\n')
+          criticalPreloads.set(cssHref, preloads)
+        }
+        if (!preloads) continue
+        html = html.replace(cssMatch[0], `${preloads}\n${cssMatch[0]}`)
+        writeFileSync(htmlPath, html)
+      }
+    },
+  }
+}
+
+/**
  * En desarrollo, las rutas de la aplicación entregan `index.html`.
  *
  * En producción existe un archivo por ruta (lo genera el prerenderizado), pero aquí no, y el modo
@@ -249,6 +323,7 @@ export default defineConfig({
     notFoundPage(),
     cloudflareHeaders(),
     prerender({ base, siteUrl }),
+    preloadCriticalFonts(),
     mapTiles({ base }),
   ],
   build: {

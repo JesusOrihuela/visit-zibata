@@ -103,10 +103,17 @@
 
   --color-focus: #3d6b00;
 
-  /* Tipografía */
-  --font-sans:
-    "Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-display: "Fraunces", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  /*
+   * Una sola familia para toda la interfaz: Archivo. Cuerpo 400, énfasis 600 y títulos 700.
+   *
+   * Los tamaños y los interlineados no cambiaron al sustituir Instrument Sans y Fraunces. Archivo
+   * conserva el ancho del cuerpo (0-2 % de diferencia) y, con 700, el ancho de Fraunces 600 en los
+   * títulos. Ese 700 en los títulos es deliberado: con 600 los títulos quedaban ~4 % más estrechos
+   * y podían cambiar de dos líneas a una, moviendo el resto de la ficha.
+   */
+  --font-sans: "Archivo", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display:
+    "Archivo", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   /* Solo para la firma de autoría: monoespaciada, como la marca de aurariola. */
   --font-mono: "Kode Mono", ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
 

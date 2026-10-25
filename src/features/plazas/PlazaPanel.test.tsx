@@ -60,8 +60,10 @@ describe('PlazaPanel', () => {
     })
     const chips = within(screen.getByRole('list', { name: 'Categorías' }))
     // "Anuncian" literalmente: la cuenta vive en el nombre accesible, no en la pantalla.
-    expect(chips.getByRole('link', { name: /^Todo/ })).toHaveAccessibleName(/1 lugar/)
-    expect(chips.getByRole('link', { name: /Tacos y antojitos/ })).toHaveAccessibleName(/1 lugar/)
+    expect(chips.getByRole('link', { name: /^Todo/ })).toHaveAccessibleName('Todo 1')
+    expect(chips.getByRole('link', { name: /Tacos y antojitos/ })).toHaveAccessibleName(
+      'Tacos y antojitos 1',
+    )
     // Y la que no tiene ninguno no anuncia ninguno: su nombre es solo la categoría.
     expect(chips.getByRole('link', { name: /Pizza/ })).toHaveAccessibleName('Pizza')
   })

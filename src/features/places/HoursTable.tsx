@@ -18,13 +18,7 @@ export function HoursTable({ hours, cerrado = false }: { hours: Hours | null; ce
 
   const groups = groupWeek(hours).filter((group) => group.ranges !== null)
   return (
-    <section className={styles.section} aria-labelledby="place-hours-title">
-      <div className={styles.header}>
-        <h3 id="place-hours-title" className={styles.title}>
-          {t('place.hours')}
-        </h3>
-        {!cerrado && <OpenStatus hours={hours} />}
-      </div>
+    <section className={styles.section} aria-label={t('place.hours')}>
       <dl className={styles.table}>
         {groups.map((group) => {
           const first = group.days[0]
@@ -39,7 +33,12 @@ export function HoursTable({ hours, cerrado = false }: { hours: Hours | null; ce
             <div key={group.days.join('-')} className={styles.row} data-today={isToday}>
               <dt>
                 {days}
-                {isToday && <span className={styles.today}>{t('hours.today')}</span>}
+                {isToday &&
+                  (cerrado ? (
+                    <span className={styles.today}>{t('hours.today')}</span>
+                  ) : (
+                    <OpenStatus hours={hours} today />
+                  ))}
               </dt>
               <dd>
                 {group.ranges?.length

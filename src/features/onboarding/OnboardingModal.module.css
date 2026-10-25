@@ -98,15 +98,13 @@
 .progress {
   font-size: var(--text-xs);
   font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
   color: var(--olive-600);
 }
 
 .title {
   font-family: var(--font-display);
   font-size: var(--text-xl);
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.05;
 }
 

@@ -1,7 +1,7 @@
-import '@fontsource/instrument-sans/400.css'
-import '@fontsource/instrument-sans/500.css'
-import '@fontsource/instrument-sans/600.css'
-import '@fontsource/fraunces/600.css'
+import '@fontsource/archivo/400.css'
+import '@fontsource/archivo/500.css'
+import '@fontsource/archivo/600.css'
+import '@fontsource/archivo/700.css'
 // Solo para la firma de autoría: la guía de marca de aurariola.com pide esta monoespaciada para su
 // wordmark, y es lo único del proyecto que la usa.
 import '@fontsource/kode-mono/600.css'
