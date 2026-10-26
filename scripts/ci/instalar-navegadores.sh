@@ -1,21 +1,25 @@
 #!/usr/bin/env bash
-# Instala los navegadores de Playwright en un runner de GitHub Actions (Ubuntu) sin quedarse colgado.
+# Instala los navegadores de Playwright en un runner de GitHub Actions (Ubuntu), con tope y reintentos.
 #
-# Uso: bash scripts/ci/instalar-navegadores.sh chromium webkit
+# Uso: bash scripts/ci/instalar-navegadores.sh chromium
 #
-# Por qué no basta `npx playwright install --with-deps`: ese comando hace dos cosas muy distintas, y la que
-# se cuelga es la primera. Primero instala paquetes del sistema con `apt`, y apt, si el espejo de Ubuntu se
-# queda parado a media descarga, espera sin límite (una vez 25 minutos, otra 4 y medio y se canceló). Después
-# descarga los navegadores desde el CDN de Playwright, que tiene su propio tiempo máximo sin datos. Por eso
-# aquí van separadas, como recomienda Playwright para CI (`install-deps` aparte, https://playwright.dev/docs/browsers):
+# Lo usa el despliegue (deploy.yml), que solo necesita Chromium. El CI de pruebas (ci.yml) ya no pasa por
+# aquí: corre dentro de la imagen oficial de Playwright, que trae los navegadores y las dependencias del
+# sistema, porque instalar WebKit en el runner obliga a apt a bajar unos 119 MB (181 paquetes) del espejo
+# de Ubuntu y, cuando ese espejo va a unos 50 KB/s, ni los topes ni los reintentos lo arreglan: la
+# descarga no está parada, está lenta. Para Chromium solo, apt baja muy poco (el runner ya trae casi todo).
+#
+# Qué hace, por si el espejo falla igualmente:
 #
 #  1. `apt` recibe sus propios tiempos de red (Acquire::Retries y Acquire::http::Timeout, documentados en
-#     apt.conf(5) y apt-transport-http(1)): una descarga parada se corta y se repite en vez de esperar.
-#  2. Cada fase tiene un tope por intento y tres intentos. Un reintento sin más no sirve con apt: matar el
-#     proceso lo deja sujetando el cerrojo de dpkg y los dos intentos siguientes fallan al instante (pasó
-#     en el primer intento de este arreglo). Por eso, antes de repetir, se cierra lo que quedó y se
-#     deja dpkg en orden. El runner es efímero, así que no hay nada que proteger.
-#  3. `--only-shell`: las pruebas corren sin ventana y sin `channel`, que es el caso para el que Playwright
+#     apt.conf(5) y apt-transport-http(1)): una conexión que se cae se repite en vez de esperar.
+#  2. Las dependencias del sistema y la descarga de los navegadores van por separado, como recomienda
+#     Playwright para CI (`install-deps` aparte, https://playwright.dev/docs/browsers), cada una con un tope
+#     por intento y tres intentos.
+#  3. Antes de repetir se cierra lo que quedó y se deja dpkg en orden: matar apt a medias lo deja
+#     sujetando el cerrojo de dpkg y el reintento fallaría al instante. El runner es efímero, así que no
+#     hay nada que proteger.
+#  4. `--only-shell`: las pruebas corren sin ventana y sin `channel`, que es el caso para el que Playwright
 #     documenta esa opción; así no se descarga el Chromium completo.
 set -uo pipefail
 
