@@ -175,11 +175,20 @@ export const es = {
   // Las páginas de categoría: solo salen en el HTML servido y en los metadatos.
   'seo.categories': 'Categorías',
   'seo.category.name': '{label} en Zibatá',
-  'seo.category.description':
-    '{label} es una de las categorías de Zibatá. Conoce los {lugares} en {zonas} de la localidad. Horarios, contacto y cómo llegar a cada uno.',
+  // En singular y plural: con un solo local, "Conoce 1 lugar" y "cómo llegar" a secas, no "a cada uno".
+  'seo.category.description': {
+    one: '{label} es una de las categorías de Zibatá. Conoce {lugares} en {zonas} de la localidad. Horario, contacto y cómo llegar.',
+    other:
+      '{label} es una de las categorías de Zibatá. Conoce {lugares} en {zonas} de la localidad. Horarios, contacto y cómo llegar a cada uno.',
+  },
+  // Si ninguno de sus locales está en una zona activa no hay zonas que contar: "en 0 zonas" no se dice.
+  'seo.category.descriptionSinZona': {
+    one: '{label} es una de las categorías de Zibatá. Conoce {lugares} de la localidad. Horario, contacto y cómo llegar.',
+    other:
+      '{label} es una de las categorías de Zibatá. Conoce {lugares} de la localidad. Horarios, contacto y cómo llegar a cada uno.',
+  },
   // Con dos o más giros que la etiqueta no dice, el título los nombra: es lo que la gente busca.
   'seo.category.title': '{label} en Zibatá: {giros}',
-  'seo.category.empty': '{label} en Zibatá: todavía no hay lugares publicados en esta categoría.',
   'seo.category.places': 'Lugares de esta categoría',
   'seo.category.zones': 'Dónde están',
   'seo.category.zoneCount': { one: '{count} zona', other: '{count} zonas' },

@@ -50,8 +50,10 @@ const KB = 1024
  * `dataJs` subió de 20 a 30 KB cuando el propietario verificó los
  * 103 locales y el dataset ganó horarios, descripciones y ubicaciones propias (v1.5.0), y de 30 a 34
  * al hacerse bilingüe la guía (v3.0.0): las etiquetas y las descripciones viajan en los dos idiomas.
- * Si el dato vuelve a crecer, antes de subir el número toca partir el paquete por idioma, que hoy no
- * se hace porque obligaría a recargar los datos al cambiar de idioma en caliente.
+ * De 34 a 40 con 103 locales: la medición estaba en 33,1 y cada local nuevo suma unos 0,3 KB, así
+ * que el margen se acababa con uno o dos más. 40 deja sitio para unos veinte locales con el dato tal
+ * como es hoy. Si vuelve a apretar, ahora sí toca partir el paquete por idioma, que no se hace porque
+ * obligaría a recargar los datos al cambiar de idioma en caliente, y medir antes de subir otra vez.
  */
 const BUDGET = {
   initialJs: 122,
@@ -62,7 +64,7 @@ const BUDGET = {
   initialCss: 11,
   mapJs: 320,
   mapCss: 15,
-  dataJs: 34,
+  dataJs: 40,
   // 2450 y no 2100 desde que la arboleda subió de densidad (v4.27): la separación media entre
   // árboles bajó de 19 a 15 metros, de 6 800 a 11 580 árboles, y el juego entero pasó de 2 095 a
   // 2 373 KB. Se sube este tope y **no** el de `largestTile`, que es el que mide lo que el

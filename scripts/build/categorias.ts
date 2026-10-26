@@ -58,12 +58,6 @@ export function lista(nombres: readonly string[], idioma: string): string {
   return new Intl.ListFormat(idioma, { style: 'long', type: 'conjunction' }).format(nombres)
 }
 
-/**
- * Desde cuántos locales una categoría se ofrece a los buscadores. Con menos de uno (es decir, cero),
- * no se genera archivo HTML. Con uno o más, la página existe, se enlaza y se ofrece a los buscadores.
- */
-export const MIN_INDEXABLE = 1
-
 /** Un giro con un solo local no representa a la categoría: no se nombra en el título. */
 export const MIN_LOCALES_POR_GIRO = 2
 

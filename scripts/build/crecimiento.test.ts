@@ -101,3 +101,38 @@ describe.each([
     expect(`${portada?.title} ${portada?.description}`).not.toMatch(/restaurant|comer|food|eat/i)
   })
 })
+
+describe.each([
+  [
+    'es',
+    'Conoce 1 lugar en 1 zona de la localidad. Horario, contacto y cómo llegar.',
+    'Conoce 1 lugar de la localidad.',
+  ],
+  [
+    'en',
+    '1 place in 1 area, with hours, contact and directions.',
+    '1 place, with hours, contact and directions.',
+  ],
+] as const)(
+  'la descripción de una categoría con un solo local (%s)',
+  (idioma, conZona, sinZona) => {
+    const paginaDeCategoria = (datos: Dataset) =>
+      pagesFor(idioma, datos, '/', '/og/', absoluta).find((pagina) =>
+        /\/(categoria|category)\//.test(pagina.href),
+      )
+
+    it('habla en singular, sin "los" ni "cada uno"', () => {
+      const pagina = paginaDeCategoria(sintetico)
+      expect(pagina?.description).toContain(conZona)
+      expect(pagina?.description).not.toMatch(/\b1 (lugares|places|zonas|areas)\b|cada uno/)
+    })
+
+    it('si su único local está en una zona que no está activa, no dice "0 zonas"', () => {
+      const plazaInactiva = { ...plaza, active: false } as unknown as Plaza
+      const pagina = paginaDeCategoria({ ...sintetico, plazas: [plazaInactiva] })
+      expect(pagina).toBeDefined()
+      expect(pagina?.description).toContain(sinZona)
+      expect(pagina?.description).not.toMatch(/\b0 |zonas?\b|areas?\b/)
+    })
+  },
+)
