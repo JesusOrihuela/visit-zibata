@@ -84,21 +84,13 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
         timeout-minutes: 10
-      # Un tope por intento y tres intentos. Esta descarga tarda menos de un minuto y de vez en cuando se
-      # queda parada: sin tope, se come el presupuesto del trabajo entero; con él, se corta a los cuatro
-      # minutos y se vuelve a intentar. `--only-shell` salta el Chromium completo: las pruebas corren sin
-      # ventana y sin `channel`, que es el caso para el que Playwright documenta esa opción
-      # (https://playwright.dev/docs/browsers).
+      # Las dependencias del sistema (apt) y la descarga de los navegadores van por separado, cada una con un
+      # tope por intento y tres intentos. Lo que se cuelga es apt, cuando el espejo de Ubuntu se queda parado
+      # a media descarga (una vez 25 minutos, otra 4 y medio); el detalle de por qué y de qué se hace está
+      # en el propio script.
       - name: Instalar los navegadores de Playwright
-        timeout-minutes: 15
-        run: |
-          for intento in 1 2 3; do
-            if timeout 4m npx playwright install --with-deps --only-shell chromium webkit; then
-              exit 0
-            fi
-            echo "::warning::La instalación de navegadores falló o pasó de 4 minutos (intento $intento de 3)"
-          done
-          exit 1
+        timeout-minutes: 25
+        run: bash scripts/ci/instalar-navegadores.sh chromium webkit
       - name: Build de producción
         run: npm run build
         timeout-minutes: 10
