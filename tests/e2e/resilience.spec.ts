@@ -2,7 +2,7 @@ import { AxeBuilder } from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
 import { isMobile, openApp, panel, placesInPlaza, plazaMarker, waitForMap } from './helpers.ts'
 
-test.describe('Estados de error', () => {
+test.describe('Estados de error @mapa', () => {
   test('sin WebGL2 se explica el problema y la guía sigue funcionando con la lista', async ({
     page,
   }) => {
@@ -22,7 +22,7 @@ test.describe('Estados de error', () => {
     await expect(
       page.getByRole('alert').filter({ hasText: 'El mapa 3D no está disponible' }),
     ).toBeVisible()
-    if (isMobile(page)) await page.getByRole('button', { name: 'Explora Zibatá' }).click()
+    if (isMobile(page)) await page.getByRole('button', { name: 'Ver las zonas' }).click()
     await page
       .getByRole('link', {
         name: new RegExp(`^Paseo Zibatá, ${placesInPlaza('Paseo Zibatá')} lugares`),
@@ -61,7 +61,9 @@ test.describe('Estados de error', () => {
     })
     await openApp(page)
     await expect(page.getByRole('searchbox', { name: 'Buscar lugares' })).toBeVisible()
-    await page.getByRole('button', { name: 'Explora Zibatá' }).click()
+    await page
+      .getByRole('button', { name: isMobile(page) ? 'Ver las zonas' : 'Explora Zibatá' })
+      .click()
     // La plaza sigue abriéndose: solo faltan los registros defectuosos.
     await page.getByRole('link', { name: /^Plaza Condesa, \d+ lugares/ }).click()
     await expect(
@@ -80,7 +82,7 @@ test.describe('Estados de error', () => {
     await expect(alert).toBeVisible()
     await expect(alert.getByRole('button', { name: 'Reintentar' })).toBeVisible()
     await expect(page.getByRole('searchbox', { name: 'Buscar lugares' })).toBeVisible()
-    if (isMobile(page)) await page.getByRole('button', { name: 'Explora Zibatá' }).click()
+    if (isMobile(page)) await page.getByRole('button', { name: 'Ver las zonas' }).click()
     await page
       .getByRole('link', {
         name: new RegExp(`^Paseo Zibatá, ${placesInPlaza('Paseo Zibatá')} lugares`),

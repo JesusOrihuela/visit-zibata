@@ -77,3 +77,13 @@
   padding: var(--space-1) var(--space-4) calc(var(--space-6) + var(--safe-bottom));
   touch-action: pan-y;
 }
+
+/*
+ * La cabecera de "Explora Zibatá" no se desplaza, y su relleno inferior no es el de una lista: esos
+ * 24 px están pensados para el final de un scroll y aquí empujaban el contenido 3 px, sacando una
+ * barra de desplazamiento de tres píxeles que no llevaba a ninguna parte. Queda solo el área segura,
+ * que es lo que separa el botón del borde del teléfono.
+ */
+.sheet[data-peek="small"] .content {
+  padding-bottom: var(--safe-bottom);
+}

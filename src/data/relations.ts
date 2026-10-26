@@ -240,3 +240,40 @@ export function validateRelations(dataset: CommercialDataset, bounds?: Bounds): 
 
   return issues
 }
+
+/**
+ * Cobertura de traducciones.
+ *
+ * Zod deja `en` opcional a propósito: un texto puede llegar solo en español y traducirse después.
+ * El problema es publicarlo así, que deja al visitante inglés leyendo español sin aviso. Pasó con
+ * trece locales y pasó la validación sin quejarse, porque nadie lo comprobaba. Esta sí.
+ *
+ * Va aparte de `validateRelations` y no dentro: las pruebas construyen catálogos mínimos que no
+ * necesitan traducciones, y la comprobación es del conjunto publicado, no de la estructura. La llama
+ * `npm run data:validate` (y por tanto el build y el despliegue).
+ */
+export function validateTranslations(dataset: CommercialDataset): DataIssue[] {
+  const issues: DataIssue[] = []
+  const missing = (dataset: DatasetName, what: string, id: string) =>
+    issues.push({
+      level: 'error',
+      dataset,
+      id,
+      message: `Falta la traducción al inglés de ${what}`,
+    })
+
+  for (const place of dataset.places) {
+    if (place.description && !place.description.en) missing('places', 'la descripción', place.id)
+  }
+  for (const plaza of dataset.plazas) {
+    if (plaza.description && !plaza.description.en) missing('plazas', 'la descripción', plaza.id)
+  }
+  for (const category of dataset.categories) {
+    if (!category.label.en) missing('categories', 'la etiqueta de la categoría', category.id)
+    for (const giro of category.giros) {
+      if (!giro.label.en) missing('categories', `la etiqueta del giro "${giro.id}"`, category.id)
+    }
+  }
+
+  return issues
+}

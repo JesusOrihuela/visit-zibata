@@ -1,7 +1,7 @@
 {
   "$schema": "./schemas/plazas.schema.json",
   "version": 1,
-  "updatedAt": "2026-09-14",
+  "updatedAt": "2026-10-25",
   "plazas": [
     {
       "id": "xentric-anahuac",
@@ -985,7 +985,7 @@
       "name": "Distrito Nandú",
       "description": {
         "es": "Desarrollo de uso mixto en construcción junto al Parque Nandú.",
-        "en": "Mixed use development under construction next to Parque Nandú."
+        "en": "Mixed-use development under construction next to Parque Nandú."
       },
       "address": null,
       "coordinates": {
@@ -1113,7 +1113,7 @@
         "es": "Zona comercial del desarrollo Riscos Condesa II, sobre Av. Ceiba.",
         "en": "Shopping area of the Riscos Condesa II development, on Av. Ceiba."
       },
-      "address": null,
+      "address": "Circuito Ceiba, Condesa II, Zibatá",
       "coordinates": {
         "lat": 20.685199,
         "lng": -100.325317
@@ -1149,9 +1149,14 @@
       "googleMapsUri": "https://maps.app.goo.gl/8N4MSxaT7RZJyJaTA",
       "placeIds": [
         "baguettia-plaza-luna",
-        "smoothie-lab-plaza-luna"
+        "smoothie-lab-plaza-luna",
+        "la-brasa-nortena",
+        "el-asadero"
       ],
       "categories": [
+        "tacos-y-antojitos",
+        "mexicana",
+        "carnes-y-parrilla",
         "entre-panes",
         "saludable",
         "bebidas"

@@ -150,6 +150,7 @@ export function BottomSheet({
       data-expanded={expanded}
       data-dragging={dragHeight !== null}
       data-initial={initial}
+      data-peek={peek}
       style={{ height }}
       aria-label={t('panel.label')}
     >

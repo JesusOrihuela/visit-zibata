@@ -7,7 +7,7 @@ import {
   MAXIMO_POR_CUENTA,
   MAXIMO_POR_PETICION,
 } from './favoritos.ts'
-import { CONTEO_CORAZONES, UMBRAL } from './senales.ts'
+import { CONTEO_CORAZONES } from './senales.ts'
 
 describe('lo que pide el navegador', () => {
   it('acepta un gesto normal', () => {
@@ -48,14 +48,8 @@ describe('lo que pide el navegador', () => {
 
 describe('las reglas del conteo público viven en el servidor', () => {
   it('la edad mínima está en el SQL, no en la interfaz', () => {
-    // Si estuviera en el navegador, bastaría con pedir los datos a mano para saltársela. El umbral
-    // se aplica al construir la señal, y su prueba vive en senales.test.ts.
+    // Si estuviera en el navegador, bastaría con pedir los datos a mano para saltársela.
     expect(CONTEO_CORAZONES).toContain('c.creada <=')
-  })
-
-  it('el umbral protege a quien guardó algo que casi nadie guardó', () => {
-    // Con umbral 1 o 2, publicar el número delataría a quien lo guardó.
-    expect(UMBRAL).toBeGreaterThanOrEqual(3)
   })
 
   it('la edad mínima convierte un ataque instantáneo en uno que hay que sostener', () => {

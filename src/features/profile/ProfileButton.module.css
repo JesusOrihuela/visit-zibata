@@ -132,6 +132,7 @@
   font-weight: 700;
   font-size: var(--text-xl);
   line-height: 1.05;
+  letter-spacing: -0.02em;
   color: var(--ink-900);
 }
 
@@ -155,10 +156,16 @@
   background: var(--lime-50);
 }
 
+/*
+ * Subtítulo de grupo, igual que en el panel de zona y en las páginas de información. Era el rótulo
+ * compacto de 12 px que quedó del sistema anterior, y en una hoja que se lee entera no separaba
+ * nada: encabezaba una tarjeta o una lista pesando menos que su propio contenido.
+ */
 .blockTitle {
-  font-size: var(--text-xs);
+  font-size: var(--text-md);
   font-weight: 600;
-  color: var(--olive-700);
+  line-height: 1.2;
+  color: var(--ink-700);
 }
 
 .summary {

@@ -66,7 +66,7 @@ const anguloDe = async (locator: import('@playwright/test').Locator): Promise<nu
     return (Math.atan2(matriz.b, matriz.a) * 180) / Math.PI
   })
 
-test.describe('Mapa', () => {
+test.describe('Mapa @mapa', () => {
   test('abre directamente en el mapa 3D con plazas y atribución', async ({ page }) => {
     await openApp(page)
     await expect(page).toHaveTitle(/Zibatá/)

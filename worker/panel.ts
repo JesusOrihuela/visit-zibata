@@ -85,12 +85,10 @@ SELECT ruta, SUM(cuenta) AS veces
 `.trim()
 
 /**
- * Los lugares más guardados, **sin umbral**.
+ * Los lugares más guardados.
  *
- * El umbral de cinco es para el público, y su motivo es que un número chico delata a quien lo
- * guardó. Aquí no delata a nadie, porque no hay nadie a quien señalar: lo que se guarda es una
- * cuenta sin correo ni nombre. Y sin los números chicos el panel no sirve para lo que se hizo, que
- * es ver qué empieza a moverse antes de que sea visible.
+ * Incluye los conteos chicos porque el panel sirve para ver qué empieza a moverse antes de que se
+ * note en la guía. No hay a quién delatar: lo que se guarda es una cuenta sin correo ni nombre.
  */
 export const MAS_GUARDADOS = `
 SELECT lugar_id AS lugar, COUNT(*) AS corazones

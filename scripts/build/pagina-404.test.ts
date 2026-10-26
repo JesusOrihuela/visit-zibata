@@ -50,6 +50,8 @@ describe('la página 404', () => {
 
   it('no se indexa, y habla en los dos idiomas', () => {
     expect(html).toContain('name="robots" content="noindex"')
-    expect(html).toContain('This address is not part of the guide.')
+    expect(html).toContain(
+      'This page doesn’t exist. The address doesn’t match any place or area in the guide: it may be mistyped, or that place may no longer be listed.',
+    )
   })
 })

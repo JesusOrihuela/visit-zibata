@@ -32,11 +32,9 @@ const { plazas } = read<{ plazas: Plaza[] }>('data/commercial/plazas.json')
 const { places } = read<{ places: Place[] }>('data/commercial/places.json')
 
 const plazaById = new Map(plazas.map((plaza) => [plaza.id, plaza]))
-const giroLabel = new Map<string, string>()
 const hueOfGiro = new Map<string, number>()
 for (const category of categories) {
   for (const giro of category.giros) {
-    giroLabel.set(giro.id, giro.label.es)
     if (category.hue !== undefined) hueOfGiro.set(giro.id, category.hue)
   }
 }
@@ -60,12 +58,10 @@ function face(place: Place): string {
 const tarjetas = places
   .map((place) => {
     const plaza = plazaById.get(place.plazaId)
-    const giros = place.giros.map((id) => giroLabel.get(id) ?? id).join(' · ')
     return `<article class="c" id="og-${place.slug}">
     <div class="txt">
       <div class="marca">${logo}<span>Visit Zibatá</span></div>
       <h1>${escapeHtml(place.name)}</h1>
-      <p class="giros">${escapeHtml(giros)}</p>
       <p class="plaza">${escapeHtml(plaza ? plaza.name : 'Zibatá')}</p>
     </div>
     ${face(place)}
@@ -88,7 +84,6 @@ body{background:#fff;font-family:Archivo,sans-serif}
 .marca svg{width:46px;height:46px}
 h1{font-family:Archivo,sans-serif;font-weight:700;font-size:68px;line-height:1.02;letter-spacing:-.02em;
   color:#22261D;text-wrap:balance}
-.giros{font-size:30px;color:#536C2A}
 .plaza{font-size:25px;color:#8A907C}
 /* Sin foto, la cara derecha lleva el tono de la categoría: el mismo que colorea su plaza. */
 .tono{background:linear-gradient(160deg,hsl(var(--h) 42% 80%),hsl(var(--h) 38% 66%))}

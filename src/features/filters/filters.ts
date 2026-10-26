@@ -82,30 +82,39 @@ export function applyFilters(
           .map((id) => catalog.placeById.get(id))
           .filter((place): place is Place => place !== undefined)
 
-  return candidates.filter(
+  const matching = candidates.filter(
     (place) =>
       (filters.categoryId === null || categoriesOf(place, catalog).includes(filters.categoryId)) &&
       (filters.plazaId === null || place.plazaId === filters.plazaId) &&
       (!filters.favoritesOnly || favoriteIds.has(place.id)) &&
       (!filters.openNowOnly || (now !== undefined && estaAbierto(place, now))),
   )
+
+  /*
+   * Sin texto, la categoría elegida hace de consulta, con la misma regla que la búsqueda: primero
+   * los locales que la llevan de primer giro y después los que la llevan de segundo. Con texto ya
+   * lo ordenó el índice, y volver a ordenar aquí desharía su trabajo.
+   */
+  if (ranked !== null || filters.categoryId === null) return matching
+  const categoryId = filters.categoryId
+  return [...matching].sort(
+    (a, b) =>
+      positionOfCategory(a, catalog, categoryId) - positionOfCategory(b, catalog, categoryId),
+  )
+}
+
+/** Posición del primer giro del local que cae en esa categoría. */
+function positionOfCategory(place: Place, catalog: Catalog, categoryId: string): number {
+  const giros = allGiroIds(place)
+  for (const [index, giro] of giros.entries())
+    if (catalog.categoryOfGiro.get(giro)?.id === categoryId) return index
+  return giros.length
 }
 
 export function countByPlaza(places: readonly Place[]): Map<string, number> {
   const counts = new Map<string, number>()
   for (const place of places) counts.set(place.plazaId, (counts.get(place.plazaId) ?? 0) + 1)
   return counts
-}
-
-/** Lugares agrupados por plaza conservando el orden de aparición. */
-export function groupByPlaza(places: readonly Place[]): [string, Place[]][] {
-  const groups = new Map<string, Place[]>()
-  for (const place of places) {
-    const list = groups.get(place.plazaId) ?? []
-    list.push(place)
-    groups.set(place.plazaId, list)
-  }
-  return [...groups]
 }
 
 /** Nº de lugares por categoría dentro de un conjunto (para las pastillas de filtro). */

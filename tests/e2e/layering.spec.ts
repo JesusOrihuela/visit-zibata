@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { isMobile, openApp, panel, waitForMap } from './helpers.ts'
 
-test.describe('capas y alineación', () => {
+test.describe('capas y alineación @mapa', () => {
   test('las etiquetas de las zonas quedan por debajo del panel lateral', async ({ page }) => {
     await openApp(page, { path: 'zona/paseo-zibata' })
     await waitForMap(page)

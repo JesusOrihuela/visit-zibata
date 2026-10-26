@@ -38,21 +38,32 @@ jobs:
         run: npm run perf:budget
 
   e2e:
-    name: E2E (Playwright, base ${{ matrix.base }})
+    name: E2E (Playwright, base ${{ matrix.base }}, ${{ matrix.grupo }})
     needs: checks
     runs-on: ubuntu-latest
-    # 60 y no 40: al soltar las teselas del mapa (v4.7.0) cada vista pide una veintena de archivos
-    # donde antes hacía unas pocas lecturas por rango, y la suite pasó de 24 a 34-40 minutos aquí.
-    # Es un costo del banco de pruebas, no de la guía publicada: `vite preview` habla HTTP/1.1 y
-    # serializa, mientras que el sitio real se sirve por h2/h3 y esas peticiones van multiplexadas
-    # sobre una sola conexión. Con 40 la ejecución en subruta se canceló por tiempo con todo en verde.
-    timeout-minutes: 60
+    # Dos grupos con peso parecido, no dos mitades arbitrarias. Medido con el informe JSON de
+    # Playwright: mapa, capas, responsive, medición, táctil y errores suman 31,6 minutos de prueba;
+    # el resto (contenido, navegación, SEO) suma 27,0. Así cada trabajo ronda los 20 minutos en CI y
+    # deja de acercarse al límite de 60 que canceló dos ejecuciones.
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
-        # El sitio se sirve en la raíz, pero se sigue probando una subruta: es lo que detecta una
-        # ruta absoluta mal escrita antes de publicarla, y mantiene el proyecto portable a otro hosting.
-        base: ['/', '/visit-zibata/']
+        # La subruta se sigue probando: detecta rutas absolutas mal escritas antes de publicar, y
+        # mantiene el proyecto portable a otro hosting.
+        include:
+          - base: '/'
+            grupo: 'mapa'
+            args: '--grep=@mapa'
+          - base: '/'
+            grupo: 'contenido'
+            args: '--grep-invert=@mapa'
+          - base: '/visit-zibata/'
+            grupo: 'mapa'
+            args: '--grep=@mapa'
+          - base: '/visit-zibata/'
+            grupo: 'contenido'
+            args: '--grep-invert=@mapa'
     env:
       BASE_PATH: ${{ matrix.base }}
     steps:
@@ -64,7 +75,7 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium webkit
       - run: npm run build
-      - run: npm run test:e2e
+      - run: npx playwright test ${{ matrix.args }}
       - name: Informe de Playwright
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

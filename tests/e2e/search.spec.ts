@@ -78,7 +78,7 @@ test.describe('Búsqueda y filtros', () => {
     await expect(region.getByRole('heading', { level: 2, name: 'Plaza Luna' })).toBeVisible()
 
     await page.getByRole('searchbox', { name: 'Buscar lugares' }).fill('taco')
-    // Los resultados salen agrupados por plaza, no solo los de la que estaba abierta.
+    // Los resultados salen en una sola lista, con la zona en cada tarjeta y no solo la que estaba abierta.
     await expect(region.getByRole('heading', { name: 'Resultados' })).toBeVisible()
     await expect(region.getByRole('link', { name: 'Ver detalles de Tacos el Pata' })).toBeVisible()
     // La plaza sigue elegida y vuelve en cuanto se borra la búsqueda.
@@ -139,7 +139,9 @@ test.describe('Búsqueda y filtros', () => {
     )
   })
 
-  test('una categoría sola muestra resultados agrupados por plaza', async ({ page }) => {
+  test('una categoría sola muestra una sola lista, con la zona en cada tarjeta', async ({
+    page,
+  }) => {
     await openApp(page)
     await page
       .getByRole('list', { name: 'Categorías' })
@@ -150,13 +152,14 @@ test.describe('Búsqueda y filtros', () => {
     await expect(page).toHaveURL(/\/categoria\/bar$/)
     const region = panel(page)
     await expect(region.getByRole('heading', { name: 'Resultados' })).toBeVisible()
-    // La cabecera de grupo es un enlace: la zona tiene dirección propia.
-    await expect(region.getByRole('link', { name: /^Xentric Anáhuac/ })).toBeVisible()
-    await expect(region.getByRole('link', { name: /^Paseo Zibatá/ })).toBeVisible()
-    await region.getByRole('link', { name: /^Paseo Zibatá/ }).click()
-    await expect(region.getByRole('heading', { level: 2, name: 'Paseo Zibatá' })).toBeVisible()
-    await expect(region.getByRole('link', { name: /^Ver detalles de/ })).toHaveCount(
-      placesInCategory('bar', 'Paseo Zibatá'),
+    // Una lista, no una sección por plaza: ya no hay cabecera de zona que enlazar.
+    await expect(region.getByRole('link', { name: /^(Xentric Anáhuac|Paseo Zibatá)/ })).toHaveCount(
+      0,
     )
+    await expect(region.getByRole('link', { name: /^Ver detalles de/ })).toHaveCount(
+      placesInCategory('bar'),
+    )
+    // La zona sigue a la vista, ahora como fila de la tarjeta.
+    await expect(region.getByText('Xentric Anáhuac').first()).toBeVisible()
   })
 })

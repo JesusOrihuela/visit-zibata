@@ -7,7 +7,7 @@
  * costó encontrar: una regla compartida ganándole a la del módulo por el orden del paquete.
  */
 import { expect, test } from '@playwright/test'
-import { openApp, waitForMap, waitForSheet } from './helpers.ts'
+import { isMobile, openApp, waitForMap, waitForSheet } from './helpers.ts'
 
 /** Las cinco formas que el catálogo permite en lo que se pulsa, más las dos que no son un radio. */
 const FORMAS_PERMITIDAS = new Set([
@@ -202,7 +202,9 @@ test.describe('catálogo de interactuables', () => {
      * En móvil la hoja llega asomada y el índice no está pintado: se abre como lo abriría
      * cualquiera, con el botón que lo dice.
      */
-    const abrir = page.getByRole('button', { name: 'Explora Zibatá' })
+    const abrir = page.getByRole('button', {
+      name: isMobile(page) ? 'Ver las zonas' : 'Explora Zibatá',
+    })
     if (await abrir.isVisible()) {
       await abrir.click()
       await waitForSheet(page)

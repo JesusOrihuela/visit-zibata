@@ -33,7 +33,7 @@ describe('ProfileButton', () => {
     expect(within(sheet).queryByText('Lo que más se te antoja')).not.toBeInTheDocument()
   })
 
-  it('resume el paso por Zibatá y marca las zonas estrenadas, sin convertirlas en botones', async () => {
+  it('resume el paso por Zibatá y marca las zonas visitadas, sin convertirlas en botones', async () => {
     visitsStore.write(
       new Map([
         ['cafe-aurora', ['2026-09-20', today()]],
@@ -53,7 +53,7 @@ describe('ProfileButton', () => {
       .getAllByRole('listitem')
       .map((item) => [item.textContent, item.dataset.visited])
     expect(marcadas).toEqual([
-      ['Norte, estrenada', 'true'],
+      ['Norte, visitada', 'true'],
       ['Sur', 'false'],
     ])
     expect(within(zonas).queryAllByRole('button')).toHaveLength(0)

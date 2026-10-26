@@ -66,6 +66,12 @@
   flex-direction: column;
   gap: 0.15rem;
   min-width: 0;
+  /*
+   * Ocupa todo el ancho que deja la foto. No es cosmético: la fila de giros se mide para decidir
+   * cuántas etiquetas caben, y sin esto mediría su propio contenido —donde siempre cabe lo que ya
+   * tiene— y el número no cambiaría nunca al ensanchar el panel.
+   */
+  flex: 1;
 }
 
 /* La fila del nombre: el nombre se encoge y se recorta, el punto nunca. */
@@ -161,7 +167,27 @@
   color: var(--olive-600);
 }
 
-.meta {
+/*
+ * La zona del local, cuando la lista mezcla zonas (resultados de búsqueda y filtros).
+ *
+ * Fila propia y no cola de la línea de giros: pegada al último giro se leía como una etiqueta más.
+ * Lleva el color de la plaza en el mapa (`--plaza-accent`), así el nombre de la zona y su mancha
+ * arriba se reconocen como lo mismo. El acento de plaza es oscuro a propósito, para pasar AA.
+ */
+.area {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 0;
   overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: var(--text-xs);
+  color: var(--plaza-accent, var(--color-text-muted));
+  white-space: nowrap;
+}
+
+/* 12 px: la chincheta sitúa la zona, no compite con el nombre del local ni con sus giros. */
+.area svg {
+  flex-shrink: 0;
+  width: 0.75rem;
+  height: 0.75rem;
 }

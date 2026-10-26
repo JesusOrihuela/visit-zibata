@@ -34,7 +34,7 @@ const ocultarPestana = (page: Page) =>
 
 const todos = (envios: Envio[]) => envios.flatMap((envio) => envio.eventos)
 
-test.describe('Medición de uso', () => {
+test.describe('Medición de uso @mapa', () => {
   test('abrir una ficha desde la lista y salir por Cómo llegar se cuentan, sin identificar a nadie', async ({
     page,
     context,

@@ -1,11 +1,11 @@
 /**
  * Lo que dice la comunidad, de ida y de vuelta.
  *
- * **De vuelta**: `/api/senales` devuelve, por lugar, cuántas personas lo guardaron (solo si pasa el
- * umbral) y un empuje de 0 a 1 para el orden personal. El servidor ya aplicó el umbral, la edad
- * mínima y toda la calibración, así que aquí no hay reglas que repetir: lo que llega es lo que se
- * puede usar. Y lo que **no** llega, a propósito, es la media de estrellas: el empuje viene hecho
- * para que la interfaz no pueda enseñarla ni queriendo (ver worker/senales.ts).
+ * **De vuelta**: `/api/senales` devuelve, por lugar, cuántas personas lo guardaron y un empuje de 0
+ * a 1 para el orden personal. El servidor ya aplicó la edad mínima y toda la calibración, así que
+ * aquí no hay reglas que repetir: lo que llega es lo que se puede usar. Y lo que **no** llega, a
+ * propósito, es la media de estrellas: el empuje viene hecho para que la interfaz no pueda
+ * enseñarla ni queriendo (ver worker/senales.ts).
  *
  * **De ida**: lo que esta persona guarda se manda a su cuenta por `lib/sincronizar.ts`, que nunca
  * bloquea el gesto ni anuncia un fallo.

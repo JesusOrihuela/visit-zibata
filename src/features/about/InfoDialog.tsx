@@ -171,19 +171,21 @@ export function InfoDialog({ topic, onClose, onGoTo }: InfoDialogProps) {
            * quite, y de quién es cada cosa.
            */}
           {key === 'privacy' && (
-            <>
+            <div className={styles.block}>
               <h3 className={styles.blockTitle}>{t('about.termsTitle')}</h3>
               <p className={styles.body}>{t('about.termsWhat')}</p>
               <p className={styles.body}>{t('about.termsData')}</p>
               <p className={styles.body}>{t('about.termsFix')}</p>
               <p className={styles.body}>{t('about.termsContent')}</p>
-            </>
+            </div>
           )}
 
           {key === 'about' && (
             <>
-              <h3 className={styles.blockTitle}>{t('about.credits')}</h3>
-              <p className={styles.body}>{t('about.creditsBody')}</p>
+              <div className={styles.block}>
+                <h3 className={styles.blockTitle}>{t('about.credits')}</h3>
+                <p className={styles.body}>{t('about.creditsBody')}</p>
+              </div>
               <p className={styles.colophon}>
                 <Signature />
                 <span className={styles.version}>

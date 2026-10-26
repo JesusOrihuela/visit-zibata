@@ -122,6 +122,7 @@
   font-size: var(--text-xl);
   font-weight: 700;
   line-height: 1.05;
+  letter-spacing: -0.02em;
   color: var(--ink-900);
 }
 
@@ -130,16 +131,32 @@
   composes: base botonIcono conSuperficie from "../../styles/controls.module.css";
 }
 
+/*
+ * Un subtítulo y lo que encabeza. El contenedor ya separa 16 px entre bloques; los 4 de aquí son el
+ * paso de 20 px que `docs/TIPOGRAFIA.md` pide antes de un subtítulo, y los 8 del `gap` son la
+ * separación corta con su propio texto. Sin esto el rótulo flotaba entre dos párrafos igual de lejos
+ * de los dos.
+ */
 .block {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+  margin-top: var(--space-1);
 }
 
+/*
+ * Subtítulo de grupo, no etiqueta compacta.
+ *
+ * En la ficha los subtítulos se fueron (cada sección ya se anuncia sola), pero aquí siguen haciendo
+ * falta: separan los términos de uso de la privacidad y los créditos del resto de la página. Se
+ * quedaron con el estilo de rótulo de 12 px que se usaba entonces, y este es el nivel que
+ * `docs/TIPOGRAFIA.md` reserva para las páginas de información: 17 px, 600, tinta de texto.
+ */
 .blockTitle {
-  font-size: var(--text-xs);
+  font-size: var(--text-md);
   font-weight: 600;
-  color: var(--olive-700);
+  line-height: 1.2;
+  color: var(--ink-700);
 }
 
 /*
