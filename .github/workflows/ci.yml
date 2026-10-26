@@ -37,20 +37,53 @@ jobs:
       - name: Presupuesto de rendimiento
         run: npm run perf:budget
 
-  e2e:
-    name: E2E (Playwright, base ${{ matrix.base }}, ${{ matrix.grupo }})
-    needs: checks
+  # La imagen oficial de Playwright trae los navegadores y sus dependencias del sistema ya instalados, y
+  # Playwright exige que su versión coincida con la del paquete (https://playwright.dev/docs/docker):
+  # si no, no encuentra los ejecutables. Por eso la etiqueta sale del propio package-lock.json y no de un
+  # número escrito a mano: cuando Dependabot suba Playwright, la imagen sube con él.
+  playwright-version:
+    name: Versión de Playwright
     runs-on: ubuntu-latest
-    # Dos grupos con peso parecido, no dos mitades arbitrarias. Medido con el informe JSON de
-    # Playwright: mapa, capas, responsive, medición, táctil y errores suman 31,6 minutos de prueba;
-    # el resto (contenido, navegación, SEO) suma 27,0. Así cada trabajo ronda los 20 minutos en CI y
-    # deja de acercarse al límite de 60 que canceló dos ejecuciones.
-    timeout-minutes: 45
+    timeout-minutes: 5
+    outputs:
+      version: ${{ steps.leer.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - id: leer
+        run: echo "version=$(node -p "require('./package-lock.json').packages['node_modules/@playwright/test'].version")" >> "$GITHUB_OUTPUT"
+
+  e2e:
+    # Los cuatro nombres no se pueden cambiar sin tocar la regla de la rama `main` (Settings, Rules,
+    # Rulesets): exige estas comprobaciones por su nombre exacto, y un nombre nuevo se quedaría
+    # esperando para siempre.
+    name: E2E (Playwright, base ${{ matrix.base }}, ${{ matrix.grupo }})
+    needs: [checks, playwright-version]
+    runs-on: ubuntu-latest
+    # Dentro de la imagen oficial de Playwright (https://playwright.dev/docs/ci, "Via Containers"). Antes
+    # cada trabajo instalaba los navegadores en el runner con `--with-deps`: apt tenía que bajar unos 119 MB
+    # (181 paquetes, sobre todo de WebKit) del espejo de Ubuntu, que a veces va a unos 50 KB/s. Una vez
+    # tardó 25 minutos, otra vez no llegó ni a los 12 con tres intentos, y ningún tope o reintento arregla
+    # que la red esté lenta. La imagen se descarga del registro de Microsoft y no hay nada que instalar.
+    # `--user 1001` es el de la documentación de Playwright (el usuario del runner, para que el
+    # espacio de trabajo siga siendo escribible) y `--ipc=host` y `--init` los que recomienda para Chromium.
+    container:
+      image: mcr.microsoft.com/playwright:v${{ needs.playwright-version.outputs.version }}-noble
+      options: --user 1001 --ipc=host --init
+    # Red de seguridad por encima de todo lo demás. Playwright corta antes con `globalTimeout` (45
+    # minutos, en playwright.config.ts) y los pasos tienen su propio tope, así que este solo salta si
+    # algo se cuelga fuera de ellos.
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
         # La subruta se sigue probando: detecta rutas absolutas mal escritas antes de publicar, y
         # mantiene el proyecto portable a otro hosting.
+        #
+        # Dos grupos por base. "mapa" son los archivos cuyas pruebas llevan `@mapa` en el título
+        # (mapa, capas, responsive, medición, táctil y errores) y "contenido" es todo lo demás. En CI
+        # "contenido" tarda más que en local (entre 23 y 35 minutos frente a 16 a 23 de "mapa"): al
+        # final de cada ejecución el resumen del trabajo lista el tiempo por archivo, que es el dato
+        # para repartirlos mejor si hace falta.
         include:
           - base: '/'
             grupo: 'mapa'
@@ -72,10 +105,18 @@ jobs:
         with:
           node-version: 24
           cache: npm
-      - run: npm ci
-      - run: npx playwright install --with-deps chromium webkit
-      - run: npm run build
-      - run: npx playwright test ${{ matrix.args }}
+      - name: Instalar dependencias
+        run: npm ci
+        timeout-minutes: 10
+      - name: Build de producción
+        run: npm run build
+        timeout-minutes: 10
+      - name: Pruebas E2E
+        run: npx playwright test ${{ matrix.args }}
+        timeout-minutes: 50
+      - name: Tiempo de prueba por archivo
+        if: ${{ !cancelled() }}
+        run: node scripts/ci/resumen-tiempos.ts >> "$GITHUB_STEP_SUMMARY"
       - name: Informe de Playwright
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

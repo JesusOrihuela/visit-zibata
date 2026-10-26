@@ -20,7 +20,22 @@ export default defineConfig({
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
   workers: process.env.CI ? 2 : 3,
-  reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : [['list']],
+  /*
+   * Tope de toda la ejecución, solo en CI. Playwright pide ponerlo siempre ahí
+   * (https://playwright.dev/docs/ci): sin él, si algo se cuelga, el trabajo se queda esperando hasta que
+   * GitHub lo cancela y no deja informe. Con él, Playwright se detiene antes, escribe el informe y la
+   * ejecución falla con un motivo. Tiene que ser menor que el límite del paso y del trabajo en
+   * .github/workflows/ci.yml (50 y 60 minutos), para que sea Playwright quien corte primero.
+   */
+  globalTimeout: process.env.CI ? 45 * 60_000 : undefined,
+  reporter: process.env.CI
+    ? [
+        ['github'],
+        ['html', { open: 'never' }],
+        // Los tiempos de cada archivo, para repartir las pruebas con datos (scripts/ci/resumen-tiempos.ts).
+        ['json', { outputFile: 'test-results/informe.json' }],
+      ]
+    : [['list']],
   use: {
     baseURL,
     locale: 'es-MX',
