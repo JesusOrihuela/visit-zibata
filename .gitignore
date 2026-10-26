@@ -48,3 +48,15 @@ skills-lock.json
 /docs/
 /research/*.md
 /data/research/README.md
+
+# Investigación, bitácoras y auditorías: material interno, no hace falta para que la guía funcione ni
+# para sus pruebas. Siguen en local y hay copia fuera del repositorio. Solo `closed.json` queda
+# versionado porque una prueba lo lee.
+/research/
+/data/research/*
+!/data/research/closed.json
+/data/commercial/imports/
+/scripts/research/apply-owner-review.ts
+/scripts/research/build-dataset.ts
+/.editorconfig
+/.env.example
