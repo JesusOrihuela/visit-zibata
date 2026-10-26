@@ -2,7 +2,7 @@ import { AxeBuilder } from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
 import { isMobile, openApp, panel, placesInPlaza, plazaMarker, waitForMap } from './helpers.ts'
 
-test.describe('Estados de error', () => {
+test.describe('Estados de error @mapa', () => {
   test('sin WebGL2 se explica el problema y la guía sigue funcionando con la lista', async ({
     page,
   }) => {

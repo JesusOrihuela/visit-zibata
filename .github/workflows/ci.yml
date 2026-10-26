@@ -38,20 +38,32 @@ jobs:
         run: npm run perf:budget
 
   e2e:
-    name: E2E (Playwright, base ${{ matrix.base }}, fragmento ${{ matrix.shard }}/2)
+    name: E2E (Playwright, base ${{ matrix.base }}, ${{ matrix.grupo }})
     needs: checks
     runs-on: ubuntu-latest
-    # Dos fragmentos por base. La suite completa tardaba 40-52 minutos por trabajo y se acercaba al
-    # límite de 60: dos ejecuciones se cancelaron por tiempo con todo en verde. Repartida en dos,
-    # cada trabajo queda en 20-25 minutos y el límite deja de ser una lotería.
+    # Dos grupos con peso parecido, no dos mitades arbitrarias. Medido con el informe JSON de
+    # Playwright: mapa, capas, responsive, medición, táctil y errores suman 31,6 minutos de prueba;
+    # el resto (contenido, navegación, SEO) suma 27,0. Así cada trabajo ronda los 20 minutos en CI y
+    # deja de acercarse al límite de 60 que canceló dos ejecuciones.
     timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
-        # El sitio se sirve en la raíz, pero se sigue probando una subruta: es lo que detecta una
-        # ruta absoluta mal escrita antes de publicarla, y mantiene el proyecto portable a otro hosting.
-        base: ['/', '/visit-zibata/']
-        shard: [1, 2]
+        # La subruta se sigue probando: detecta rutas absolutas mal escritas antes de publicar, y
+        # mantiene el proyecto portable a otro hosting.
+        include:
+          - base: '/'
+            grupo: 'mapa'
+            args: '--grep=@mapa'
+          - base: '/'
+            grupo: 'contenido'
+            args: '--grep-invert=@mapa'
+          - base: '/visit-zibata/'
+            grupo: 'mapa'
+            args: '--grep=@mapa'
+          - base: '/visit-zibata/'
+            grupo: 'contenido'
+            args: '--grep-invert=@mapa'
     env:
       BASE_PATH: ${{ matrix.base }}
     steps:
@@ -63,7 +75,7 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium webkit
       - run: npm run build
-      - run: npx playwright test --shard=${{ matrix.shard }}/2
+      - run: npx playwright test ${{ matrix.args }}
       - name: Informe de Playwright
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

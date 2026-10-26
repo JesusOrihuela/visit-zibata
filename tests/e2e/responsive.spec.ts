@@ -41,7 +41,7 @@ const SIZES: { width: number; height: number; project: string[] }[] = [
 ]
 
 for (const size of SIZES) {
-  test.describe(`${size.width}×${size.height}`, () => {
+  test.describe(`${size.width}×${size.height} @mapa`, () => {
     test.use({ viewport: { width: size.width, height: size.height } })
 
     test('sin desbordamiento horizontal ni solapes entre barra, controles, atribución y panel', async ({

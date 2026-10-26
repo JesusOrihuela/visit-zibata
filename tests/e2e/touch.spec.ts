@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 import { openApp, panel, plazaMarker, waitForMap, waitForSheet } from './helpers.ts'
 
 // Solo en proyectos con pantalla táctil (teléfono Android, iPhone con WebKit y tableta).
-test.describe('Interacción táctil', () => {
+test.describe('Interacción táctil @mapa', () => {
   test.beforeEach(({ page }, testInfo) => {
     test.skip(!testInfo.project.use.hasTouch, 'Requiere pantalla táctil emulada')
     void page
