@@ -205,19 +205,16 @@ function cloudflareHeaders(): Plugin {
 }
 
 /**
- * Fuentes críticas para la primera pintura: cuerpo (Archivo 400), énfasis (600) y títulos (700), solo
- * el subconjunto `latin`. Ese ya trae las tildes y la eñe del español y las del inglés; `latin-ext`
- * (otros alfabetos latinos) no se usa en ninguna página y precargarlo costaba tres archivos y unos
- * 38 KB en cada visita. Se midió: ninguna página de la guía lo pide si no se le precarga.
+ * La fuente crítica para la primera pintura: Special Gothic variable, un solo archivo que lleva el
+ * cuerpo (400 y 600) y los títulos (700 al 75 % de ancho), solo el subconjunto `latin`. Ese ya trae
+ * las tildes y la eñe del español y las del inglés; `latin-ext` (otros alfabetos latinos) no se usa en ninguna
+ * página y precargarlo costaba tres archivos y unos 38 KB en cada visita. Se midió: ninguna página
+ * de la guía lo pide si no se le precarga.
  *
  * El 500 no se precarga: no está en el primer texto. Kode Mono, tampoco: solo sirve a la firma de
  * autoría, y las fuentes del mapa se piden cuando el mapa las necesita.
  */
-const CRITICAL_FONT_PATTERNS = [
-  /archivo-latin-400-normal/,
-  /archivo-latin-600-normal/,
-  /archivo-latin-700-normal/,
-]
+const CRITICAL_FONT_PATTERNS = [/special-gothic-latin-wdth-normal/]
 
 /** La base escapada para usarla dentro de una expresión regular (`/` o `/visit-zibata/`). */
 const BASE_RE = base.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')

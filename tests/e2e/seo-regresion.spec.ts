@@ -543,16 +543,16 @@ test.describe('Enlaces internos y recursos', () => {
 })
 
 test.describe('Rendimiento: precarga de fuentes', () => {
-  test('cada página precarga solo las tres fuentes del primer texto, y existen', () => {
+  test('cada página precarga solo la fuente del primer texto, y existe', () => {
     for (const { loc, html } of paginas) {
       const precargas = [
         ...html.matchAll(/<link rel="preload" href="([^"]+\.woff2)" as="font"[^>]*crossorigin>/g),
       ].map((m) => m[1] ?? '')
-      // Archivo 400 (cuerpo), 600 (énfasis) y 700 (títulos), solo `latin`: ni `latin-ext` ni el 500.
+      // Special Gothic variable, solo `latin` (lleva cuerpo y títulos): ni `latin-ext` ni otras.
       expect(
-        precargas.map((url) => /archivo-(latin-\d+)-normal/.exec(url)?.[1]).sort(),
+        precargas.map((url) => /(special-gothic-latin-wdth)-normal/.exec(url)?.[1]),
         loc,
-      ).toEqual(['latin-400', 'latin-600', 'latin-700'])
+      ).toEqual(['special-gothic-latin-wdth'])
       for (const url of precargas) {
         expect(archivoDe(rutaDe(url)), `${loc}: la fuente ${url} no existe`).not.toBeNull()
       }

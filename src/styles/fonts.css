@@ -1,0 +1,22 @@
+/*
+ * Special Gothic, la única familia de la guía: un archivo variable con el eje de peso (400 a 700) y el
+ * de ancho (75 % a 125 %).
+ *
+ * Es propia y no `@fontsource-variable/special-gothic/wdth.css` por dos motivos. El paquete declara
+ * también `latin-ext`, y esa regla sola subía el CSS inicial por encima del presupuesto. Y los dos
+ * rangos tienen que estar declarados en la regla: sin `font-weight: 400 700` el navegador finge las
+ * negritas, y sin `font-stretch: 75% 125%` ignora `font-stretch: 75%` de los títulos y los pinta a
+ * ancho completo, aunque `getComputedStyle` diga 75 %. Lo comprueba `tests/e2e/tipografia.spec.ts`.
+ */
+@font-face {
+  font-family: "Special Gothic";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400 700;
+  font-stretch: 75% 125%;
+  src: url("../../node_modules/@fontsource-variable/special-gothic/files/special-gothic-latin-wdth-normal.woff2")
+    format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}

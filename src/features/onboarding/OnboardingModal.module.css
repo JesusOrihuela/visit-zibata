@@ -103,10 +103,10 @@
 
 .title {
   font-family: var(--font-display);
-  font-size: var(--text-xl);
+  font-size: var(--title-lg);
   font-weight: 700;
+  font-stretch: var(--title-stretch);
   line-height: 1.05;
-  letter-spacing: -0.02em;
 }
 
 .body {

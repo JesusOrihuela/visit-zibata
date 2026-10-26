@@ -26,7 +26,7 @@ import { createHash } from 'node:crypto'
 /**
  * El estilo de la página, en línea a propósito.
  *
- * La familia "Archivo" se nombra pero no se carga: es la de la guía y viaja con huella en el
+ * La familia "Special Gothic" se nombra pero no se carga: es la de la guía y viaja con huella en el
  * nombre, así que aquí se usa solo si el navegador ya la tiene y si no cae a las del sistema. Una
  * página de error no debe esperar a una descarga.
  */
@@ -35,14 +35,14 @@ const ESTILO = `
       * { box-sizing: border-box; margin: 0; }
       body { min-height: 100svh; display: grid; place-items: center; padding: 1.5rem;
         background: var(--papel); color: var(--tinta); text-align: center;
-        font: 1rem/1.55 "Archivo", ui-sans-serif, system-ui, sans-serif; }
+        font: 1rem/1.55 "Special Gothic", ui-sans-serif, system-ui, sans-serif; }
       /* La misma trama de puntos del resto de la marca, muy tenue. */
       body::before { content: ""; position: fixed; inset: 0; pointer-events: none;
         background-image: radial-gradient(var(--olivo) 1px, transparent 1px);
         background-size: 26px 26px; opacity: .07; }
       main { position: relative; max-width: 30rem; display: grid; justify-items: center; gap: .75rem; }
       img { width: 72px; height: 72px; }
-      h1 { font-family: "Archivo", ui-sans-serif, system-ui, sans-serif; font-weight: 700;
+      h1 { font-family: "Special Gothic", ui-sans-serif, system-ui, sans-serif; font-weight: 700;
         font-size: 1.875rem; line-height: 1.15; letter-spacing: -.02em; margin-top: .5rem; }
       p { color: var(--apagado); }
       .en { font-size: .875rem; }

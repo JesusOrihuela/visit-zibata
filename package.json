@@ -42,8 +42,9 @@
     "perf:budget": "node scripts/perf/check-bundle.ts"
   },
   "dependencies": {
-    "@fontsource/archivo": "^5.3.0",
+    "@fontsource-variable/special-gothic": "5.3.0",
     "@fontsource/kode-mono": "5.3.0",
+    "@fontsource/special-gothic": "5.3.0",
     "fuse.js": "^7.5.0",
     "lucide-react": "^1.46.0",
     "maplibre-gl": "^6.10.0",

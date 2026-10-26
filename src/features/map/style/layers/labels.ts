@@ -3,11 +3,15 @@ import type { LayerSpecification } from 'maplibre-gl'
 import { SOURCE } from '../ids.ts'
 import { mapTheme as t } from '../theme.ts'
 
+/**
+ * MapLibre registra cada archivo con su propio nombre y no aplica los ejes de uno variable: por eso el
+ * mapa usa los tres pesos estáticos de Special Gothic y no el archivo variable de la interfaz. No hay
+ * cursiva: parques, golf y agua se distinguen por el color de su etiqueta.
+ */
 export const FONT = {
-  sans: 'Archivo Medium',
-  sansStrong: 'Archivo SemiBold',
-  serif: 'Archivo Regular',
-  serifItalic: 'Archivo Italic',
+  sans: 'Special Gothic Medium',
+  sansStrong: 'Special Gothic SemiBold',
+  serif: 'Special Gothic Regular',
 } as const
 
 export function labelLayers(): LayerSpecification[] {
@@ -77,13 +81,7 @@ export function labelLayers(): LayerSpecification[] {
       ],
       layout: {
         'text-field': ['get', 'name'],
-        'text-font': [
-          'match',
-          ['get', 'class'],
-          ['park', 'golf', 'water'],
-          ['literal', [FONT.serifItalic]],
-          ['literal', [FONT.sans]],
-        ],
+        'text-font': [FONT.sans],
         'text-size': [
           'interpolate',
           ['linear'],

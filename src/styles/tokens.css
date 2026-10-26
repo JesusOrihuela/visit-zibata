@@ -104,16 +104,19 @@
   --color-focus: #3d6b00;
 
   /*
-   * Una sola familia para toda la interfaz: Archivo. Cuerpo 400, énfasis 600 y títulos 700.
+   * Una sola familia, Special Gothic, en un archivo variable (src/styles/fonts.css). Los títulos y el
+   * resto del texto son la misma letra: lo que cambia es el ancho. Los títulos la pintan al 75 %
+   * (`--title-stretch`) y a 700, el máximo de su eje de peso; el cuerpo, al 100 %, con 400 y 600.
    *
-   * Los tamaños y los interlineados no cambiaron al sustituir Instrument Sans y Fraunces. Archivo
-   * conserva el ancho del cuerpo (0-2 % de diferencia) y, con 700, el ancho de Fraunces 600 en los
-   * títulos. Ese 700 en los títulos es deliberado: con 600 los títulos quedaban ~4 % más estrechos
-   * y podían cambiar de dos líneas a una, moviendo el resto de la ficha.
+   * Special Gothic mide un 96 % de la altura de x del Archivo que sustituye, así que el cuerpo se ve
+   * algo más pequeño a los mismos 14 px (docs/TIPOGRAFIA.md lo mide). Los títulos suben de tamaño
+   * (`--title-*`) y ninguno de la guía sube de líneas; algunos bajan de dos a una.
    */
-  --font-sans: "Archivo", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-sans:
+    "Special Gothic", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-display:
-    "Archivo", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    "Special Gothic", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --title-stretch: 75%;
   /* Solo para la firma de autoría: monoespaciada, como la marca de aurariola. */
   --font-mono: "Kode Mono", ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
 
@@ -122,7 +125,7 @@
    *   2xs 11  etiqueta legal y pie          xs 12  versalitas de sección
    *   sm 13   metadatos y enlaces           base 15  cuerpo
    *   md 17   nombre de lugar en listas     lg 22  subtítulos
-   *   xl 24   título de ficha               2xl 30  título de panel y de hoja
+   *   xl 24   primer paso del perfil        2xl 30  sin uso: los títulos tienen `--title-*`
    */
   --text-2xs: 0.6875rem;
   --text-xs: 0.75rem;
@@ -142,6 +145,17 @@
   --text-lg: 1.375rem;
   --text-xl: 1.5rem;
   --text-2xl: 1.875rem;
+
+  /*
+   * Los tres escalones de título, con `--font-display` a 700, `--title-stretch` y sin tracking. Van aparte de `--text-*`
+   * porque esos pertenecen a la familia del cuerpo: cambiar un título de familia no puede mover un
+   * subtítulo ni un número.
+   *   xl 34  título del panel de zona      lg 28  ficha, diálogo, perfil, onboarding y error
+   *   md 24  estado vacío y hoja colapsada
+   */
+  --title-xl: 2.125rem;
+  --title-lg: 1.75rem;
+  --title-md: 1.5rem;
 
   /*
    * Y un paso fuera de la escala, solo para los campos de texto.

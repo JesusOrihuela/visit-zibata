@@ -38,9 +38,9 @@
 .title {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: var(--text-lg);
+  font-stretch: var(--title-stretch);
+  font-size: var(--title-md);
   line-height: 1.15;
-  letter-spacing: -0.02em;
 }
 
 .body {
