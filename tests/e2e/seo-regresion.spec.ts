@@ -2,7 +2,6 @@ import { readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { expect, test } from '@playwright/test'
-import { MIN_INDEXABLE } from '../../scripts/build/categorias.ts'
 import { bloquea } from '../../scripts/build/robots.ts'
 
 /**
@@ -93,14 +92,14 @@ const localesDe = (categoria: (typeof categorias)[number]): number =>
   lugares.filter((lugar) =>
     girosDe(lugar).some((giro) => categoria.giros.some((g) => g.id === giro)),
   ).length
-/** Las que se ofrecen a los buscadores: con locales de sobra. El resto existe, pero con `noindex`. */
-const categoriasIndexables = (idioma: 'es' | 'en') =>
+/** Las categorías con al menos un local: son las que tienen página y entran en el sitemap. */
+const categoriasConPagina = (idioma: 'es' | 'en') =>
   new Set(
     categorias
-      .filter((categoria) => localesDe(categoria) >= MIN_INDEXABLE)
+      .filter((categoria) => localesDe(categoria) > 0)
       .map((categoria) => categoria.slug[idioma]),
   )
-const categoriasConLocales = new Set([...categoriasIndexables('es'), ...categoriasIndexables('en')])
+const categoriasConLocales = new Set([...categoriasConPagina('es'), ...categoriasConPagina('en')])
 const zonas = dato<{ plazas: { id: string; slug: string; active: boolean }[] }>(
   'plazas.json',
 ).plazas
@@ -324,7 +323,7 @@ test.describe('Las páginas de categoría', () => {
     }
   })
 
-  test('las categorías con al menos un local están indexables; las de 0 locales no tienen página', () => {
+  test('las categorías con al menos un local tienen página y se pueden indexar; las de 0 locales no tienen página', () => {
     let sinPagina = 0
     let conPagina = 0
     for (const idioma of ['es', 'en'] as const) {
@@ -539,6 +538,26 @@ test.describe('Enlaces internos y recursos', () => {
         continue
       }
       expect(archivoDe(destino), `og:image de ${loc}: ${imagen}`).not.toBeNull()
+    }
+  })
+})
+
+test.describe('Rendimiento: precarga de fuentes', () => {
+  test('cada página precarga solo las tres fuentes del primer texto, y existen', () => {
+    for (const { loc, html } of paginas) {
+      const precargas = [
+        ...html.matchAll(/<link rel="preload" href="([^"]+\.woff2)" as="font"[^>]*crossorigin>/g),
+      ].map((m) => m[1] ?? '')
+      // Archivo 400 (cuerpo), 600 (énfasis) y 700 (títulos), solo `latin`: ni `latin-ext` ni el 500.
+      expect(
+        precargas.map((url) => /archivo-(latin-\d+)-normal/.exec(url)?.[1]).sort(),
+        loc,
+      ).toEqual(['latin-400', 'latin-600', 'latin-700'])
+      for (const url of precargas) {
+        expect(archivoDe(rutaDe(url)), `${loc}: la fuente ${url} no existe`).not.toBeNull()
+      }
+      // Antes de la hoja de estilos: es lo que hace que el navegador las pida sin esperar al CSS.
+      expect(html.indexOf('rel="preload"'), loc).toBeLessThan(html.indexOf('rel="stylesheet"'))
     }
   })
 })

@@ -56,11 +56,6 @@ interface Page {
    */
   contenido?: string
   /**
-   * `false` si la página existe pero no se ofrece a los buscadores: lleva `noindex, follow` y no entra
-   * en el sitemap. Hoy solo las categorías con menos de `MIN_INDEXABLE` locales.
-   */
-  indexable?: boolean
-  /**
    * Cuándo cambió de verdad el contenido de esta página, para el `lastmod` del sitemap.
    *
    * Sin esto, todas las URL llevaban la fecha del build, así que cada publicación le decía a Google
@@ -273,30 +268,29 @@ export function pagesFor(
   }
 
   /*
-   * Una página por cada categoría de los datos, tenga locales o no. Así ninguna dirección que Google
-   * haya llegado a conocer pasa a dar 404 si una categoría se queda sin locales, y una que crece se
-   * abre sola: la página es la misma, lo que cambia es si se ofrece a los buscadores (ver
-   * `MIN_INDEXABLE`). Las que no tienen locales no se enlazan desde ningún sitio.
+   * Una página por cada categoría que tiene al menos un local, y todas se ofrecen a los buscadores.
+   * Una que se queda sin locales deja de tener página (esa dirección pasa a dar 404).
    */
-  for (const categoria of data.categories) {
+  for (const categoria of categoriasConPagina) {
     const lugares = porCategoria.get(categoria.id) ?? []
     const etiqueta = text(categoria.label, locale)
     const name = fill(copy['seo.category.name'], { label: etiqueta })
     const zonas = activePlazas.filter((plaza) =>
       lugares.some((place) => place.plazaId === plaza.id),
     )
-    const resumen =
-      lugares.length === 0
-        ? fill(copy['seo.category.empty'], { label: etiqueta })
-        : fill(copy['seo.category.description'], {
-            label: etiqueta,
-            lugares: conCantidad(copy['places.count'], lugares.length, locale),
-            zonas: conCantidad(copy['seo.category.zoneCount'], zonas.length, locale),
-            ejemplos: nombresEnLista(
-              lugares.slice(0, 3).map((place) => place.name),
-              locale,
-            ),
-          })
+    // En singular y plural, y sin "en 0 zonas" si ninguno de sus locales está en una zona activa.
+    const resumen = fill(
+      conCantidad(
+        copy[zonas.length === 0 ? 'seo.category.descriptionSinZona' : 'seo.category.description'],
+        lugares.length,
+        locale,
+      ),
+      {
+        label: etiqueta,
+        lugares: conCantidad(copy['places.count'], lugares.length, locale),
+        zonas: conCantidad(copy['seo.category.zoneCount'], zonas.length, locale),
+      },
+    )
     /*
      * El título nombra lo que la gente busca cuando la etiqueta es más general ("Comida Rápida" se
      * busca como "hamburguesas" o "alitas"): los dos giros con más locales que la etiqueta no dice.
@@ -312,25 +306,19 @@ export function pagesFor(
     const sinGiros = fill(copy['seo.title'], { name })
     // Solo si caben en un título (unos 60 caracteres): cortado a media palabra sería peor que corto.
     const titulo = giros.length >= 2 && conGiros.length <= TOPE_TITULO ? conGiros : sinGiros
-    if (lugares.length === 0) continue
-
     pages.push({
       href: route({ categorySlug: categoria.slug[locale] }),
       lastmod: masReciente(lugares),
-      indexable: true,
       title: titulo,
-      // Solo lo que dicen los datos: cuántos, en cuántas zonas y tres nombres. Nada de "abierto ahora".
+      // Solo lo que dicen los datos: cuántos y en cuántas zonas. Nada de "abierto ahora".
       description: trim(resumen),
-      jsonLd:
-        lugares.length === 0
-          ? undefined
-          : listado(
-              name,
-              lugares.map((place) => ({
-                name: place.name,
-                url: absolute(route({ placeSlug: place.slug })),
-              })),
-            ),
+      jsonLd: listado(
+        name,
+        lugares.map((place) => ({
+          name: place.name,
+          url: absolute(route({ placeSlug: place.slug })),
+        })),
+      ),
       contenido: contenidoDeLista({
         nombre: name,
         descripcion: resumen,
@@ -609,7 +597,6 @@ export function prerender(options: { base: string; siteUrl?: string }): Plugin {
       )
 
       const written: { href: string; lastmod?: string }[] = []
-      let escritas = 0
       for (const locale of LOCALES) {
         const pages = byLocale.get(locale) ?? []
         pages.forEach((page, index) => {
@@ -668,14 +655,6 @@ export function prerender(options: { base: string; siteUrl?: string }): Plugin {
             /<link\s+rel="canonical"[^>]*\/>/,
             `<link rel="canonical" href="${escapeHtml(absolute(page.href))}" />`,
           )
-          // Una categoría con pocos locales existe y se enlaza, pero no se ofrece a los buscadores.
-          if (page.indexable === false) {
-            html = setTag(
-              html,
-              metaTag('name', 'robots'),
-              '<meta name="robots" content="noindex, follow" />',
-            )
-          }
           html = html.replace('</head>', `  ${alternates.filter(Boolean).join('\n  ')}\n  </head>`)
           if (page.jsonLd) {
             html = html.replace('</head>', `  ${bloque(page.jsonLd)}\n  </head>`)
@@ -693,8 +672,7 @@ export function prerender(options: { base: string; siteUrl?: string }): Plugin {
           const file = join(dist, relative === '' ? 'index.html' : `${relative}.html`)
           mkdirSync(dirname(file), { recursive: true })
           writeFileSync(file, html)
-          if (page.indexable !== false) written.push({ href: page.href, lastmod: page.lastmod })
-          escritas += 1
+          written.push({ href: page.href, lastmod: page.lastmod })
         })
       }
 
@@ -714,9 +692,7 @@ export function prerender(options: { base: string; siteUrl?: string }): Plugin {
         join(dist, 'robots.txt'),
         robotsTxt(base, siteUrl ? new URL('sitemap.xml', siteUrl).href : undefined),
       )
-      console.log(
-        `✓ prerenderizado: ${escritas} páginas (${written.length} en el sitemap), sitemap y robots.txt`,
-      )
+      console.log(`✓ prerenderizado: ${written.length} páginas, sitemap y robots.txt`)
     },
   }
 }

@@ -151,10 +151,17 @@ export const en = {
   'seo.zones': 'The areas of Zibatá',
   'seo.categories': 'Categories',
   'seo.category.name': '{label} in Zibatá',
-  'seo.category.description':
-    '{label} is one of the categories of Zibatá: {lugares} across {zonas}, with hours, contact and directions.',
+  'seo.category.description': {
+    one: '{label} is one of the categories of Zibatá: {lugares} in {zonas}, with hours, contact and directions.',
+    other:
+      '{label} is one of the categories of Zibatá: {lugares} across {zonas}, with hours, contact and directions.',
+  },
+  'seo.category.descriptionSinZona': {
+    one: '{label} is one of the categories of Zibatá: {lugares}, with hours, contact and directions.',
+    other:
+      '{label} is one of the categories of Zibatá: {lugares}, with hours, contact and directions.',
+  },
   'seo.category.title': '{label} in Zibatá: {giros}',
-  'seo.category.empty': '{label} in Zibatá: there are no places published in this category yet.',
   'seo.category.places': 'Places in this category',
   'seo.category.zones': 'Where to find them',
   'seo.category.zoneCount': { one: '{count} area', other: '{count} areas' },

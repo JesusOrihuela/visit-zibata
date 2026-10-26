@@ -205,18 +205,22 @@ function cloudflareHeaders(): Plugin {
 }
 
 /**
- * Fuentes críticas para la primera pintura: cuerpo (Archivo 400), énfasis (600) y títulos (700).
- * Se precargan latin y latin-ext porque el español usa tildes y eñe. Kode Mono se deja fuera: solo
- * sirve a la firma de autoría, que no está en el texto inicial.
+ * Fuentes críticas para la primera pintura: cuerpo (Archivo 400), énfasis (600) y títulos (700), solo
+ * el subconjunto `latin`. Ese ya trae las tildes y la eñe del español y las del inglés; `latin-ext`
+ * (otros alfabetos latinos) no se usa en ninguna página y precargarlo costaba tres archivos y unos
+ * 38 KB en cada visita. Se midió: ninguna página de la guía lo pide si no se le precarga.
+ *
+ * El 500 no se precarga: no está en el primer texto. Kode Mono, tampoco: solo sirve a la firma de
+ * autoría, y las fuentes del mapa se piden cuando el mapa las necesita.
  */
 const CRITICAL_FONT_PATTERNS = [
   /archivo-latin-400-normal/,
-  /archivo-latin-ext-400-normal/,
   /archivo-latin-600-normal/,
-  /archivo-latin-ext-600-normal/,
   /archivo-latin-700-normal/,
-  /archivo-latin-ext-700-normal/,
 ]
+
+/** La base escapada para usarla dentro de una expresión regular (`/` o `/visit-zibata/`). */
+const BASE_RE = base.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 function findHtmlFiles(dir: string): string[] {
   const result: string[] = []
@@ -247,16 +251,21 @@ function preloadCriticalFonts(): Plugin {
       const criticalPreloads = new Map<string, string>()
       for (const htmlPath of findHtmlFiles(outDir)) {
         let html = readFileSync(htmlPath, 'utf8')
+        // Con la base: en una subruta (`/visit-zibata/`) las rutas de `assets/` la llevan delante.
         const cssMatch = html.match(
-          /<link rel="stylesheet"[^>]*href="(\/assets\/index-[A-Za-z0-9_-]+\.css)"/,
+          new RegExp(
+            `<link rel="stylesheet"[^>]*href="(${BASE_RE}assets/index-[A-Za-z0-9_-]+\\.css)"`,
+          ),
         )
         if (!cssMatch) continue
         const cssHref = cssMatch[1]
         if (!cssHref) continue
         let preloads = criticalPreloads.get(cssHref)
         if (!preloads) {
-          const css = readFileSync(join(outDir, cssHref), 'utf8')
-          const woff2Urls = [...css.matchAll(/url\((\/assets\/[^)]+\.woff2)\)/g)]
+          const css = readFileSync(join(outDir, cssHref.slice(base.length)), 'utf8')
+          const woff2Urls = [
+            ...css.matchAll(new RegExp(`url\\((${BASE_RE}assets/[^)]+\\.woff2)\\)`, 'g')),
+          ]
             .map((m) => m[1])
             .filter((url): url is string => typeof url === 'string')
           const criticalUrls = woff2Urls.filter((url) =>

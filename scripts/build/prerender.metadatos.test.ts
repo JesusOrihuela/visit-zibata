@@ -302,12 +302,13 @@ describe.each(idiomas)('las páginas de categoría (%s)', (idioma) => {
     )
   })
 
-  it('todas las categorías con al menos un local son indexables', () => {
-    for (const categoria of data.categories) {
-      const n = data.places.filter((p) => idsDe(p).has(categoria.id)).length
-      if (n === 0) continue
+  it('la descripción dice la cantidad de locales y de zonas, sin "0" ni plurales de uno', () => {
+    for (const categoria of conLocales) {
       const pagina = de(idioma, ruta(categoria.slug[idioma]))
-      expect(pagina.indexable !== false, categoria.id).toBe(true)
+      expect(pagina.description, categoria.id).not.toMatch(
+        /\b0 (zonas?|areas?)|\b1 (lugares|places|zonas|areas)\b/,
+      )
+      expect(pagina.description, categoria.id).toMatch(/\b\d+ (lugares?|places?)\b/)
     }
   })
 
