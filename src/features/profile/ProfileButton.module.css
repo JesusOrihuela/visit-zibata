@@ -130,9 +130,9 @@
 .title {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: var(--text-xl);
+  font-stretch: var(--title-stretch);
+  font-size: var(--title-lg);
   line-height: 1.05;
-  letter-spacing: -0.02em;
   color: var(--ink-900);
 }
 
@@ -275,7 +275,7 @@
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   overflow: hidden;
-  font-family: var(--font-display);
+  font-family: var(--font-sans);
   font-size: var(--text-sm);
   font-weight: 600;
   line-height: 1.15;
@@ -318,7 +318,7 @@
 }
 
 .stepNumber {
-  font-family: var(--font-display);
+  font-family: var(--font-sans);
   font-size: var(--text-lg);
   font-weight: 600;
   line-height: 1;

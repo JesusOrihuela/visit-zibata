@@ -46,6 +46,14 @@ export function placesInPlaza(name: string): number {
 
 export const activePlazas = () => dataset.plazas.filter((plaza) => plaza.active)
 
+/** Los `n` locales de nombre más largo: el peor caso para un título que debe caber en su columna. */
+export const longestPlaces = (n: number) =>
+  [...dataset.places].sort((a, b) => b.name.length - a.name.length).slice(0, n)
+
+/** Las `n` zonas activas de nombre más largo. */
+export const longestPlazas = (n: number) =>
+  [...activePlazas()].sort((a, b) => b.name.length - a.name.length).slice(0, n)
+
 /** Las categorías en las que aparece un local: las de todos sus giros, de los dos niveles. */
 const categoriesOf = (place: DatasetPlace) =>
   [...place.giros, ...place.secundarios]

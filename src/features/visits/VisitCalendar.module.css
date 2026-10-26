@@ -49,7 +49,7 @@
 
 .cabecera h3 {
   margin: 0;
-  font-family: var(--font-display);
+  font-family: var(--font-sans);
   font-size: var(--text-md);
   font-weight: 600;
 }

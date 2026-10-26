@@ -148,6 +148,15 @@
   }
 }
 
+/*
+ * Los marcadores HTML (etiquetas de zona) viven dentro del contenedor de MapLibre, y su hoja le pone a
+ * todo el mapa `font: 12px/20px "Helvetica Neue"`. Sin esto, el texto de las etiquetas heredaba esa
+ * fuente y no la de la guía, aunque el resto de la interfaz ya usara Special Gothic.
+ */
+.root :global(.maplibregl-marker) {
+  font-family: var(--font-sans);
+}
+
 /* Atribución compacta y discreta, siempre visible. */
 .root :global(.maplibregl-ctrl-attrib) {
   background: rgb(252 250 246 / 0.82);

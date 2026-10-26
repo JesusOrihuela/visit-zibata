@@ -30,9 +30,9 @@
 .error h2 {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: var(--text-xl);
+  font-stretch: var(--title-stretch);
+  font-size: var(--title-lg);
   line-height: 1.05;
-  letter-spacing: -0.02em;
   margin-bottom: var(--space-3);
 }
 

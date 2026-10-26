@@ -54,15 +54,23 @@
   gap: 0.4rem;
 }
 
+/*
+ * El rótulo de un campo (y de la pregunta "¿Quién escribe?") es el subtítulo de lo que viene debajo,
+ * así que lleva la receta del subtítulo de grupo (docs/TIPOGRAFIA.md): 17 px, 600, `--ink-700`, con
+ * `line-height` explícito. Estuvo en 12 px: con la altura de x de Special Gothic, menor que la del
+ * cuerpo, quedaba por debajo del texto que encabeza.
+ */
 .label {
-  font-size: var(--text-xs);
+  font-size: var(--text-md);
   font-weight: 600;
-  color: var(--ink-800);
+  line-height: 1.2;
+  color: var(--ink-700);
 }
 
-/* "Opcional" acompaña a la etiqueta, no la toca. */
+/* "Opcional" acompaña a la etiqueta, no la toca. Va a 13 px: es una nota, no un subtítulo. */
 .hint {
   margin-inline-start: 0.35rem;
+  font-size: var(--text-sm);
   font-weight: 400;
   color: var(--color-text-muted);
 }

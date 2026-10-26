@@ -20,7 +20,14 @@ import sharp from 'sharp'
 import { ROOT } from '../data/lib/dataset.ts'
 
 const SALIDA = `${ROOT}docs/img/`
-const fuentes = `${ROOT}node_modules/@fontsource`
+/**
+ * La fuente va incrustada (data URI) y no como `file://`: la página se crea con `setContent` y el navegador
+ * no deja que una página en blanco cargue archivos locales, así que con `file://` el texto salía en la
+ * sans genérica del sistema aunque el CSS nombrara Special Gothic.
+ */
+const fuente = readFileSync(
+  `${ROOT}node_modules/@fontsource-variable/special-gothic/files/special-gothic-latin-wdth-normal.woff2`,
+).toString('base64')
 const logo = readFileSync(`${ROOT}public/logo.svg`, 'utf8').trim()
 
 /*
@@ -51,10 +58,9 @@ const marcaAurariola = `<svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000
 </svg>`
 
 const estilos = `
-@font-face{font-family:Archivo;font-weight:700;src:url("file:///${fuentes}/archivo/files/archivo-latin-700-normal.woff2")format("woff2")}
-@font-face{font-family:Archivo;font-weight:500;src:url("file:///${fuentes}/archivo/files/archivo-latin-500-normal.woff2")format("woff2")}
+@font-face{font-family:"Special Gothic";font-weight:400 700;font-stretch:75% 125%;src:url(data:font/woff2;base64,${fuente})format("woff2")}
 *{margin:0;box-sizing:border-box}
-body{background:#fff;font-family:Archivo,sans-serif}
+body{background:#fff;font-family:"Special Gothic",sans-serif}
 .social{width:1280px;height:640px;background:#F7F4ED;position:relative;overflow:hidden;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px}
 /* La misma trama de puntos del 404 y de las tarjetas de cada local. */
@@ -62,7 +68,7 @@ body{background:#fff;font-family:Archivo,sans-serif}
   background-image:radial-gradient(#536C2A 1px,transparent 1px);background-size:30px 30px;opacity:.07}
 .social > *{position:relative}
 .social svg{width:132px;height:132px}
-h1{font-family:Archivo,sans-serif;font-weight:700;font-size:82px;letter-spacing:-.02em;color:#22261D}
+h1{font-family:"Special Gothic",sans-serif;font-weight:700;font-stretch:75%;font-size:92px;color:#22261D}
 .lema{font-size:31px;color:#536C2A}
 .sitio{margin-top:10px;font-size:21px;letter-spacing:.16em;text-transform:uppercase;color:#8A907C}
 .avatar{width:512px;height:512px;background:#14161b;display:grid;place-items:center}

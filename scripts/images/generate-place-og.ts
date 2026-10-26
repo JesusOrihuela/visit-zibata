@@ -13,7 +13,7 @@
  * cara las usa: la rama ya está escrita.
  *
  * Se renderiza con el navegador de Playwright, que ya es dependencia de desarrollo, y no con la
- * composición de texto de sharp: esa depende de las fuentes instaladas en el sistema, y Archivo no
+ * composición de texto de sharp: esa depende de las fuentes instaladas en el sistema, y Special Gothic no
  * está en los runners de CI. Para que no cueste 101 navegaciones, se pinta una sola página con las
  * 101 tarjetas y se captura cada una por separado.
  */
@@ -43,7 +43,14 @@ const escapeHtml = (value: string) =>
   value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
 const logo = readFileSync(`${ROOT}public/logo.svg`, 'utf8').trim()
-const fuentes = `${ROOT}node_modules/@fontsource`
+/**
+ * La fuente va incrustada (data URI) y no como `file://`: la página se crea con `setContent` y el navegador
+ * no deja que una página en blanco cargue archivos locales, así que con `file://` el texto salía en la
+ * sans genérica del sistema aunque el CSS nombrara Special Gothic.
+ */
+const fuente = readFileSync(
+  `${ROOT}node_modules/@fontsource-variable/special-gothic/files/special-gothic-latin-wdth-normal.woff2`,
+).toString('base64')
 
 /** La cara derecha: la foto del local si la tiene, y si no el tono de su categoría. */
 function face(place: Place): string {
@@ -70,10 +77,9 @@ const tarjetas = places
   .join('\n')
 
 const html = `<!doctype html><meta charset="utf-8"><style>
-@font-face{font-family:Archivo;font-weight:700;src:url("file:///${fuentes}/archivo/files/archivo-latin-700-normal.woff2")format("woff2")}
-@font-face{font-family:Archivo;font-weight:500;src:url("file:///${fuentes}/archivo/files/archivo-latin-500-normal.woff2")format("woff2")}
+@font-face{font-family:"Special Gothic";font-weight:400 700;font-stretch:75% 125%;src:url(data:font/woff2;base64,${fuente})format("woff2")}
 *{margin:0;box-sizing:border-box}
-body{background:#fff;font-family:Archivo,sans-serif}
+body{background:#fff;font-family:"Special Gothic",sans-serif}
 .c{width:1200px;height:630px;display:grid;grid-template-columns:1fr 440px;background:#F7F4ED;
   position:relative;overflow:hidden}
 .c::before{content:"";position:absolute;inset:0;
@@ -82,7 +88,7 @@ body{background:#fff;font-family:Archivo,sans-serif}
 .marca{display:flex;align-items:center;gap:12px;font-size:21px;letter-spacing:.14em;
   text-transform:uppercase;color:#536C2A;margin-bottom:10px}
 .marca svg{width:46px;height:46px}
-h1{font-family:Archivo,sans-serif;font-weight:700;font-size:68px;line-height:1.02;letter-spacing:-.02em;
+h1{font-family:"Special Gothic",sans-serif;font-weight:700;font-stretch:75%;font-size:76px;line-height:1;
   color:#22261D;text-wrap:balance}
 .plaza{font-size:25px;color:#8A907C}
 /* Sin foto, la cara derecha lleva el tono de la categoría: el mismo que colorea su plaza. */

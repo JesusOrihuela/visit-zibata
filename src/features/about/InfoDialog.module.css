@@ -101,8 +101,8 @@
   display: flex;
   justify-content: space-between;
   /*
-   * Por el centro y no por arriba. El título mide 25 px de caja y la cruz 40, así que alineados
-   * arriba el centro óptico de la cruz quedaba siete píxeles por debajo del de la palabra, que es
+   * Por el centro y no por arriba. El título mide 29 px de caja y la cruz 40, así que alineados
+   * arriba el centro óptico de la cruz quedaba unos cinco píxeles por debajo del de la palabra, que es
    * poco y se ve.
    */
   align-items: center;
@@ -114,15 +114,15 @@
  * aviso de mapa caído y el de Tu Zibatá: los cinco son el nombre de lo que acabas de abrir. Estuvo
  * a 30 y era el único, y en una columna de cuatrocientos y pico píxeles se comía la página.
  *
- * Los 30 se quedan para el título de una zona, que no es un diálogo del sistema sino la portada de
+ * Los 34 (`--title-xl`) se quedan para el título de una zona, que no es un diálogo del sistema sino la portada de
  * ese sitio, y es el único de toda la guía.
  */
 .title {
   font-family: var(--font-display);
-  font-size: var(--text-xl);
+  font-size: var(--title-lg);
   font-weight: 700;
+  font-stretch: var(--title-stretch);
   line-height: 1.05;
-  letter-spacing: -0.02em;
   color: var(--ink-900);
 }
 
