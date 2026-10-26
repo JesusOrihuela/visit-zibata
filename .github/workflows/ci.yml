@@ -38,19 +38,28 @@ jobs:
         run: npm run perf:budget
 
   e2e:
+    # Los cuatro nombres no se pueden cambiar sin tocar la regla de la rama `main` (Settings, Rules,
+    # Rulesets): exige estas comprobaciones por su nombre exacto, y un nombre nuevo se quedaría
+    # esperando para siempre.
     name: E2E (Playwright, base ${{ matrix.base }}, ${{ matrix.grupo }})
     needs: checks
     runs-on: ubuntu-latest
-    # Dos grupos con peso parecido, no dos mitades arbitrarias. Medido con el informe JSON de
-    # Playwright: mapa, capas, responsive, medición, táctil y errores suman 31,6 minutos de prueba;
-    # el resto (contenido, navegación, SEO) suma 27,0. Así cada trabajo ronda los 20 minutos en CI y
-    # deja de acercarse al límite de 60 que canceló dos ejecuciones.
-    timeout-minutes: 45
+    # Red de seguridad por encima de todo lo demás. Playwright corta antes con `globalTimeout` (45
+    # minutos, en playwright.config.ts) y los pasos tienen su propio tope, así que este solo salta si
+    # algo se cuelga fuera de ellos. Con 45 aquí una instalación de navegadores que tardó 25 minutos
+    # (la normal tarda menos de uno) se comió el margen de una ejecución que sí iba a terminar.
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
         # La subruta se sigue probando: detecta rutas absolutas mal escritas antes de publicar, y
         # mantiene el proyecto portable a otro hosting.
+        #
+        # Dos grupos por base. "mapa" son los archivos cuyas pruebas llevan `@mapa` en el título
+        # (mapa, capas, responsive, medición, táctil y errores) y "contenido" es todo lo demás. En CI
+        # "contenido" tarda más que en local (entre 23 y 35 minutos frente a 16 a 23 de "mapa"): al
+        # final de cada ejecución el resumen del trabajo lista el tiempo por archivo, que es el dato
+        # para repartirlos mejor si hace falta.
         include:
           - base: '/'
             grupo: 'mapa'
@@ -72,10 +81,33 @@ jobs:
         with:
           node-version: 24
           cache: npm
-      - run: npm ci
-      - run: npx playwright install --with-deps chromium webkit
-      - run: npm run build
-      - run: npx playwright test ${{ matrix.args }}
+      - name: Instalar dependencias
+        run: npm ci
+        timeout-minutes: 10
+      # Un tope por intento y tres intentos. Esta descarga tarda menos de un minuto y de vez en cuando se
+      # queda parada: sin tope, se come el presupuesto del trabajo entero; con él, se corta a los cuatro
+      # minutos y se vuelve a intentar. `--only-shell` salta el Chromium completo: las pruebas corren sin
+      # ventana y sin `channel`, que es el caso para el que Playwright documenta esa opción
+      # (https://playwright.dev/docs/browsers).
+      - name: Instalar los navegadores de Playwright
+        timeout-minutes: 15
+        run: |
+          for intento in 1 2 3; do
+            if timeout 4m npx playwright install --with-deps --only-shell chromium webkit; then
+              exit 0
+            fi
+            echo "::warning::La instalación de navegadores falló o pasó de 4 minutos (intento $intento de 3)"
+          done
+          exit 1
+      - name: Build de producción
+        run: npm run build
+        timeout-minutes: 10
+      - name: Pruebas E2E
+        run: npx playwright test ${{ matrix.args }}
+        timeout-minutes: 50
+      - name: Tiempo de prueba por archivo
+        if: ${{ !cancelled() }}
+        run: node scripts/ci/resumen-tiempos.ts >> "$GITHUB_STEP_SUMMARY"
       - name: Informe de Playwright
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
