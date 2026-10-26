@@ -23,7 +23,6 @@
     "check": "npm run lint && npm run typecheck && npm run test && npm run build",
     "data:validate": "node scripts/data/validate-data.ts",
     "data:import": "node scripts/data/import-csv.ts",
-    "data:apply-review": "node scripts/research/apply-owner-review.ts",
     "analitica:crear": "wrangler d1 create visit-zibata-analitica",
     "analitica:esquema": "wrangler d1 execute visit-zibata-analitica --remote --file=worker/esquema.sql",
     "analitica:ver": "node scripts/analitica/ver.ts",
