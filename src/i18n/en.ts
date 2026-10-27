@@ -138,7 +138,7 @@ export const en = {
 
   'seo.home.title': 'Visit Zibatá · The local guide to discovering Zibatá',
   'seo.imageAlt':
-    'Visit Zibatá: a map of Zibatá with the plazas where to eat and drink, the local guide to the town.',
+    'Visit Zibatá: a map of Zibatá with its plazas, the local guide to everything there is in town.',
   'seo.home.description':
     'Discover Zibatá: businesses and places in each plaza, with hours, contact ' +
     'and directions. Everything you need to decide where to go.',

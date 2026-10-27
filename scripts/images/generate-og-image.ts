@@ -26,17 +26,17 @@ const { values } = parseArgs({
 })
 
 /**
- * Lo único que cambia entre las dos imágenes. La descripción dice solo lo que hay en los datos: hoy
- * son todo comida y bebida, así que no promete más.
+ * Lo único que cambia entre las dos imágenes. La descripción es general a propósito: el catálogo va a
+ * crecer (gimnasios, servicios, tiendas) y no debe quedar atada a una categoría ni a «las plazas».
  */
 const IMAGENES = [
   {
     archivo: 'og-image.png',
-    descripcion: 'Descubre dónde comer y tomar algo en las plazas de Zibatá.',
+    descripcion: 'Descubre todo lo que hay en Zibatá.',
   },
   {
     archivo: 'og-image-en.png',
-    descripcion: 'Find where to eat and drink in the plazas of Zibatá.',
+    descripcion: 'Discover everything Zibatá has to offer.',
   },
 ]
 
@@ -91,7 +91,7 @@ try {
       #og-card .marca { display: flex; align-items: center; gap: 18px; }
       #og-card svg { display: block; flex: none; }
       #og-card h1 { margin: 22px 0 16px; font-family: 'Special Gothic', sans-serif; font-weight: 700; font-stretch: 75%; font-size: 104px; line-height: .92; letter-spacing: -.01em; }
-      #og-card .descripcion { margin: 0; font-size: 28px; font-weight: 500; line-height: 1.28; text-wrap: balance; color: #454a3b; }
+      #og-card .descripcion { margin: 0; font-size: 25px; font-weight: 400; line-height: 1.3; text-wrap: balance; color: #454a3b; }
       #og-card .sitio { margin: 0; font-size: 21px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: #536c2a; }
     `,
   })
@@ -153,7 +153,7 @@ try {
   const cargadas = await page.evaluate(async () => {
     await Promise.all([
       document.fonts.load('700 104px "Special Gothic"'),
-      document.fonts.load('500 28px "Special Gothic"'),
+      document.fonts.load('400 25px "Special Gothic"'),
     ])
     await document.fonts.ready
     return [...document.fonts].filter(
