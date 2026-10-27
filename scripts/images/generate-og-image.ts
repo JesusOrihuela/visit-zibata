@@ -6,8 +6,8 @@
  * install chromium).
  *
  * Es la única imagen social de todo el sitio y de los dos idiomas (ver prerender.ts), así que lo
- * único escrito en ella es el nombre de la marca, la región y el dominio: nada que haya que
- * traducir. Es una pieza de marca, no una captura técnica: el mapa ocupa todo el cuadro y no se
+ * único escrito en ella es el nombre de la marca, el dominio y el lema en los dos idiomas: nada que
+ * haya que traducir. Es una pieza de marca, no una captura técnica: el mapa ocupa todo el cuadro y no se
  * nombra la tecnología.
  *
  * Lo que muestra el mapa es lo que tenga la app en ese momento: hay que volver a generarla cuando
@@ -83,31 +83,46 @@ try {
       #og-card { position: fixed; inset: 0; z-index: 100; pointer-events: none;
         background: linear-gradient(90deg, rgb(248 244 237 / 0.98) 0%, rgb(248 244 237 / 0.95) 33%, rgb(248 244 237 / 0) 52%); }
       #og-card .inner { position: absolute; left: 64px; top: 50%; translate: 0 -50%; width: 420px; color: #1f2419; font-family: 'Special Gothic', sans-serif; }
-      #og-card svg { display: block; }
+      #og-card .marca { display: flex; align-items: center; gap: 18px; }
+      #og-card svg { display: block; flex: none; }
       #og-card h1 { margin: 22px 0 14px; font-family: 'Special Gothic', sans-serif; font-weight: 700; font-stretch: 75%; font-size: 104px; line-height: .92; letter-spacing: -.01em; }
-      #og-card .region { margin: 0; font-size: 30px; font-weight: 500; color: #454a3b; }
-      #og-card .sitio { margin: 34px 0 0; font-size: 19px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: #536c2a; }
+      #og-card .lema { margin: 0; font-size: 27px; font-weight: 500; white-space: nowrap; color: #454a3b; }
+      #og-card .lema span { color: #8a907c; padding: 0 .35em; }
+      #og-card .sitio { margin: 0; font-size: 21px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: #536c2a; }
     `,
   })
   await page.evaluate((marca) => {
     const card = document.createElement('div')
     card.id = 'og-card'
     card.innerHTML = `<div class="inner">
-      ${marca}
+      <div class="marca">${marca}<p class="sitio">visitzibata.com</p></div>
       <h1>Visit Zibatá</h1>
-      <p class="region">Querétaro, México</p>
-      <p class="sitio">visitzibata.com</p>
+      <p class="lema">La guía local<span>·</span>The local guide</p>
     </div>`
     card.querySelector('svg')?.setAttribute('width', '64')
     card.querySelector('svg')?.setAttribute('height', '64')
     document.body.append(card)
   }, logo)
   // Un pin que queda bajo el texto o cortado por el borde de la imagen estorba: solo se dejan los que caben enteros en la zona libre.
+  // Cada pin con nombre lleva además un tallo, que es otro marcador (muy angosto) en la misma vertical: se oculta con él.
   await page.evaluate(
     ({ x0, x1, y0, y1 }) => {
-      for (const pin of document.querySelectorAll<HTMLElement>('.maplibregl-marker')) {
-        const r = pin.getBoundingClientRect()
-        if (r.left < x0 || r.right > x1 || r.top < y0 || r.bottom > y1) pin.style.display = 'none'
+      const marcadores = [...document.querySelectorAll<HTMLElement>('.maplibregl-marker')]
+      const rect = (el: HTMLElement) => el.getBoundingClientRect()
+      const esTallo = (el: HTMLElement) => rect(el).width < 8
+      const ocultos = marcadores.filter((el) => {
+        if (esTallo(el)) return false
+        const r = rect(el)
+        return r.left < x0 || r.right > x1 || r.top < y0 || r.bottom > y1
+      })
+      for (const el of ocultos) el.style.display = 'none'
+      const centros = ocultos.map((el) => rect(el).left + rect(el).width / 2)
+      for (const el of marcadores) {
+        if (!esTallo(el)) continue
+        const r = rect(el)
+        const fuera = r.left < x0 || r.right > x1 || r.top < y0 || r.bottom > y1
+        if (fuera || centros.some((c) => Math.abs(c - (r.left + r.width / 2)) < 8))
+          el.style.display = 'none'
       }
     },
     { x0: 500, x1: 1176, y0: 24, y1: 606 },
