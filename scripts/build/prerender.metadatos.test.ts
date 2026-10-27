@@ -105,17 +105,19 @@ describe.each(idiomas)('metadatos de las páginas (%s)', (idioma) => {
     }
   })
 
-  it('todas las páginas usan la misma imagen social, también en el JSON-LD de las fichas', () => {
-    // Una imagen para todo el sitio y los dos idiomas: no hay imagen por local ni texto que traducir en ella.
-    for (const pagina of todas) expect(pagina.image, pagina.href).toBe('/og-image.png')
+  it('todas las páginas del idioma usan su imagen social, también en el JSON-LD de las fichas', () => {
+    // Una imagen por idioma, igual en todas las páginas de ese idioma: no hay imagen por local.
+    const imagen = idioma === 'en' ? '/og-image-en.png' : '/og-image.png'
+    for (const pagina of todas) expect(pagina.image, pagina.href).toBe(imagen)
     for (const pagina of fichas) {
-      expect(pagina.jsonLd?.image, pagina.href).toBe(absoluta('/og-image.png'))
+      expect(pagina.jsonLd?.image, pagina.href).toBe(absoluta(imagen))
     }
   })
 
   it('con una base en subruta la imagen social la lleva', () => {
+    const imagen = idioma === 'en' ? 'og-image-en.png' : 'og-image.png'
     for (const pagina of pagesFor(idioma, data, '/visit-zibata/', absoluta)) {
-      expect(pagina.image, pagina.href).toBe('/visit-zibata/og-image.png')
+      expect(pagina.image, pagina.href).toBe(`/visit-zibata/${imagen}`)
     }
   })
 

@@ -152,8 +152,9 @@ export function pagesFor(
   absolute: (href: string) => string,
 ): Page[] {
   const copy = CATALOGS[locale]
-  // Una sola imagen para todo el sitio (public/og-image.png): sin texto traducible, así que sirve a los dos idiomas.
-  const image = `${base}og-image.png`
+  // Una imagen social por idioma, igual en todas las páginas de ese idioma (public/og-image.png y og-image-en.png): lleva escrito el
+  // texto de la marca en su idioma, así que una ficha en inglés no se comparte con una imagen en español.
+  const image = `${base}${locale === 'en' ? 'og-image-en.png' : 'og-image.png'}`
   const giroLabel = new Map<string, string>()
   const categoryOfGiro = new Map<string, Category>()
   for (const category of data.categories) {
@@ -648,6 +649,11 @@ export function prerender(options: { base: string; siteUrl?: string }): Plugin {
             html,
             metaTag('property', 'og:image'),
             `<meta property="og:image" content="${escapeHtml(absolute(page.image))}" />`,
+          )
+          html = setTag(
+            html,
+            metaTag('property', 'og:image:alt'),
+            `<meta property="og:image:alt" content="${escapeHtml(String(CATALOGS[locale]['seo.imageAlt']))}" />`,
           )
           html = setTag(
             html,

@@ -5,7 +5,7 @@
  */
 export const es = {
   'app.name': 'Visit Zibatá',
-  'app.tagline': 'La guía de zibateños para zibateños',
+  'app.tagline': 'La guía local',
   'app.mapLabel': 'Mapa 3D interactivo de Zibatá',
 
   'search.label': 'Buscar lugares',
@@ -154,6 +154,8 @@ export const es = {
    * resultado de búsqueda y vista previa al compartir. Nunca se ven dentro de la aplicación.
    */
   'seo.home.title': 'Visit Zibatá · La guía local para descubrir Zibatá',
+  'seo.imageAlt':
+    'Visit Zibatá: mapa de Zibatá con sus plazas, la guía local para descubrir todo lo que hay en la localidad.',
   'seo.home.description':
     'Descubre Zibatá: negocios y lugares de cada plaza, con horarios y contacto. ' +
     'Explora la localidad y decide adónde ir.',

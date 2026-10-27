@@ -7,7 +7,7 @@ import type { Messages } from './es.ts'
 
 export const en = {
   'app.name': 'Visit Zibatá',
-  'app.tagline': 'By locals, for locals',
+  'app.tagline': 'The local guide',
   'app.mapLabel': 'Interactive 3D map of Zibatá',
 
   'search.label': 'Search places',
@@ -137,6 +137,8 @@ export const en = {
   'brand.by': 'A project by',
 
   'seo.home.title': 'Visit Zibatá · The local guide to discovering Zibatá',
+  'seo.imageAlt':
+    'Visit Zibatá: a map of Zibatá with its plazas, the local guide to everything there is in town.',
   'seo.home.description':
     'Discover Zibatá: businesses and places in each plaza, with hours, contact ' +
     'and directions. Everything you need to decide where to go.',
