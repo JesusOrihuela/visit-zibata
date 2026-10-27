@@ -108,8 +108,8 @@ test.describe('Páginas de categoría', () => {
       context.waitForEvent('page'),
       italiana.click({ modifiers: ['Control'] }),
     ])
-    await nueva.waitForLoadState('domcontentloaded')
-    expect(new URL(nueva.url()).pathname).toMatch(/\/categoria\/italiana$/)
+    // La pestaña nace en about:blank: leer su URL en cuanto "carga" es una carrera. Se espera a que llegue.
+    await expect(nueva).toHaveURL(/\/categoria\/italiana$/)
     await expect(page).toHaveURL(/\/$/)
   })
 })
