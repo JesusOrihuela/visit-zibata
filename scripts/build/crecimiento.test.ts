@@ -63,7 +63,7 @@ describe.each([
   ['es', '/lugar/estilo-x', 'Peluquería en Plaza Prueba, Zibatá. Cortes y color.'],
   ['en', '/en/place/estilo-x', 'Hair salon at Plaza Prueba, Zibatá. Haircuts and colour.'],
 ] as const)('una categoría que no es de comida (%s)', (idioma, href, descripcion) => {
-  const paginas = pagesFor(idioma, sintetico, '/', '/og/', absoluta)
+  const paginas = pagesFor(idioma, sintetico, '/', absoluta)
   const ficha = paginas.find((pagina) => pagina.href === href)
 
   it('genera la portada, la zona, la categoría, la ficha y la información', () => {
@@ -117,7 +117,7 @@ describe.each([
   'la descripción de una categoría con un solo local (%s)',
   (idioma, conZona, sinZona) => {
     const paginaDeCategoria = (datos: Dataset) =>
-      pagesFor(idioma, datos, '/', '/og/', absoluta).find((pagina) =>
+      pagesFor(idioma, datos, '/', absoluta).find((pagina) =>
         /\/(categoria|category)\//.test(pagina.href),
       )
 

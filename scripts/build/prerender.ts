@@ -46,8 +46,8 @@ interface Page {
   href: string
   title: string
   description: string
-  /** Imagen de vista previa, con base. Sin ella se usa la general del sitio. */
-  image?: string
+  /** Imagen de vista previa, con base. Es la misma en todas las páginas y en los dos idiomas. */
+  image: string
   /** Datos estructurados de esta página, ya con URLs absolutas. Las de información no llevan. */
   jsonLd?: Record<string, unknown>
   /**
@@ -149,10 +149,11 @@ export function pagesFor(
   locale: Locale,
   data: Dataset,
   base: string,
-  ogDir: string,
   absolute: (href: string) => string,
 ): Page[] {
   const copy = CATALOGS[locale]
+  // Una sola imagen para todo el sitio (public/og-image.png): sin texto traducible, así que sirve a los dos idiomas.
+  const image = `${base}og-image.png`
   const giroLabel = new Map<string, string>()
   const categoryOfGiro = new Map<string, Category>()
   for (const category of data.categories) {
@@ -188,6 +189,7 @@ export function pagesFor(
       href: route({}),
       title: copy['seo.home.title'],
       description: copy['seo.home.description'],
+      image,
       // La portada lista sus zonas, que es su contenido real. Listar aquí los 101 locales sería
       // repetir en la raíz lo que cada zona ya dice de los suyos.
       jsonLd: listado(
@@ -230,6 +232,7 @@ export function pagesFor(
     pages.push({
       href: route({ plazaSlug: plaza.slug }),
       lastmod: masReciente(deLaPlaza),
+      image,
       title: fill(copy['seo.title'], { name }),
       description: trim(
         text(plaza.description, locale) || fill(copy['seo.plaza.fallback'], { name }),
@@ -309,6 +312,7 @@ export function pagesFor(
     pages.push({
       href: route({ categorySlug: categoria.slug[locale] }),
       lastmod: masReciente(lugares),
+      image,
       title: titulo,
       // Solo lo que dicen los datos: cuántos y en cuántas zonas. Nada de "abierto ahora".
       description: trim(resumen),
@@ -408,7 +412,6 @@ export function pagesFor(
   )
 
   fichas.forEach(({ place, plaza, giros }, indice) => {
-    const image = `${ogDir}${place.slug}.jpg`
     pages.push({
       href: route({ placeSlug: place.slug }),
       // La última vez que el dato cambió de verdad: la verificación o, si es más reciente, el cierre.
@@ -505,6 +508,7 @@ export function pagesFor(
       href: route({ infoTopic: topic }),
       title: fill(copy['seo.title'], { name: String(copy[keys.title]) }),
       description: trim(String(copy[keys.lead])),
+      image,
       /*
        * El texto de estas páginas también va escrito. Importa sobre todo en privacidad: una política
        * que solo existe si se ejecuta JavaScript no se puede citar ni archivar.
@@ -583,7 +587,6 @@ export function prerender(options: { base: string; siteUrl?: string }): Plugin {
         places: read<{ places: Place[] }>('data/commercial/places.json').places,
       }
       const template = readFileSync(join(dist, 'index.html'), 'utf8')
-      const ogDir = `${base}og/`
       // `href` ya lleva la base, y `siteUrl` es la raíz pública del despliegue, que también la
       // lleva (así la usan el resto de plugins). Si no se quitara antes de resolver, un sitio en
       // subdirectorio escribiría la base dos veces en cada `canonical` y en todo el sitemap.
@@ -592,9 +595,7 @@ export function prerender(options: { base: string; siteUrl?: string }): Plugin {
         const relative = href.startsWith(base) ? href.slice(base.length) : href.replace(/^\//, '')
         return new URL(relative, siteUrl).href
       }
-      const byLocale = new Map(
-        LOCALES.map((l) => [l, pagesFor(l, data, base, ogDir, absolute)] as const),
-      )
+      const byLocale = new Map(LOCALES.map((l) => [l, pagesFor(l, data, base, absolute)] as const))
 
       const written: { href: string; lastmod?: string }[] = []
       for (const locale of LOCALES) {
@@ -643,13 +644,11 @@ export function prerender(options: { base: string; siteUrl?: string }): Plugin {
             metaTag('property', 'og:locale'),
             `<meta property="og:locale" content="${locale === 'en' ? 'en_US' : 'es_MX'}" />`,
           )
-          if (page.image) {
-            html = setTag(
-              html,
-              metaTag('property', 'og:image'),
-              `<meta property="og:image" content="${escapeHtml(absolute(page.image))}" />`,
-            )
-          }
+          html = setTag(
+            html,
+            metaTag('property', 'og:image'),
+            `<meta property="og:image" content="${escapeHtml(absolute(page.image))}" />`,
+          )
           html = setTag(
             html,
             /<link\s+rel="canonical"[^>]*\/>/,

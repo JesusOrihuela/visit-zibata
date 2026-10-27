@@ -81,7 +81,7 @@ const conjunto: Dataset = {
 const absoluta = (href: string) => `https://visitzibata.com${href}`
 
 describe.each(['es', 'en'] as const)('plantillas con registros de peor caso (%s)', (idioma) => {
-  const paginas = pagesFor(idioma, conjunto, '/', '/og/', absoluta)
+  const paginas = pagesFor(idioma, conjunto, '/', absoluta)
   const fichaDe = (slug: string) =>
     paginas.find((pagina) => pagina.href.endsWith(`/${slug}`) && /lugar|place/.test(pagina.href))
 

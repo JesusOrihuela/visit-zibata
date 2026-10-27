@@ -521,23 +521,22 @@ test.describe('Enlaces internos y recursos', () => {
     expect(rotos, `recursos que faltan:\n${rotos.slice(0, 15).join('\n')}`).toEqual([])
   })
 
-  test('la imagen social de cada página existe', () => {
-    // Las imágenes de vista previa de cada local (`/og/{slug}.jpg`) no las escribe el build: las genera
-    // `npm run images:og-places` después, con Chromium, y solo la publicación las deja en dist/. Aquí se
-    // exige que apunten al slug de su propia página y, si ya se generaron, que existan; el resto de
-    // imágenes (la general, la de marca) tienen que estar siempre.
-    const generadas = esDirectorio(join(DIST, 'og'))
-    for (const { loc, ruta, html } of paginas) {
-      const imagen = etiqueta(html, /<meta\s+property="og:image"\s+content="([^"]*)"/g)[0]
-      if (!imagen) continue
-      const destino = rutaDe(imagen)
-      if (destino.startsWith('/og/')) {
-        const slug = /^\/(?:en\/place|lugar)\/(.+)$/.exec(ruta)?.[1]
-        expect(destino, `og:image de ${loc}`).toBe(`/og/${slug}.jpg`)
-        if (generadas) expect(archivoDe(destino), `falta ${destino} (${loc})`).not.toBeNull()
-        continue
+  test('todas las páginas llevan la misma imagen social, absoluta con SITE_URL, y existe', () => {
+    // Una imagen para todo el sitio y los dos idiomas (public/og-image.png): no hay imagen por local.
+    const esperada = `${ORIGEN ?? ''}${BASE}og-image.png`
+    expect(archivoDe('/og-image.png'), 'falta og-image.png en dist/').not.toBeNull()
+    expect(esDirectorio(join(DIST, 'og')), 'dist/og/ ya no debe existir').toBe(false)
+    for (const { loc, html } of paginas) {
+      const imagenes = etiqueta(html, /<meta\s+property="og:image"\s+content="([^"]*)"/g)
+      expect(imagenes, `og:image de ${loc}`).toEqual([esperada])
+      expect(html, `${loc} sigue apuntando a /og/`).not.toMatch(/\/og\/[^"]*\.jpg/)
+      // El `image` del JSON-LD, si lo hay, es la misma URL.
+      for (const [, json] of html.matchAll(
+        /<script type="application\/ld\+json">([\s\S]*?)<\/script>/g,
+      )) {
+        const image = (JSON.parse(json ?? '{}') as { image?: unknown }).image
+        if (image !== undefined) expect(image, `JSON-LD de ${loc}`).toBe(esperada)
       }
-      expect(archivoDe(destino), `og:image de ${loc}: ${imagen}`).not.toBeNull()
     }
   })
 })
