@@ -28,15 +28,16 @@ const { values } = parseArgs({
 /**
  * Lo único que cambia entre las dos imágenes. La descripción es general a propósito: el catálogo va a
  * crecer (gimnasios, servicios, tiendas) y no debe quedar atada a una categoría ni a «las plazas».
+ * No repite «Zibatá»: ya está en el dominio y en el título.
  */
 const IMAGENES = [
   {
     archivo: 'og-image.png',
-    descripcion: 'Descubre todo lo que hay en Zibatá.',
+    descripcion: 'Todo lo que necesitas, cerca de casa.',
   },
   {
     archivo: 'og-image-en.png',
-    descripcion: 'Discover everything Zibatá has to offer.',
+    descripcion: 'Everything you need, close to home.',
   },
 ]
 
