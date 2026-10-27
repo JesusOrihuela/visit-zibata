@@ -538,6 +538,11 @@ const count = (name: string) =>
     ...layers.filter((layer) => layer.name === name).map((layer) => layer.features.length),
   )
 
+// La sección de realismo la escribe map:build:realismo; regenerar el mapa no debe borrarla.
+const realismoManifest = existsSync(paths.manifest)
+  ? readJson<{ realismo?: unknown }>(paths.manifest).realismo
+  : undefined
+
 writeJson(paths.manifest, {
   $comment: 'Generado por scripts/map/build-map.ts. No editar a mano.',
   crs: 'Datos en EPSG:4326 (WGS84); teselas vectoriales en EPSG:3857 (Web Mercator)',
@@ -631,5 +636,6 @@ writeJson(paths.manifest, {
       areaKm2: Number((turf.area(boundary) / 1e6).toFixed(2)),
     },
   },
+  ...(realismoManifest ? { realismo: realismoManifest } : {}),
 })
 log('✓ Mapa generado')

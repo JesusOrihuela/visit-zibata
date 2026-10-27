@@ -70,8 +70,15 @@ const BUDGET = {
   // 2 373 KB. Se sube este tope y **no** el de `largestTile`, que es el que mide lo que el
   // navegador descarga de verdad y que se queda en 113 de 140: el conjunto solo cuida el peso del
   // despliegue. Si alguna vez hay que recortar, el primer sitio son los árboles, no el código.
-  tiles: 2450,
+  //
+  // 2600 desde Overture 2026-10-21.0: trae 16 020 edificios en el mapa (antes 14 028) y el juego
+  // entero pasó de 2 373 a 2 448 KB, con 2,4 KB de margen. La tesela más pesada casi no cambió
+  // (93,7 KB). Son datos nuevos de verdad, no descuido; se deja ~150 KB para la siguiente versión.
+  tiles: 2600,
   largestTile: 140,
+  // Lo que baja quien ve el realismo (suelo, contexto, calles de la región y una tesela de relieve), comprimido.
+  // Hoy ronda 315 KB; los edificios y árboles 3D de la siguiente fase se suman aquí, no al conjunto de teselas.
+  realismoDatos: 340,
 }
 
 const gz = (file: string) => gzipSync(readFileSync(file)).byteLength / KB
@@ -106,6 +113,17 @@ function medirTeselas(dir: string): { total: number; mayor: number } {
 
 const teselas = medirTeselas(`${DIST}map/tiles`)
 
+/** Peso comprimido de lo que siempre baja con el realismo, más la tesela de relieve más pesada. */
+function medirRealismo(dir: string): number {
+  const relieve = readdirSync(`${dir}/relieve/12`, { recursive: true })
+    .filter((nombre): nombre is string => typeof nombre === 'string' && nombre.endsWith('.webp'))
+    .map((nombre) => gz(`${dir}/relieve/12/${nombre}`))
+  const fijos = ['suelo.webp', 'contexto.webp', 'vias.geojson'].map((nombre) =>
+    gz(`${dir}/${nombre}`),
+  )
+  return fijos.reduce((total, peso) => total + peso, 0) + Math.max(0, ...relieve)
+}
+
 const measured = {
   initialJs: sum(referenced('.js')),
   initialCss: sum(referenced('.css')),
@@ -114,6 +132,7 @@ const measured = {
   dataJs: sum(matching(/^(categories|plazas|places)-.*\.js$/)),
   tiles: teselas.total,
   largestTile: teselas.mayor,
+  realismoDatos: medirRealismo(`${DIST}map/realismo`),
 }
 
 let failed = false

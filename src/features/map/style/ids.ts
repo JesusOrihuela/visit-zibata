@@ -4,6 +4,11 @@ export const SOURCE = {
   plazaBuildings: 'plaza-buildings',
   mask: 'outside-mask',
   areaLabel: 'area-label',
+  /** Capas de realismo (ver layers/realismo.ts). */
+  soil: 'realismo-suelo',
+  relief: 'realismo-relieve',
+  context: 'realismo-contexto',
+  contextRoads: 'realismo-vias',
 } as const
 
 /** Capas con las que el usuario interactúa (hover / clic sobre plazas). */

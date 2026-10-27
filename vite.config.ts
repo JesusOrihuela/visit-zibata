@@ -193,6 +193,12 @@ function cloudflareHeaders(): Plugin {
   Content-Type: application/x-protobuf
   Cache-Control: public, max-age=86400
 
+# Las calles de la region (realismo) son un GeoJSON de casi 1 MB: como application/json el CDN lo
+# comprime, y con el tipo propio de la extension no esta garantizado que lo haga.
+/map/realismo/vias.geojson
+  Content-Type: application/json
+  Cache-Control: public, max-age=86400
+
 /*.html
   Cache-Control: public, max-age=0, must-revalidate
 

@@ -22,6 +22,8 @@ export const MAP_ASSETS = {
    */
   tiles: 'map/tiles.json',
   plazaBuildings: 'map/plaza-buildings.geojson',
+  /** Carpeta de las capas de realismo (suelo, relieve y contexto); ver scripts/map/realismo. */
+  realismo: 'map/realismo/',
 }
 
 export interface CameraState {

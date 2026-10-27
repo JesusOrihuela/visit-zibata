@@ -31,6 +31,7 @@ import { MapErrorMessage } from './MapErrorMessage.tsx'
 import styles from './MapView.module.css'
 import { ensureMapRuntime, prefersReducedMotion } from './mapRuntime.ts'
 import { PlazaMarkers } from './PlazaMarkers.tsx'
+import { opcionesRealismo } from './realismo/modo.ts'
 import { buildMapStyle } from './style/buildMapStyle.ts'
 import { INTERACTIVE_PLAZA_LAYERS, SOURCE } from './style/ids.ts'
 import type { MapStatus } from './types.ts'
@@ -48,6 +49,8 @@ export interface MapViewProps {
   /** Espacio ocupado por paneles (px), para centrar la cámara en el área visible. */
   padding: PaddingOptions
   compact: boolean
+  /** Dibuja el suelo, el relieve y el contexto de realismo (ver features/map/realismo). */
+  realismo?: boolean
   onStatusChange?: (status: MapStatus) => void
   onMapInstance?: (map: MapLibreMap | null) => void
 }
@@ -68,6 +71,7 @@ export default function MapView({
   onSelectPlaza,
   padding,
   compact,
+  realismo,
   onStatusChange,
   onMapInstance,
 }: MapViewProps) {
@@ -78,9 +82,25 @@ export default function MapView({
   const [attempt, setAttempt] = useState(0)
 
   // Valores recientes para callbacks del mapa registrados una sola vez.
-  const latest = useRef({ onSelectPlaza, onStatusChange, onMapInstance, plazas, padding, compact })
+  const latest = useRef({
+    onSelectPlaza,
+    onStatusChange,
+    onMapInstance,
+    plazas,
+    padding,
+    compact,
+    realismo,
+  })
   useEffect(() => {
-    latest.current = { onSelectPlaza, onStatusChange, onMapInstance, plazas, padding, compact }
+    latest.current = {
+      onSelectPlaza,
+      onStatusChange,
+      onMapInstance,
+      plazas,
+      padding,
+      compact,
+      realismo,
+    }
   })
 
   // ── Creación del mapa (una vez por intento: "Reintentar" incrementa `attempt`) ──────────────
@@ -109,6 +129,10 @@ export default function MapView({
           boundary: ZIBATA_EXTENT.boundary,
           areaBbox: ZIBATA_EXTENT.areaBbox,
           center: ZIBATA_EXTENT.center,
+          realismo: opcionesRealismo(
+            latest.current.realismo === true,
+            absoluteAssetUrl(MAP_ASSETS.realismo),
+          ),
         }),
         ...initialCamera(latest.current.compact),
         minZoom: MAP_LIMITS.minZoom,

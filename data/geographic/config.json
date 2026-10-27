@@ -363,7 +363,7 @@
       "https://overpass.private.coffee/api/interpreter",
       "https://overpass.kumi.systems/api/interpreter"
     ],
-    "overtureRelease": "2026-08-19.0"
+    "overtureRelease": "2026-10-21.0"
   },
   "tiles": {
     "minZoom": 12,
@@ -420,6 +420,33 @@
       "street": 7,
       "service": 5,
       "path": 3
+    }
+  },
+  "realismo": {
+    "$comment": "Capas de realismo (suelo, relieve y contexto). Todo se descarga una vez al preparar datos; la app publicada no consulta ningún servidor externo.",
+    "sentinel": {
+      "escena": "S2C_14QLH_20261020_0_L2A",
+      "tif": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/14/Q/LH/2026/10/S2C_14QLH_20261020_0_L2A/TCI.tif",
+      "utm": "+proj=utm +zone=14 +datum=WGS84 +units=m +no_defs",
+      "anio": 2026
+    },
+    "relieve": {
+      "fuente": "https://download.mapterhorn.com/planet.pmtiles",
+      "zoom": 12,
+      "x": [904, 908],
+      "y": [1805, 1809]
+    },
+    "contexto": {
+      "pixeles": 1024,
+      "anilloM": 100,
+      "difuminadoOrilla": 0.14
+    },
+    "vias": {
+      "clases": {
+        "autopista": ["motorway", "motorway_link"],
+        "principal": ["trunk", "trunk_link", "primary", "primary_link"],
+        "secundaria": ["secondary", "secondary_link"]
+      }
     }
   }
 }
