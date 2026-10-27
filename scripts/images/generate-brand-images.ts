@@ -83,7 +83,7 @@ try {
 <div class="social" id="social">
   ${logo}
   <h1>Visit Zibatá</h1>
-  <p class="lema">La guía de zibateños para zibateños</p>
+  <p class="lema">La guía local</p>
   <p class="sitio">visitzibata.com</p>
 </div>
 <div class="avatar" id="avatar">${marcaAurariola}</div>`)

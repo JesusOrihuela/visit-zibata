@@ -5,7 +5,7 @@
  */
 export const es = {
   'app.name': 'Visit Zibatá',
-  'app.tagline': 'La guía de zibateños para zibateños',
+  'app.tagline': 'La guía local',
   'app.mapLabel': 'Mapa 3D interactivo de Zibatá',
 
   'search.label': 'Buscar lugares',

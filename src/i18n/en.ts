@@ -7,7 +7,7 @@ import type { Messages } from './es.ts'
 
 export const en = {
   'app.name': 'Visit Zibatá',
-  'app.tagline': 'By locals, for locals',
+  'app.tagline': 'The local guide',
   'app.mapLabel': 'Interactive 3D map of Zibatá',
 
   'search.label': 'Search places',
