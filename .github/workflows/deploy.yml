@@ -65,7 +65,6 @@ jobs:
           npm run lint
           npm run typecheck
           npm test
-      # Antes del build porque la composición de las imágenes de vista previa también usa Chromium.
       # Solo Chromium: la matriz completa, con WebKit y las dos bases, la corre ci.yml en el pull
       # request y es la que bloquea la fusión.
       # Con tope por intento y reintentos: si apt o la descarga se quedan paradas, un despliegue no tiene
@@ -75,11 +74,6 @@ jobs:
         run: bash scripts/ci/instalar-navegadores.sh chromium
       - name: Build de producción
         run: npm run build
-      # Después del build, nunca antes: el build limpia dist/, así que unas imágenes generadas
-      # primero desaparecerían sin dejar rastro y cada enlace compartido volvería a la imagen de
-      # la portada.
-      - name: Imágenes de vista previa por local
-        run: npm run images:og-places
       - name: Presupuesto de rendimiento
         run: npm run perf:budget
       # Humo, no la suite entera: ci.yml ya corrió los 264 tests en las dos bases sobre este mismo

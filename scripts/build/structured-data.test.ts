@@ -54,7 +54,7 @@ const base = {
   giros: ['Pizza'],
   url: 'https://visitzibata.com/lugar/x',
   plazaUrl: 'https://visitzibata.com/zona/condesa',
-  image: 'https://visitzibata.com/og/x.jpg',
+  image: 'https://visitzibata.com/og-image.png',
   locale: 'es' as const,
 }
 

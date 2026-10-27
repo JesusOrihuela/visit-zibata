@@ -36,7 +36,6 @@
     "map:suggest-plaza": "node scripts/map/suggest-plaza.ts",
     "images:optimize": "node scripts/images/optimize-images.ts",
     "images:og": "node scripts/images/generate-og-image.ts",
-    "images:og-places": "node scripts/images/generate-place-og.ts",
     "images:marca": "node scripts/images/generate-brand-images.ts",
     "images:icons": "node scripts/images/generate-icons.ts",
     "perf:budget": "node scripts/perf/check-bundle.ts"

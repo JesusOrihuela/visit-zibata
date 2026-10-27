@@ -23,8 +23,8 @@ const data: Dataset = {
 
 const absoluta = (href: string) => `https://visitzibata.com${href}`
 const paginas = {
-  es: pagesFor('es', data, '/', '/og/', absoluta),
-  en: pagesFor('en', data, '/', '/og/', absoluta),
+  es: pagesFor('es', data, '/', absoluta),
+  en: pagesFor('en', data, '/', absoluta),
 }
 type Idioma = keyof typeof paginas
 const idiomas: Idioma[] = ['es', 'en']
@@ -102,6 +102,20 @@ describe.each(idiomas)('metadatos de las páginas (%s)', (idioma) => {
       const esperado = textoDelDato(place, idioma)
       const descripcion = ficha(idioma, place.slug).jsonLd?.description
       if (descripcion !== undefined) expect(descripcion, place.slug).toBe(esperado)
+    }
+  })
+
+  it('todas las páginas usan la misma imagen social, también en el JSON-LD de las fichas', () => {
+    // Una imagen para todo el sitio y los dos idiomas: no hay imagen por local ni texto que traducir en ella.
+    for (const pagina of todas) expect(pagina.image, pagina.href).toBe('/og-image.png')
+    for (const pagina of fichas) {
+      expect(pagina.jsonLd?.image, pagina.href).toBe(absoluta('/og-image.png'))
+    }
+  })
+
+  it('con una base en subruta la imagen social la lleva', () => {
+    for (const pagina of pagesFor(idioma, data, '/visit-zibata/', absoluta)) {
+      expect(pagina.image, pagina.href).toBe('/visit-zibata/og-image.png')
     }
   })
 
