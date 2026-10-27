@@ -154,6 +154,8 @@ export const es = {
    * resultado de búsqueda y vista previa al compartir. Nunca se ven dentro de la aplicación.
    */
   'seo.home.title': 'Visit Zibatá · La guía local para descubrir Zibatá',
+  'seo.imageAlt':
+    'Visit Zibatá: mapa de Zibatá con las plazas donde comer y tomar algo, la guía local de la localidad.',
   'seo.home.description':
     'Descubre Zibatá: negocios y lugares de cada plaza, con horarios y contacto. ' +
     'Explora la localidad y decide adónde ir.',

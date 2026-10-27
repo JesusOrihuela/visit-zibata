@@ -521,14 +521,25 @@ test.describe('Enlaces internos y recursos', () => {
     expect(rotos, `recursos que faltan:\n${rotos.slice(0, 15).join('\n')}`).toEqual([])
   })
 
-  test('todas las páginas llevan la misma imagen social, absoluta con SITE_URL, y existe', () => {
-    // Una imagen para todo el sitio y los dos idiomas (public/og-image.png): no hay imagen por local.
-    const esperada = `${ORIGEN ?? ''}${BASE}og-image.png`
-    expect(archivoDe('/og-image.png'), 'falta og-image.png en dist/').not.toBeNull()
+  test('cada página lleva la imagen social de su idioma, absoluta con SITE_URL, y existe', () => {
+    // Una imagen por idioma, igual en todas las páginas de ese idioma: no hay imagen por local.
+    const imagen = (en: boolean) =>
+      `${ORIGEN ?? ''}${BASE}${en ? 'og-image-en.png' : 'og-image.png'}`
+    for (const archivo of ['/og-image.png', '/og-image-en.png']) {
+      expect(archivoDe(archivo), `falta ${archivo} en dist/`).not.toBeNull()
+    }
     expect(esDirectorio(join(DIST, 'og')), 'dist/og/ ya no debe existir').toBe(false)
-    for (const { loc, html } of paginas) {
+    const alts = new Set<string>()
+    for (const { loc, ruta, html } of paginas) {
+      const esEn = ruta === '/en' || ruta.startsWith('/en/')
+      const esperada = imagen(esEn)
       const imagenes = etiqueta(html, /<meta\s+property="og:image"\s+content="([^"]*)"/g)
       expect(imagenes, `og:image de ${loc}`).toEqual([esperada])
+      // El texto alternativo existe y está en el idioma de la página: uno distinto por idioma.
+      const alt = etiqueta(html, /<meta\s+property="og:image:alt"\s+content="([^"]*)"/g)
+      expect(alt, `og:image:alt de ${loc}`).toHaveLength(1)
+      expect(alt[0], `og:image:alt de ${loc}`).not.toBe('')
+      alts.add(`${esEn ? 'en' : 'es'}|${alt[0]}`)
       expect(html, `${loc} sigue apuntando a /og/`).not.toMatch(/\/og\/[^"]*\.jpg/)
       // El `image` del JSON-LD, si lo hay, es la misma URL.
       for (const [, json] of html.matchAll(
@@ -538,6 +549,7 @@ test.describe('Enlaces internos y recursos', () => {
         if (image !== undefined) expect(image, `JSON-LD de ${loc}`).toBe(esperada)
       }
     }
+    expect(alts.size, 'un og:image:alt por idioma').toBe(2)
   })
 })
 
