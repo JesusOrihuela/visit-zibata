@@ -223,6 +223,10 @@ function ReadyExperience({ catalog }: { catalog: Catalog }) {
   const sheetPeekHeight = collapsedHeightFor(sheetPeek, viewportHeight, sheetTopReserved)
   const [map, setMap] = useState<MapLibreMap | null>(null)
   const [debugRequested] = useState(() => new URLSearchParams(window.location.search).has('debug'))
+  // Se lee al montar: la sincronización de la URL descarta los parámetros que no conoce.
+  const [realismo] = useState(
+    () => new URLSearchParams(window.location.search).get('realismo') === 'si',
+  )
   const searchInputRef = useRef<HTMLInputElement>(null)
   const returnFocus = useReturnFocus(searchInputRef)
   useUrlSync(catalog)
@@ -478,6 +482,7 @@ function ReadyExperience({ catalog }: { catalog: Catalog }) {
               onSelectPlaza={selectPlaza}
               padding={padding}
               compact={!isDesktop}
+              realismo={realismo}
               onStatusChange={onMapStatus}
               onMapInstance={setMap}
             />
