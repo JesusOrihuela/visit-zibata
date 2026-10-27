@@ -73,7 +73,7 @@ test.describe('Mapa @mapa', () => {
     await expect(
       page.getByRole('heading', {
         level: 1,
-        name: 'Visit Zibatá · La guía de zibateños para zibateños',
+        name: 'Visit Zibatá · La guía local',
       }),
     ).toBeAttached()
     const canvas = page.locator('canvas.maplibregl-canvas')

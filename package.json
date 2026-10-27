@@ -3,7 +3,7 @@
   "private": true,
   "license": "MIT",
   "version": "4.26.0",
-  "description": "Guía interactiva 3D de Zibatá, Querétaro: la guía de zibateños para zibateños. Sitio estático, sin backend.",
+  "description": "Guía interactiva 3D de Zibatá, Querétaro. Sitio estático, sin backend.",
   "type": "module",
   "engines": {
     "node": ">=22.18.0"
