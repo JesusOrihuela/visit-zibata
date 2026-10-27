@@ -16,6 +16,7 @@
       "!data/geographic/processed",
       "!data/**/*.json",
       "!research/**/*.json",
+      "!src/features/map/realismo/descriptor.json",
       "!**/*.geojson",
       "!**/package-lock.json"
     ]

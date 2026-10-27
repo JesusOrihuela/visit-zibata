@@ -22,6 +22,12 @@ export const paths = {
   planoSource: `${ROOT}data/geographic/reference/plano-zibata.png`,
   planoGeoref: `${ROOT}data/geographic/reference/plano-zibata.georef.json`,
   planoPublic: `${ROOT}public/map/reference/plano-zibata.webp`,
+  realismoDir: `${ROOT}public/map/realismo`,
+  relieveDir: `${ROOT}public/map/realismo/relieve`,
+  rawSentinelZibata: `${ROOT}data/geographic/raw/sentinel-zibata.png`,
+  rawSentinelRegion: `${ROOT}data/geographic/raw/sentinel-region.png`,
+  rawSentinelMeta: `${ROOT}data/geographic/raw/sentinel.meta.json`,
+  rawViasContexto: `${ROOT}data/geographic/raw/osm-vias-contexto.json`,
 }
 
 export interface GeoConfig {
@@ -49,6 +55,13 @@ export interface GeoConfig {
       default: PlazaSyntheticRule
       plazas: Record<string, Partial<PlazaSyntheticRule>>
     }
+  }
+  realismo: {
+    sentinel: { escena: string; tif: string; utm: string; anio: number }
+    /** Bloque de teselas z12 de relieve (Copernicus GLO-30 vía Mapterhorn), ambos extremos incluidos. */
+    relieve: { fuente: string; zoom: number; x: [number, number]; y: [number, number] }
+    contexto: { pixeles: number; anilloM: number; difuminadoOrilla: number }
+    vias: { clases: Record<string, string[]> }
   }
 }
 
