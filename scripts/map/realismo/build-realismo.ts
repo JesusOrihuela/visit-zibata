@@ -11,7 +11,8 @@
  * Sentinel-2: contains modified Copernicus Sentinel data. Relieve: Copernicus DEM GLO-30.
  * Calles: © OpenStreetMap contributors (ODbL 1.0).
  */
-import { mkdirSync, writeFileSync } from 'node:fs'
+import { createHash } from 'node:crypto'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import * as turf from '@turf/turf'
 import type { Feature, LineString, Polygon, Position } from 'geojson'
 import sharp from 'sharp'
@@ -308,3 +309,55 @@ console.log(
   `✓ suelo ${(suelo.bytes / 1024).toFixed(0)} KB · contexto ${(contexto.bytes / 1024).toFixed(0)} KB · ` +
     `${vias.tramos} tramos de calles (${(vias.bytes / 1024).toFixed(0)} KB) → ${salida}`,
 )
+
+// Procedencia en el manifiesto (build-map.ts conserva esta sección al regenerar el mapa).
+const sha256 = (archivo: string): string =>
+  createHash('sha256').update(readFileSync(archivo)).digest('hex')
+const salidas = ['suelo.webp', 'contexto.webp', 'vias.geojson']
+const manifiesto = readJson<Record<string, unknown>>(paths.manifest)
+writeJson(paths.manifest, {
+  ...manifiesto,
+  realismo: {
+    sources: [
+      {
+        id: 'sentinel-2',
+        name: `Copernicus Sentinel-2 L2A, escena ${sentinel.escena}`,
+        layers: ['suelo', 'contexto'],
+        license: 'Copernicus Sentinel data licence (libre, completa y abierta)',
+        attribution: `Contains modified Copernicus Sentinel data ${sentinel.anio}`,
+        url: 'https://sentinels.copernicus.eu/documents/247904/690755/Sentinel_Data_Legal_Notice',
+        method: 'COG público en AWS, lectura por rangos (scripts/map/realismo/fetch-realismo.ts)',
+        extractedAt: sentinel.obtenidoEl,
+      },
+      {
+        id: 'copernicus-dem-glo30',
+        name: 'Copernicus DEM GLO-30 vía Mapterhorn',
+        layers: ['relieve', 'contexto'],
+        license: 'COPERNICUS full, free and open license',
+        attribution:
+          'Copernicus DEM GLO-30 © DLR e.V. y Airbus Defence and Space, provisto por la Unión Europea y la ESA, vía Mapterhorn',
+        url: 'https://mapterhorn.com/attribution',
+        method: `Teselas z${realismo.relieve.zoom} de ${realismo.relieve.fuente} (scripts/map/realismo/fetch-realismo.ts)`,
+      },
+      {
+        id: 'osm-vias-contexto',
+        name: 'OpenStreetMap: calles principales de la región',
+        layers: ['vias'],
+        license: 'ODbL-1.0',
+        attribution: '© OpenStreetMap contributors',
+        url: 'https://www.openstreetmap.org/copyright',
+        method:
+          'Overpass API (scripts/map/realismo/fetch-realismo.ts); archivo derivado bajo ODbL 1.0',
+      },
+    ],
+    outputs: Object.fromEntries(
+      salidas.map((nombre) => [
+        `public/map/realismo/${nombre}`,
+        {
+          bytes: readFileSync(`${salida}/${nombre}`).byteLength,
+          sha256: sha256(`${salida}/${nombre}`),
+        },
+      ]),
+    ),
+  },
+})
