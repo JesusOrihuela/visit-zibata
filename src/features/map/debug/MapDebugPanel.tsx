@@ -1,6 +1,5 @@
 /**
- * Modo depuración del mapa (?debug en desarrollo; nunca incluido en producción salvo que se compile
- * con VITE_ENABLE_MAP_DEBUG=true). Muestra coordenadas, cámara, límites de teselas, IDs de
+ * Modo depuración del mapa (?debug, solo en desarrollo: el build de producción no lo incluye). Muestra coordenadas, cámara, límites de teselas, IDs de
  * edificios y plazas, geometrías de plazas y el plano del cliente georreferenciado encima del mapa.
  */
 import type { ImageSource, Map as MapLibreMap, MapMouseEvent } from 'maplibre-gl'
