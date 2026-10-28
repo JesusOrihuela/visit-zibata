@@ -12,24 +12,19 @@ import {
   type PaddingOptions,
 } from 'maplibre-gl'
 import { useEffect, useRef, useState } from 'react'
-import {
-  clampToCenterBounds,
-  insideCenterBounds,
-  MAP_ASSETS,
-  MAP_LIMITS,
-  MAP_LOCALE,
-  ZIBATA_EXTENT,
-} from '../../config/map.ts'
+import { MAP_ASSETS, MAP_LIMITS, MAP_LOCALE, ZIBATA_EXTENT } from '../../config/map.ts'
 import { t } from '../../i18n/index.ts'
 import { absoluteAssetUrl } from '../../lib/assets.ts'
 import { registrar } from '../../lib/eventos.ts'
 import type { Plaza } from '../../types/domain.ts'
+import { createCameraConstraint } from './bounds.ts'
 import { ComingSoonMarkers } from './ComingSoonMarkers.tsx'
 import { focusPlaza, initialCamera, resetCamera, updatePadding } from './camera.ts'
+import { installCameraLimits } from './cameraLimits.ts'
 import { MapControls } from './MapControls.tsx'
 import { MapErrorMessage } from './MapErrorMessage.tsx'
 import styles from './MapView.module.css'
-import { ensureMapRuntime, prefersReducedMotion } from './mapRuntime.ts'
+import { ensureMapRuntime } from './mapRuntime.ts'
 import { PlazaMarkers } from './PlazaMarkers.tsx'
 import { opcionesRealismo } from './realismo/modo.ts'
 import { buildMapStyle } from './style/buildMapStyle.ts'
@@ -51,8 +46,6 @@ export interface MapViewProps {
   compact: boolean
   /** Dibuja el suelo, el relieve y el contexto de realismo (ver features/map/realismo). */
   realismo?: boolean
-  /** Medición en el dispositivo (?medir): recorre tres vistas y deja las cifras en pantalla. */
-  medir?: 'si' | 'corto'
   onStatusChange?: (status: MapStatus) => void
   onMapInstance?: (map: MapLibreMap | null) => void
 }
@@ -74,7 +67,6 @@ export default function MapView({
   padding,
   compact,
   realismo,
-  medir,
   onStatusChange,
   onMapInstance,
 }: MapViewProps) {
@@ -93,7 +85,6 @@ export default function MapView({
     padding,
     compact,
     realismo,
-    medir,
   })
   useEffect(() => {
     latest.current = {
@@ -104,7 +95,6 @@ export default function MapView({
       padding,
       compact,
       realismo,
-      medir,
     }
   })
 
@@ -123,10 +113,15 @@ export default function MapView({
     }
     update({ state: 'loading' })
 
+    const constraint = createCameraConstraint(
+      ZIBATA_EXTENT.bbox,
+      ZIBATA_EXTENT.boundary.coordinates[0],
+    )
     let instance: MapLibreMap
     try {
       instance = new MapLibreMap({
         container,
+        transformConstrain: constraint.constrain,
         style: buildMapStyle({
           tilesUrl: absoluteAssetUrl(MAP_ASSETS.tiles),
           plazaBuildingsUrl: absoluteAssetUrl(MAP_ASSETS.plazaBuildings),
@@ -158,19 +153,17 @@ export default function MapView({
       return
     }
 
-    // El mapa no se aleja de Zibatá: si el centro de la pantalla sale del área permitida, vuelve al
-    // punto más cercano dentro de ella al terminar el gesto. Se limita el centro y no el encuadre
-    // completo para no estropear la vista general (ver MAP_LIMITS en config/map.ts).
-    const keepOverZibata = () => {
-      const { lng, lat } = instance.getCenter()
-      if (insideCenterBounds(lng, lat)) return
-      const [clampedLng, clampedLat] = clampToCenterBounds(lng, lat)
-      instance.easeTo({
-        center: [clampedLng, clampedLat],
-        duration: prefersReducedMotion() ? 0 : 300,
-      })
-    }
-    instance.on('moveend', keepOverZibata)
+    // El mapa no se aleja de Zibatá: la restricción ya está en la cámara (ver bounds.ts), así que ni a
+    // mitad de un gesto se puede dejar a Zibatá fuera de la pantalla.
+    constraint.attach(instance, () => latest.current.padding)
+    // Alejamiento máximo e inclinación máxima: valen con y sin realismo, porque lo que cuidan (que Zibatá siga en
+    // pantalla y que no se vea el horizonte vacío) no depende de lo que se dibuje.
+    const stopLimits = installCameraLimits(
+      instance,
+      ZIBATA_EXTENT.boundary,
+      constraint,
+      () => latest.current.padding,
+    )
 
     // Si el mapa 3D se usa: el primer gesto de la persona (arrastrar, girar, inclinar o acercar),
     // una vez por carga. Los movimientos de la propia guía no traen `originalEvent`.
@@ -219,10 +212,7 @@ export default function MapView({
         // carga, no se ha ocultado nada nativo y el mapa sigue como estaba.
         void import('./realismo/install.ts')
           .then(({ installRealism }) =>
-            installRealism(instance, absoluteAssetUrl(MAP_ASSETS.realismo), {
-              boundary: ZIBATA_EXTENT.boundary,
-              benchmark: latest.current.medir,
-            }),
+            installRealism(instance, absoluteAssetUrl(MAP_ASSETS.realismo)),
           )
           .catch((error) => console.error('[realismo]', error))
       }
@@ -246,6 +236,7 @@ export default function MapView({
     latest.current.onMapInstance?.(instance)
     return () => {
       window.clearTimeout(timeout)
+      stopLimits()
       latest.current.onMapInstance?.(null)
       setMap(null)
       instance.remove()

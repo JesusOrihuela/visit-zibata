@@ -51,7 +51,7 @@
   margin: 0;
   font-family: var(--font-sans);
   font-size: var(--text-md);
-  font-weight: 600;
+  font-weight: var(--weight-strong);
 }
 
 /* Solo la primera letra: `capitalize` pone en mayúscula cada palabra y dejaba "Octubre De 2026". */
@@ -94,7 +94,7 @@
   padding-bottom: 0.2rem;
   color: var(--color-text-muted);
   font-size: var(--text-2xs);
-  font-weight: 700;
+  font-weight: var(--weight-heavy);
   text-align: center;
   text-transform: uppercase;
 }

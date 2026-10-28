@@ -154,7 +154,7 @@
  */
 .blockTitle {
   font-size: var(--text-md);
-  font-weight: 600;
+  font-weight: var(--weight-strong);
   line-height: 1.2;
   color: var(--ink-700);
 }

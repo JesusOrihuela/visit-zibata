@@ -163,7 +163,7 @@
  */
 .blockTitle {
   font-size: var(--text-md);
-  font-weight: 600;
+  font-weight: var(--weight-strong);
   line-height: 1.2;
   color: var(--ink-700);
 }
@@ -197,7 +197,7 @@
   background: var(--zone-soft, white);
   color: var(--zone-accent, var(--olive-700));
   font-size: var(--text-2xs);
-  font-weight: 600;
+  font-weight: var(--weight-strong);
 }
 
 .zone[data-visited="true"] {
@@ -277,7 +277,7 @@
   overflow: hidden;
   font-family: var(--font-sans);
   font-size: var(--text-sm);
-  font-weight: 600;
+  font-weight: var(--weight-strong);
   line-height: 1.15;
 }
 
@@ -320,7 +320,7 @@
 .stepNumber {
   font-family: var(--font-sans);
   font-size: var(--text-lg);
-  font-weight: 600;
+  font-weight: var(--weight-strong);
   line-height: 1;
 }
 
@@ -352,7 +352,7 @@
 
 .tasteName {
   font-size: var(--text-xs);
-  font-weight: 600;
+  font-weight: var(--weight-strong);
   color: var(--ink-800);
 }
 

@@ -77,7 +77,7 @@
   background: var(--color-surface-solid);
   color: var(--ink-600);
   font-size: var(--text-xs);
-  font-weight: 600;
+  font-weight: var(--weight-strong);
   white-space: nowrap;
   clip-path: polygon(0 0, calc(100% - 11px) 0, 100% 50%, calc(100% - 11px) 100%, 0 100%);
   filter: drop-shadow(1px 0 0 var(--sand-400)) drop-shadow(-1px 0 0 var(--sand-400))

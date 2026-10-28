@@ -225,13 +225,8 @@ function ReadyExperience({ catalog }: { catalog: Catalog }) {
   const [debugRequested] = useState(
     () => import.meta.env.DEV && new URLSearchParams(window.location.search).has('debug'),
   )
-  // Se leen al montar: la sincronización de la URL descarta los parámetros que no conoce.
-  const [medir] = useState<'si' | 'corto' | undefined>(() => {
-    const value = new URLSearchParams(window.location.search).get('medir')
-    return value === null ? undefined : value === 'corto' ? 'corto' : 'si'
-  })
-  // El mapa es el realista; solo se apaga donde no puede dibujarlo (ver realismo/modo.ts). Medir lo exige.
-  const [realismo] = useState(() => medir !== undefined || realismoActivo())
+  // El mapa es el realista; solo se apaga donde no puede dibujarlo (ver realismo/modo.ts).
+  const [realismo] = useState(realismoActivo)
   const searchInputRef = useRef<HTMLInputElement>(null)
   const returnFocus = useReturnFocus(searchInputRef)
   useUrlSync(catalog)
@@ -488,7 +483,6 @@ function ReadyExperience({ catalog }: { catalog: Catalog }) {
               padding={padding}
               compact={!isDesktop}
               realismo={realismo}
-              medir={medir}
               onStatusChange={onMapStatus}
               onMapInstance={setMap}
             />
