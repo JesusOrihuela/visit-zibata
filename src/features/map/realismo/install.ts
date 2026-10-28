@@ -26,16 +26,7 @@ const PARTS = {
 type Part = keyof typeof PARTS
 type Status = 'cargando' | 'propia' | 'nativa' | 'incoherente'
 
-export interface RealismOptions {
-  /** Medición en el dispositivo (?medir): 'si' o 'corto' para probar la herramienta. */
-  benchmark?: 'si' | 'corto'
-}
-
-export function installRealism(
-  map: MapLibreMap,
-  baseUrl: string,
-  options: RealismOptions,
-): { quality: Quality } {
+export function installRealism(map: MapLibreMap, baseUrl: string): { quality: Quality } {
   const quality = createQuality()
   const container = map.getContainer()
   const ready = new Set<Part>()
@@ -161,13 +152,5 @@ export function installRealism(
     stopGovernor()
   })
 
-  if (options.benchmark) {
-    const short = options.benchmark === 'corto'
-    map.once('idle', () => {
-      void import('./benchmark.ts')
-        .then(({ runBenchmark }) => runBenchmark(map, quality, { short }))
-        .catch((error) => console.error('[realismo] medición:', error))
-    })
-  }
   return { quality }
 }

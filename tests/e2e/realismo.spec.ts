@@ -164,26 +164,6 @@ test.describe('Realismo del mapa @mapa', () => {
     expect(zoomMin).toBeLessThan(16)
   })
 
-  test('la medición en el dispositivo (?medir=corto) recorre las tres vistas en los tres niveles', async ({
-    page,
-  }, testInfo) => {
-    test.skip(testInfo.project.name !== 'desktop', 'es una herramienta; basta probarla una vez')
-    test.setTimeout(300_000)
-    // Medir exige el realismo aunque el renderizado sea por software: es justo lo que se quiere medir.
-    await openApp(page, { path: '?medir=corto' })
-    const resultado = page.getByLabel('Resultado de la medición')
-    await expect(resultado).toBeVisible({ timeout: 240_000 })
-    const filas = (await resultado.inputValue())
-      .split('\n')
-      .filter((linea) => /^[123] \| /.test(linea))
-    expect(filas).toHaveLength(9)
-    const vistas = ['Panorámica', 'Barrio', 'Casas']
-    expect(filas.map((fila) => fila.split(' | ')[1])).toEqual([...vistas, ...vistas, ...vistas])
-    // Al terminar suelta el gobernador y deja un nivel válido. No se exige el 3: con la máquina cargada
-    // el gobernador puede bajarlo con toda razón en cuanto queda libre.
-    await expect(page.locator('[data-realismo]')).toHaveAttribute('data-realismo-nivel', /^[123]$/)
-  })
-
   test('si se pierde el contexto WebGL el mapa vuelve al de siempre', async ({ page }) => {
     await abrirConRealismo(page)
     await waitForMap(page)
