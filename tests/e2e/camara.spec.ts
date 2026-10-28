@@ -1,0 +1,49 @@
+import { expect, type Page, test } from '@playwright/test'
+import { conGpu, isMobile, openApp, waitForMap } from './helpers.ts'
+
+/** Posición media (de 0 a 1 del ancho) de los marcadores de plaza que se ven, y cuántos son. */
+const dondeEstaZibata = (page: Page) =>
+  page.evaluate(() => {
+    const visibles = [...document.querySelectorAll<HTMLElement>('button[data-mode]')]
+      .filter((m) => m.dataset.mode !== 'hidden')
+      .map((m) => m.getBoundingClientRect())
+      .filter((b) => b.left >= 0 && b.right <= innerWidth && b.top >= 0 && b.bottom <= innerHeight)
+    const media = visibles.reduce((s, b) => s + (b.left + b.right) / 2, 0) / (visibles.length || 1)
+    return { cuantos: visibles.length, x: media / innerWidth }
+  })
+
+test.describe('Cámara acotada a Zibatá @mapa', () => {
+  test('por mucho que se aleje y se arrastre, Zibatá sigue a la vista y en torno al centro', async ({
+    page,
+  }) => {
+    test.skip(isMobile(page), 'el gesto es de ratón; en el teléfono lo cubre el límite de zoom')
+    // Con GPU (simulada) el mapa es el realista, cuyo alejamiento máximo deja a Zibatá justa en pantalla.
+    await conGpu(page)
+    await openApp(page)
+    await waitForMap(page)
+    await expect(page.locator('[data-realismo]')).toHaveAttribute('data-realismo', 'completo', {
+      timeout: 60_000,
+    })
+    const { width, height } = page.viewportSize() ?? { width: 1280, height: 800 }
+    await page.mouse.move(width / 2, height / 2)
+    for (let i = 0; i < 25; i++) {
+      await page.mouse.wheel(0, 400)
+      await page.waitForTimeout(60)
+    }
+    // Arrastrar una y otra vez en la misma dirección, cada vez más lejos de donde empezó.
+    for (let i = 0; i < 6; i++) {
+      await page.mouse.move(width * 0.8, height / 2)
+      await page.mouse.down()
+      await page.mouse.move(width * 0.1, height / 2 - 100, { steps: 12 })
+      await page.mouse.up()
+      await page.waitForTimeout(250)
+    }
+    await page.waitForTimeout(1500)
+    // Antes el centro podía llegar a 440 m fuera de Zibatá y, en una pantalla ancha, dejarla en una
+    // esquina: los marcadores quedaban en el tercio izquierdo. Ahora siguen en torno al centro.
+    const { cuantos, x } = await dondeEstaZibata(page)
+    expect(cuantos).toBeGreaterThanOrEqual(3)
+    expect(x).toBeGreaterThan(0.3)
+    expect(x).toBeLessThan(0.7)
+  })
+})

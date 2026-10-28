@@ -12,24 +12,18 @@ import {
   type PaddingOptions,
 } from 'maplibre-gl'
 import { useEffect, useRef, useState } from 'react'
-import {
-  clampToCenterBounds,
-  insideCenterBounds,
-  MAP_ASSETS,
-  MAP_LIMITS,
-  MAP_LOCALE,
-  ZIBATA_EXTENT,
-} from '../../config/map.ts'
+import { MAP_ASSETS, MAP_LIMITS, MAP_LOCALE, ZIBATA_EXTENT } from '../../config/map.ts'
 import { t } from '../../i18n/index.ts'
 import { absoluteAssetUrl } from '../../lib/assets.ts'
 import { registrar } from '../../lib/eventos.ts'
 import type { Plaza } from '../../types/domain.ts'
+import { createCameraConstraint } from './bounds.ts'
 import { ComingSoonMarkers } from './ComingSoonMarkers.tsx'
 import { focusPlaza, initialCamera, resetCamera, updatePadding } from './camera.ts'
 import { MapControls } from './MapControls.tsx'
 import { MapErrorMessage } from './MapErrorMessage.tsx'
 import styles from './MapView.module.css'
-import { ensureMapRuntime, prefersReducedMotion } from './mapRuntime.ts'
+import { ensureMapRuntime } from './mapRuntime.ts'
 import { PlazaMarkers } from './PlazaMarkers.tsx'
 import { opcionesRealismo } from './realismo/modo.ts'
 import { buildMapStyle } from './style/buildMapStyle.ts'
@@ -123,10 +117,15 @@ export default function MapView({
     }
     update({ state: 'loading' })
 
+    const constraint = createCameraConstraint(
+      ZIBATA_EXTENT.bbox,
+      ZIBATA_EXTENT.boundary.coordinates[0],
+    )
     let instance: MapLibreMap
     try {
       instance = new MapLibreMap({
         container,
+        transformConstrain: constraint.constrain,
         style: buildMapStyle({
           tilesUrl: absoluteAssetUrl(MAP_ASSETS.tiles),
           plazaBuildingsUrl: absoluteAssetUrl(MAP_ASSETS.plazaBuildings),
@@ -158,19 +157,9 @@ export default function MapView({
       return
     }
 
-    // El mapa no se aleja de Zibatá: si el centro de la pantalla sale del área permitida, vuelve al
-    // punto más cercano dentro de ella al terminar el gesto. Se limita el centro y no el encuadre
-    // completo para no estropear la vista general (ver MAP_LIMITS en config/map.ts).
-    const keepOverZibata = () => {
-      const { lng, lat } = instance.getCenter()
-      if (insideCenterBounds(lng, lat)) return
-      const [clampedLng, clampedLat] = clampToCenterBounds(lng, lat)
-      instance.easeTo({
-        center: [clampedLng, clampedLat],
-        duration: prefersReducedMotion() ? 0 : 300,
-      })
-    }
-    instance.on('moveend', keepOverZibata)
+    // El mapa no se aleja de Zibatá: la restricción ya está en la cámara (ver bounds.ts), así que ni a
+    // mitad de un gesto se puede dejar a Zibatá fuera de la pantalla.
+    constraint.attach(instance)
 
     // Si el mapa 3D se usa: el primer gesto de la persona (arrastrar, girar, inclinar o acercar),
     // una vez por carga. Los movimientos de la propia guía no traen `originalEvent`.
@@ -221,6 +210,7 @@ export default function MapView({
           .then(({ installRealism }) =>
             installRealism(instance, absoluteAssetUrl(MAP_ASSETS.realismo), {
               boundary: ZIBATA_EXTENT.boundary,
+              constraint,
               benchmark: latest.current.medir,
             }),
           )

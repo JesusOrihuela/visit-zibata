@@ -7,11 +7,14 @@
  *    mapa, así que no mueve la cámara ni dispara eventos;
  *  - inclinación máxima según el zoom: cuanto más lejos se mira, más terreno ve el borde superior, y el
  *    contexto es finito;
- *  - recentrado suave al llegar al límite, solo cuando la persona ya soltó la pantalla.
+ *
+ * Que el centro no se aleje de Zibatá lo restringe la propia cámara (../bounds.ts); aquí solo se le da el
+ * ancla: a dónde va el centro en el alejamiento máximo, que ya cuenta la inclinación.
  */
 
 import type { Polygon } from 'geojson'
 import { LngLat, type Map as MapLibreMap, Point } from 'maplibre-gl'
+import type { createCameraConstraint } from '../bounds.ts'
 import { prefersReducedMotion } from '../mapRuntime.ts'
 import { cameraTransform } from './internals.ts'
 
@@ -21,14 +24,7 @@ const FOV = 0.6435011087932844
 const EARTH_CIRCUMFERENCE = 40075016.686
 /** Piso de inclinación: con el padding de la guía en un teléfono horizontal ninguna cabe, y un mapa plano pierde el volumen. */
 const MIN_MAX_PITCH = 30
-const SETTLE_DELAY_MS = 800
-const RECENTER_DEVIATION = 0.05
 const FIT_MARGIN = { x: 12, y: 16 } as const
-
-interface Fit {
-  zoom: number
-  center: [number, number]
-}
 
 /** Distancia (m) del centro de la vista al punto más lejano de las esquinas de arriba; Infinity si ve el horizonte. */
 function visibleRadius(map: MapLibreMap, pitchDeg: number, zoom: number, latitude: number): number {
@@ -77,7 +73,11 @@ function limitPitch(map: MapLibreMap): void {
 }
 
 /** Instala los límites; devuelve la función que los quita. */
-export function installCameraLimits(map: MapLibreMap, boundary: Polygon): () => void {
+export function installCameraLimits(
+  map: MapLibreMap,
+  boundary: Polygon,
+  constraint: ReturnType<typeof createCameraConstraint>,
+): () => void {
   const ring = (boundary.coordinates[0] ?? []).map(([lng = 0, lat = 0]) => new LngLat(lng, lat))
   const box = ring.reduce(
     (b, p) => [
@@ -90,7 +90,6 @@ export function installCameraLimits(map: MapLibreMap, boundary: Polygon): () => 
   ) as [number, number, number, number]
 
   let lastKey = ''
-  let fit: Fit | null = null
 
   function fitMinZoom(force = false): void {
     // Con el mapa en movimiento (p. ej. la animación de padding de la guía) no se toca la cámara.
@@ -178,7 +177,7 @@ export function installCameraLimits(map: MapLibreMap, boundary: Polygon): () => 
     // Si a ese zoom la vista rebasa lo que cubre el contexto (espacio libre muy pequeño), el límite se queda donde todavía cubre.
     const radius = visibleRadius(map, pitchAt(center, zoom), zoom, center[1])
     if (radius > VIEW_RADIUS_M && Number.isFinite(radius)) zoom += Math.log2(radius / VIEW_RADIUS_M)
-    fit = { zoom, center }
+    constraint.setAnchor(center)
     lastKey = key
     // Visible en el contenedor: sirve para comprobar el límite desde fuera y para depurar en un equipo real.
     container.dataset.realismoZoomMin = zoom.toFixed(2)
@@ -196,48 +195,6 @@ export function installCameraLimits(map: MapLibreMap, boundary: Polygon): () => 
     }
   }
 
-  // En el límite de alejamiento Zibatá cabe justo: al llegar ahí por el zoom o por un movimiento de la guía
-  // la cámara se centra despacio, cuando la persona ya soltó la pantalla. Si lo último que hizo fue arrastrar,
-  // rotar o inclinar sin cambiar el zoom, la cámara se queda donde la dejó.
-  let timer: ReturnType<typeof setTimeout> | undefined
-  let zoomAtStart = 0
-  let byPerson = false
-  let nested = 0
-  const cancelRecenter = (): void => clearTimeout(timer)
-  const recenter = (): void => {
-    if (!fit || map.isMoving() || map.getZoom() > fit.zoom + 0.03) return
-    const container = map.getContainer()
-    const pad = map.getPadding()
-    const free = Math.min(
-      container.clientWidth - (pad.left ?? 0) - (pad.right ?? 0),
-      container.clientHeight - (pad.top ?? 0) - (pad.bottom ?? 0),
-    )
-    const here = map.project(map.getCenter())
-    const target = map.project(new LngLat(fit.center[0], fit.center[1]))
-    if (Math.hypot(here.x - target.x, here.y - target.y) > RECENTER_DEVIATION * free) {
-      map.easeTo({
-        center: fit.center,
-        duration: prefersReducedMotion() ? 0 : 800,
-        easing: (x) => 1 - (1 - x) ** 3,
-      })
-    }
-  }
-  const onMoveStart = (event: { originalEvent?: unknown }): void => {
-    cancelRecenter()
-    // La inercia de un arrastre emite su propio inicio de movimiento sin evento de la persona: cuenta como parte del mismo gesto.
-    if (nested++ === 0) {
-      zoomAtStart = map.getZoom()
-      byPerson = false
-    }
-    if (event.originalEvent) byPerson = true
-  }
-  const onMoveEnd = (): void => {
-    if (--nested > 0) return
-    nested = 0
-    const onlyMoved = byPerson && Math.abs(map.getZoom() - zoomAtStart) < 0.02
-    if (!onlyMoved) timer = setTimeout(recenter, SETTLE_DELAY_MS)
-  }
-
   const pitchEvents = ['zoom', 'resize', 'moveend'] as const
   const fitEvents = ['resize', 'moveend', 'idle', 'rotateend', 'pitchend'] as const
   const onPitch = (): void => limitPitch(map)
@@ -245,16 +202,9 @@ export function installCameraLimits(map: MapLibreMap, boundary: Polygon): () => 
   limitPitch(map)
   for (const name of pitchEvents) map.on(name, onPitch)
   for (const name of fitEvents) map.on(name, onFit)
-  map.on('movestart', onMoveStart)
-  map.on('moveend', onMoveEnd)
-  map.getCanvasContainer().addEventListener('pointerdown', cancelRecenter, { passive: true })
 
   return () => {
-    cancelRecenter()
     for (const name of pitchEvents) map.off(name, onPitch)
     for (const name of fitEvents) map.off(name, onFit)
-    map.off('movestart', onMoveStart)
-    map.off('moveend', onMoveEnd)
-    map.getCanvasContainer().removeEventListener('pointerdown', cancelRecenter)
   }
 }

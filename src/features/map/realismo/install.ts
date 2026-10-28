@@ -11,6 +11,7 @@
  */
 import type { Polygon } from 'geojson'
 import type { Map as MapLibreMap } from 'maplibre-gl'
+import type { createCameraConstraint } from '../bounds.ts'
 import { createBuildingsLayer, type LayerHooks } from './buildingsLayer.ts'
 import { installCameraLimits } from './camera.ts'
 import { stencilReset } from './internals.ts'
@@ -31,6 +32,8 @@ type Status = 'cargando' | 'propia' | 'nativa' | 'incoherente'
 export interface RealismOptions {
   /** Contorno de Zibatá: de él sale el límite de alejamiento. */
   boundary: Polygon
+  /** La restricción del centro de la cámara: el límite de alejamiento le da el ancla. */
+  constraint: ReturnType<typeof createCameraConstraint>
   /** Medición en el dispositivo (?medir): 'si' o 'corto' para probar la herramienta. */
   benchmark?: 'si' | 'corto'
 }
@@ -144,7 +147,7 @@ export function installRealism(
   applyLevel(map, quality, 3)
   const stopGovernor = startGovernor(map, quality)
   // Alejamiento, inclinación y recentrado que cuidan que no se vea el borde de la imagen de contexto.
-  const stopCamera = installCameraLimits(map, options.boundary)
+  const stopCamera = installCameraLimits(map, options.boundary, options.constraint)
 
   // Si el contexto WebGL se pierde (sobre todo en móviles al cambiar de app), MapLibre destruye el estilo y,
   // al recuperarlo, lo vuelve a montar SIN las capas propias (no sabe restaurarlas) y con las nativas como
