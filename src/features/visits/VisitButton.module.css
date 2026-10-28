@@ -87,6 +87,8 @@
  */
 .visit[data-plano="true"] .button {
   padding: 0 0.35rem;
+  /* El relleno de la zona pulsable asoma por la izquierda: el icono queda en el borde del texto. */
+  margin-left: -0.35rem;
   background: none;
   box-shadow: none;
   color: var(--olive-700);

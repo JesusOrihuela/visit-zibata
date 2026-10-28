@@ -26,6 +26,13 @@
   gap: 0.15rem;
   border: 0;
   padding: 0;
+  /*
+   * Sin el margen de 2 px que un fieldset trae de fábrica, y corrida a la izquierda lo que sobra
+   * a cada lado del dibujo dentro de su zona sensible (2 rem de ancho, 1,2 rem de estrella): así
+   * la primera estrella empieza donde empieza el texto de la ficha y no 8 px más adentro. La zona
+   * pulsable no cambia de tamaño, solo asoma por el margen del panel.
+   */
+  margin: 0 0 0 -0.4rem;
 }
 
 .legend {
