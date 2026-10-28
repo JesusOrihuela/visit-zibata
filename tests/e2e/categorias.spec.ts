@@ -98,18 +98,26 @@ test.describe('Páginas de categoría', () => {
     await expect(page).toHaveURL(/\/zona\/paseo-zibata\?categoria=desayunos-y-cafe$/)
   })
 
-  test('con Ctrl el enlace no se intercepta: abre una página que existe', async ({
-    page,
-    context,
-  }) => {
+  test('con Ctrl el enlace no se intercepta: apunta a una página que existe', async ({ page }) => {
     await openApp(page)
     const italiana = cápsulas(page).getByRole('link', { name: /^Italiana/ })
-    const [nueva] = await Promise.all([
-      context.waitForEvent('page'),
-      italiana.click({ modifiers: ['Control'] }),
-    ])
-    // La pestaña nace en about:blank: leer su URL en cuanto "carga" es una carrera. Se espera a que llegue.
-    await expect(nueva).toHaveURL(/\/categoria\/italiana$/)
+    const href = await italiana.getAttribute('href')
+    expect(href).toMatch(/\/categoria\/italiana$/)
+    // Lo que importa es que la app no cancele el clic (el navegador abre la pestaña) y que el destino
+    // exista. No se espera a la pestaña nueva: en CI a veces se queda en about:blank y la prueba dependía
+    // de eso (falló en el despliegue de #59, en escritorio y tableta).
+    await page.evaluate(() => {
+      ;(window as unknown as { __clic: Promise<boolean> }).__clic = new Promise((resolve) => {
+        window.addEventListener('click', (event) => resolve(event.defaultPrevented), { once: true })
+      })
+    })
+    await italiana.click({ modifiers: ['Control'] })
+    const cancelado = await page.evaluate(
+      () => (window as unknown as { __clic: Promise<boolean> }).__clic,
+    )
+    expect(cancelado).toBe(false)
     await expect(page).toHaveURL(/\/$/)
+    const respuesta = await page.request.get(new URL(href ?? '', page.url()).href)
+    expect(respuesta.status()).toBe(200)
   })
 })

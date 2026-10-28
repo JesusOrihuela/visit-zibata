@@ -3,10 +3,34 @@
  * futura los cambia, estas funciones devuelven `null` y el realismo se monta sin lo que dependía de
  * ellos, en vez de romper el mapa.
  */
-import type { Map as MapLibreMap } from 'maplibre-gl'
+import type { LngLat, Map as MapLibreMap, PaddingOptions } from 'maplibre-gl'
+
+/** Un punto de pantalla: lo que devuelve la transformación y lo que acepta para volver a coordenadas. */
+export interface ScreenPoint {
+  x: number
+  y: number
+}
+
+/** Lo que usamos de la transformación interna de la cámara (copia suelta del mapa, no la del mapa). */
+export interface TransformLike {
+  clone(): TransformLike
+  setMinZoom(zoom: number): void
+  setMaxZoom(zoom: number): void
+  setMinPitch(pitch: number): void
+  setMaxPitch(pitch: number): void
+  resize(width: number, height: number): void
+  setPadding(padding: PaddingOptions): void
+  setBearing(bearing: number): void
+  setCenter(center: LngLat): void
+  setZoom(zoom: number): void
+  setPitch(pitch: number): void
+  locationToScreenPoint(location: LngLat): ScreenPoint
+  screenPointToLocation(point: ScreenPoint): { lng: number; lat: number }
+}
 
 interface PainterLike {
   currentStencilSource?: unknown
+  transform?: Partial<TransformLike>
 }
 
 const painterOf = (map: MapLibreMap): PainterLike | null =>
@@ -23,4 +47,20 @@ export function stencilReset(map: MapLibreMap): (() => void) | null {
   return () => {
     painter.currentStencilSource = undefined
   }
+}
+
+/**
+ * Una copia de la transformación de la cámara: permite probar cámaras (zoom, inclinación, centro) sin
+ * mover la del mapa ni disparar eventos. `null` si este MapLibre no la expone; entonces no se calcula
+ * el límite de alejamiento.
+ */
+export function cameraTransform(map: MapLibreMap): TransformLike | null {
+  const transform = painterOf(map)?.transform
+  return typeof transform?.clone === 'function' ? (transform as TransformLike).clone() : null
+}
+
+/** El contexto WebGL del mapa, para leer el modelo de gráfica en la medición. */
+export function glContext(map: MapLibreMap): WebGL2RenderingContext | null {
+  const context = (map as unknown as { painter?: { context?: { gl?: unknown } } }).painter?.context
+  return (context?.gl as WebGL2RenderingContext | undefined) ?? null
 }

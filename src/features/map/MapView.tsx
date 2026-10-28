@@ -51,6 +51,8 @@ export interface MapViewProps {
   compact: boolean
   /** Dibuja el suelo, el relieve y el contexto de realismo (ver features/map/realismo). */
   realismo?: boolean
+  /** Medición en el dispositivo (?medir): recorre tres vistas y deja las cifras en pantalla. */
+  medir?: 'si' | 'corto'
   onStatusChange?: (status: MapStatus) => void
   onMapInstance?: (map: MapLibreMap | null) => void
 }
@@ -72,6 +74,7 @@ export default function MapView({
   padding,
   compact,
   realismo,
+  medir,
   onStatusChange,
   onMapInstance,
 }: MapViewProps) {
@@ -90,6 +93,7 @@ export default function MapView({
     padding,
     compact,
     realismo,
+    medir,
   })
   useEffect(() => {
     latest.current = {
@@ -100,6 +104,7 @@ export default function MapView({
       padding,
       compact,
       realismo,
+      medir,
     }
   })
 
@@ -214,7 +219,10 @@ export default function MapView({
         // carga, no se ha ocultado nada nativo y el mapa sigue como estaba.
         void import('./realismo/install.ts')
           .then(({ installRealism }) =>
-            installRealism(instance, absoluteAssetUrl(MAP_ASSETS.realismo)),
+            installRealism(instance, absoluteAssetUrl(MAP_ASSETS.realismo), {
+              boundary: ZIBATA_EXTENT.boundary,
+              benchmark: latest.current.medir,
+            }),
           )
           .catch((error) => console.error('[realismo]', error))
       }
