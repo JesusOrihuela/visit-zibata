@@ -102,6 +102,9 @@ test.describe('Títulos sin desborde @mapa', () => {
   }
 
   test('páginas de información', async ({ page }) => {
+    // Abre dos páginas seguidas con el mapa dibujando por software detrás: en CI, con la máquina cargada, la
+    // primera evaluación llegó a tardar 12 s y la segunda página 26 s, y las dos juntas rebasaban los 90 s.
+    test.slow()
     await openApp(page, { path: 'info/acerca' })
     const titulo = page.getByRole('heading', { level: 2, name: 'Acerca de esta guía' })
     await expect(titulo).toBeVisible()
