@@ -227,6 +227,10 @@ function ReadyExperience({ catalog }: { catalog: Catalog }) {
   const [realismo] = useState(
     () => new URLSearchParams(window.location.search).get('realismo') === 'si',
   )
+  const [medir] = useState<'si' | 'corto' | undefined>(() => {
+    const value = new URLSearchParams(window.location.search).get('medir')
+    return value === null ? undefined : value === 'corto' ? 'corto' : 'si'
+  })
   const searchInputRef = useRef<HTMLInputElement>(null)
   const returnFocus = useReturnFocus(searchInputRef)
   useUrlSync(catalog)
@@ -483,6 +487,7 @@ function ReadyExperience({ catalog }: { catalog: Catalog }) {
               padding={padding}
               compact={!isDesktop}
               realismo={realismo}
+              medir={medir}
               onStatusChange={onMapStatus}
               onMapInstance={setMap}
             />

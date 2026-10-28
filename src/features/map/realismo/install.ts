@@ -9,10 +9,12 @@
  *   cargando · completo (las dos propias) · degradado (una propia, una nativa) · respaldo (el mapa de siempre).
  * `data-realismo-sombras` dice si las sombras en vivo de los edificios están disponibles (si/no).
  */
+import type { Polygon } from 'geojson'
 import type { Map as MapLibreMap } from 'maplibre-gl'
 import { createBuildingsLayer, type LayerHooks } from './buildingsLayer.ts'
+import { installCameraLimits } from './camera.ts'
 import { stencilReset } from './internals.ts'
-import { createQuality, type Quality } from './quality.ts'
+import { applyLevel, createQuality, type Quality, startGovernor } from './quality.ts'
 import { createTreesLayer } from './treesLayer.ts'
 
 export type RealismState = 'cargando' | 'completo' | 'degradado' | 'respaldo'
@@ -26,7 +28,18 @@ const PARTS = {
 type Part = keyof typeof PARTS
 type Status = 'cargando' | 'propia' | 'nativa' | 'incoherente'
 
-export function installRealism(map: MapLibreMap, baseUrl: string): { quality: Quality } {
+export interface RealismOptions {
+  /** Contorno de Zibatá: de él sale el límite de alejamiento. */
+  boundary: Polygon
+  /** Medición en el dispositivo (?medir): 'si' o 'corto' para probar la herramienta. */
+  benchmark?: 'si' | 'corto'
+}
+
+export function installRealism(
+  map: MapLibreMap,
+  baseUrl: string,
+  options: RealismOptions,
+): { quality: Quality } {
   const quality = createQuality()
   const container = map.getContainer()
   const ready = new Set<Part>()
@@ -119,6 +132,36 @@ export function installRealism(map: MapLibreMap, baseUrl: string): { quality: Qu
       broken.add(part)
       restore(part, `realismo-${part}`)
     }
+  }
+
+  // Calidad: arranca en 3 (con la razón de píxeles topada a 2) y baja sola si el mapa en movimiento va lento.
+  applyLevel(map, quality, 3)
+  const stopGovernor = startGovernor(map, quality)
+  // Alejamiento, inclinación y recentrado que cuidan que no se vea el borde de la imagen de contexto.
+  const stopCamera = installCameraLimits(map, options.boundary)
+
+  // Si el contexto WebGL se pierde (sobre todo en móviles al cambiar de app), las capas propias dejan de
+  // servir: se vuelve a las extrusiones nativas, que MapLibre repinta cuando recupera el contexto.
+  map.getCanvas().addEventListener('webglcontextlost', () => {
+    stopGovernor()
+    for (const part of Object.keys(PARTS) as Part[]) {
+      broken.add(part)
+      ready.delete(part)
+      restore(part, `realismo-${part}`)
+    }
+  })
+  map.once('remove', () => {
+    stopGovernor()
+    stopCamera()
+  })
+
+  if (options.benchmark) {
+    const short = options.benchmark === 'corto'
+    map.once('idle', () => {
+      void import('./benchmark.ts')
+        .then(({ runBenchmark }) => runBenchmark(map, quality, { short }))
+        .catch((error) => console.error('[realismo] medición:', error))
+    })
   }
   return { quality }
 }

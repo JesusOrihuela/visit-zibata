@@ -99,6 +99,40 @@ test.describe('Realismo del mapa @mapa', () => {
     await expect(page.locator('button[data-mode]').first()).toBeVisible()
   })
 
+  test('la cámara fija el alejamiento máximo y arranca en calidad 3', async ({ page }) => {
+    await openApp(page, { path: '?realismo=si' })
+    await waitForMap(page)
+    const mapa = page.locator('[data-realismo]')
+    await expect(mapa).toHaveAttribute('data-realismo', 'completo', { timeout: 60_000 })
+    await expect(mapa).toHaveAttribute('data-realismo-nivel', '3')
+    // El límite sale de que Zibatá quepa en el espacio libre: un zoom razonable, no el de siempre (12,6) ni uno absurdo.
+    await expect
+      .poll(async () => Number(await mapa.getAttribute('data-realismo-zoom-min')), {
+        timeout: 30_000,
+      })
+      .toBeGreaterThan(9)
+    const zoomMin = Number(await mapa.getAttribute('data-realismo-zoom-min'))
+    expect(zoomMin).toBeLessThan(16)
+  })
+
+  test('la medición en el dispositivo (?medir=corto) recorre las tres vistas en los tres niveles', async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name !== 'desktop', 'es una herramienta; basta probarla una vez')
+    test.setTimeout(300_000)
+    await openApp(page, { path: '?realismo=si&medir=corto' })
+    const resultado = page.getByLabel('Resultado de la medición')
+    await expect(resultado).toBeVisible({ timeout: 240_000 })
+    const filas = (await resultado.inputValue())
+      .split('\n')
+      .filter((linea) => /^[123] \| /.test(linea))
+    expect(filas).toHaveLength(9)
+    const vistas = ['Panorámica', 'Barrio', 'Casas']
+    expect(filas.map((fila) => fila.split(' | ')[1])).toEqual([...vistas, ...vistas, ...vistas])
+    // Termina en el nivel con el que empezó y suelta el gobernador.
+    await expect(page.locator('[data-realismo]')).toHaveAttribute('data-realismo-nivel', '3')
+  })
+
   test('sin el parámetro no se monta ninguna capa propia', async ({ page }) => {
     await openApp(page)
     await waitForMap(page)
