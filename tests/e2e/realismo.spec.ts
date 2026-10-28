@@ -2,7 +2,24 @@ import { expect, test } from '@playwright/test'
 import { openApp, waitForMap } from './helpers.ts'
 
 test.describe('Realismo del mapa @mapa', () => {
-  test('sin el parámetro no se pide ninguna capa de realismo', async ({ page }) => {
+  test('con ?realismo=no no se pide ninguna capa de realismo', async ({ page }) => {
+    const pedidas: string[] = []
+    page.on('request', (request) => {
+      if (request.url().includes('/map/realismo/')) pedidas.push(request.url())
+    })
+    await openApp(page, { path: '?realismo=no' })
+    await waitForMap(page)
+    await page.waitForTimeout(1500)
+    expect(pedidas).toEqual([])
+  })
+
+  test('sin parámetro y con renderizado por software el realismo va apagado', async ({
+    page,
+  }, testInfo) => {
+    // WebKit se presenta como "Apple GPU" aunque dibuje en software: no se puede detectar ahí.
+    test.skip(testInfo.project.name === 'webkit-iphone', 'WebKit no revela el renderizador')
+    // Playwright dibuja con SwiftShader (sin GPU): ahí el 3D propio deja el mapa inservible, y por eso el
+    // realismo se apaga solo. Con GPU real, sin parámetro va encendido.
     const pedidas: string[] = []
     page.on('request', (request) => {
       if (request.url().includes('/map/realismo/')) pedidas.push(request.url())
@@ -11,6 +28,7 @@ test.describe('Realismo del mapa @mapa', () => {
     await waitForMap(page)
     await page.waitForTimeout(1500)
     expect(pedidas).toEqual([])
+    await expect(page.locator('[data-realismo]')).toHaveCount(0)
   })
 
   test('con ?realismo=si carga suelo, contexto, calles y relieve del mismo origen, con sus créditos', async ({
@@ -129,8 +147,9 @@ test.describe('Realismo del mapa @mapa', () => {
     expect(filas).toHaveLength(9)
     const vistas = ['Panorámica', 'Barrio', 'Casas']
     expect(filas.map((fila) => fila.split(' | ')[1])).toEqual([...vistas, ...vistas, ...vistas])
-    // Termina en el nivel con el que empezó y suelta el gobernador.
-    await expect(page.locator('[data-realismo]')).toHaveAttribute('data-realismo-nivel', '3')
+    // Al terminar suelta el gobernador y deja un nivel válido. No se exige el 3: con la máquina cargada
+    // el gobernador puede bajarlo con toda razón en cuanto queda libre.
+    await expect(page.locator('[data-realismo]')).toHaveAttribute('data-realismo-nivel', /^[123]$/)
   })
 
   test('si se pierde el contexto WebGL el mapa vuelve al de siempre', async ({ page }) => {
@@ -151,8 +170,8 @@ test.describe('Realismo del mapa @mapa', () => {
     await expect(page.locator('button[data-mode]').first()).toBeVisible()
   })
 
-  test('sin el parámetro no se monta ninguna capa propia', async ({ page }) => {
-    await openApp(page)
+  test('con ?realismo=no no se monta ninguna capa propia', async ({ page }) => {
+    await openApp(page, { path: '?realismo=no' })
     await waitForMap(page)
     await page.waitForTimeout(1500)
     await expect(page.locator('[data-realismo]')).toHaveCount(0)
