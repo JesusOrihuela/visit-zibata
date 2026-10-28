@@ -71,7 +71,10 @@ export const es = {
   'place.didiFood': 'DiDi Food',
   'place.noPhoto': 'Ilustración de la categoría {category}',
   'place.openDetail': 'Ver detalles de {name}',
-  'place.savedCount': { one: '{count} persona lo guardó', other: '{count} personas lo guardaron' },
+  'place.savedCount': {
+    one: 'Ya es favorito de {count} persona',
+    other: 'Ya es favorito de {count} personas',
+  },
   'place.missingInfo': 'Aún no tenemos más información de este lugar.',
 
   'hours.open': 'Abierto',
