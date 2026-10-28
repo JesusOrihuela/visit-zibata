@@ -215,17 +215,17 @@ test.describe('Sitemap', () => {
   test('hay una página por cada zona activa y cada local activo, en los dos idiomas', () => {
     const rutas = new Set(paginas.map((pagina) => pagina.ruta))
     for (const lugar of lugares.filter((p) => p.active)) {
-      expect(rutas.has(`/lugar/${lugar.slug}`), `falta /lugar/${lugar.slug}`).toBe(true)
+      expect(rutas.has(`/es/lugar/${lugar.slug}`), `falta /es/lugar/${lugar.slug}`).toBe(true)
       expect(rutas.has(`/en/place/${lugar.slug}`), `falta /en/place/${lugar.slug}`).toBe(true)
     }
     for (const zona of zonas.filter((p) => p.active)) {
-      expect(rutas.has(`/zona/${zona.slug}`), `falta /zona/${zona.slug}`).toBe(true)
+      expect(rutas.has(`/es/zona/${zona.slug}`), `falta /es/zona/${zona.slug}`).toBe(true)
       expect(rutas.has(`/en/area/${zona.slug}`), `falta /en/area/${zona.slug}`).toBe(true)
     }
     for (const idioma of ['es', 'en'] as const) {
       for (const categoria of categorias) {
         const slug = categoria.slug[idioma]
-        const ruta = idioma === 'es' ? `/categoria/${slug}` : `/en/category/${slug}`
+        const ruta = idioma === 'es' ? `/es/categoria/${slug}` : `/en/category/${slug}`
         const nLocales = localesDe(categoria)
         if (nLocales === 0) {
           expect(
@@ -236,7 +236,7 @@ test.describe('Sitemap', () => {
       }
       // Las páginas de categoría en el sitemap deben pertenecer a categorías con al menos 1 local
       for (const ruta of locs) {
-        const match = ruta.match(/^\/(?:en\/category|categoria)\/(.+)$/)
+        const match = ruta.match(/^\/(?:en\/category|es\/categoria)\/(.+)$/)
         if (match) {
           const slug = match[1]
           const categoria = categorias.find((c) => c.slug[idioma] === slug)
@@ -249,7 +249,7 @@ test.describe('Sitemap', () => {
         }
       }
     }
-    expect(rutas.has('/'), 'falta la portada').toBe(true)
+    expect(rutas.has('/es'), 'falta la portada').toBe(true)
     expect(rutas.has('/en'), 'falta la portada en inglés').toBe(true)
   })
 
@@ -257,14 +257,14 @@ test.describe('Sitemap', () => {
     const activos = new Set(lugares.filter((p) => p.active).map((p) => p.slug))
     const zonasActivas = new Set(zonas.filter((p) => p.active).map((p) => p.slug))
     for (const { ruta } of paginas) {
-      const lugar = /^\/(?:en\/place|lugar)\/(.+)$/.exec(ruta)?.[1]
-      const zona = /^\/(?:en\/area|zona)\/(.+)$/.exec(ruta)?.[1]
-      const categoria = /^\/(?:en\/category|categoria)\/(.+)$/.exec(ruta)?.[1]
+      const lugar = /^\/(?:en\/place|es\/lugar)\/(.+)$/.exec(ruta)?.[1]
+      const zona = /^\/(?:en\/area|es\/zona)\/(.+)$/.exec(ruta)?.[1]
+      const categoria = /^\/(?:en\/category|es\/categoria)\/(.+)$/.exec(ruta)?.[1]
       if (lugar) expect(activos.has(lugar), `${ruta} no es un local activo`).toBe(true)
       else if (zona) expect(zonasActivas.has(zona), `${ruta} no es una zona activa`).toBe(true)
       else if (categoria) {
         expect(categoriasConLocales.has(categoria), `${ruta} no llega al umbral`).toBe(true)
-      } else expect(ruta, 'ruta fuera de las conocidas').toMatch(/^\/(en)?$|^\/(en\/)?info\//)
+      } else expect(ruta, 'ruta fuera de las conocidas').toMatch(/^\/(es|en)$|^\/(es|en)\/info\//)
     }
   })
 
@@ -289,7 +289,7 @@ test.describe('Sitemap', () => {
       .map((linea) => linea.slice('Disallow: '.length))
     const bloqueada = (ruta: string) => reglas.some((regla) => bloquea(regla, ruta))
     // El filtro dentro de una zona, que las cápsulas enlazan, es lo que no se debe rastrear.
-    expect(bloqueada(`${BASE}zona/condesa?categoria=italiana`)).toBe(true)
+    expect(bloqueada(`${BASE}es/zona/condesa?categoria=italiana`)).toBe(true)
     expect(bloqueada(`${BASE}en/area/condesa?category=italian`)).toBe(true)
     // Y ninguna dirección del sitemap, ni la portada con el parámetro antiguo, queda bloqueada.
     expect(locs.length).toBeGreaterThan(0)
@@ -303,7 +303,7 @@ test.describe('Sitemap', () => {
 
 test.describe('Las páginas de categoría', () => {
   const archivoDeCategoria = (idioma: 'es' | 'en', slug: string) =>
-    idioma === 'es' ? `categoria/${slug}.html` : `en/category/${slug}.html`
+    idioma === 'es' ? `es/categoria/${slug}.html` : `en/category/${slug}.html`
 
   test('toda categoría con locales tiene su página en los dos idiomas, con sus etiquetas una sola vez', () => {
     for (const idioma of ['es', 'en'] as const) {
@@ -329,7 +329,7 @@ test.describe('Las páginas de categoría', () => {
     for (const idioma of ['es', 'en'] as const) {
       for (const categoria of categorias) {
         const slug = categoria.slug[idioma]
-        const ruta = idioma === 'es' ? `/categoria/${slug}` : `/en/category/${slug}`
+        const ruta = idioma === 'es' ? `/es/categoria/${slug}` : `/en/category/${slug}`
         const archivo = archivoDe(ruta)
         const nLocales = localesDe(categoria)
         if (nLocales === 0) {
@@ -350,7 +350,7 @@ test.describe('Las páginas de categoría', () => {
 
   test('una categoría sin locales no tiene página HTML', () => {
     for (const categoria of categorias.filter((c) => localesDe(c) === 0)) {
-      const ruta = `/categoria/${categoria.slug.es}`
+      const ruta = `/es/categoria/${categoria.slug.es}`
       expect(archivoDe(ruta), ruta).toBeNull()
     }
   })
@@ -582,8 +582,8 @@ test.describe('Lo que no existe y debe seguir sin existir (o avisar)', () => {
     // que `vite preview` no tiene: se prueba aparte, con sus pruebas unitarias.
     const canonico = (html: string) =>
       etiqueta(html, /<link\s+rel="canonical"\s+href="([^"]*)"/g)[0]
-    const filtrada = await request.get(`${BASE}zona/condesa?categoria=italiana`)
-    const zonaSola = await request.get(`${BASE}zona/condesa`)
+    const filtrada = await request.get(`${BASE}es/zona/condesa?categoria=italiana`)
+    const zonaSola = await request.get(`${BASE}es/zona/condesa`)
     expect(filtrada.status()).toBe(200)
     expect(canonico(await filtrada.text())).toBe(canonico(await zonaSola.text()))
     expect(
@@ -593,7 +593,7 @@ test.describe('Lo que no existe y debe seguir sin existir (o avisar)', () => {
   })
 
   test('una ruta que no existe responde con la 404 propia, no con 200', async ({ request }) => {
-    const respuesta = await request.get(`${BASE}lugar/no-existe-este-local`)
+    const respuesta = await request.get(`${BASE}es/lugar/no-existe-este-local`)
     expect(respuesta.status()).toBe(404)
     // El cuerpo que sirve el hosting es dist/404.html: `vite preview` no lo devuelve a `request`.
     expect(leer('404.html')).toMatch(/<meta\s+name="robots"\s+content="noindex/i)
@@ -609,19 +609,19 @@ test.describe('Estructura ya renderizada', () => {
    * no cambia lo que se ve. Mientras el catálogo carga, el `h1` es el lema de la marca.
    */
   const rutas = [
-    '',
+    'es',
     'en',
-    'zona/condesa',
+    'es/zona/condesa',
     'en/area/condesa',
-    'lugar/bendito-bocado',
+    'es/lugar/bendito-bocado',
     'en/place/bendito-bocado',
-    'categoria/italiana',
+    'es/categoria/italiana',
     'en/category/italian',
-    'categoria/botanas',
-    'info/privacidad',
+    'es/categoria/botanas',
+    'es/info/privacidad',
     'en/info/privacy',
     // Un filtro dentro de una zona sigue siendo la zona.
-    'zona/condesa?categoria=italiana',
+    'es/zona/condesa?categoria=italiana',
   ]
   for (const ruta of rutas) {
     test(`/${ruta}: un solo h1, y es el mismo que sirve el archivo`, async ({ page }) => {

@@ -256,7 +256,7 @@ test.describe('Mapa @mapa', () => {
     await expect(region.getByRole('link', { name: /^Ver detalles de/ })).toHaveCount(
       placesInPlaza('Xentric Anáhuac'),
     )
-    await expect(page).toHaveURL(/\/zona\/xentric-anahuac$/)
+    await expect(page).toHaveURL(/\/es\/zona\/xentric-anahuac$/)
     await expect(marker).toHaveAttribute('aria-pressed', 'true')
   })
 })

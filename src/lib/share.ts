@@ -28,7 +28,7 @@ export type ShareOutcome = 'shared' | 'copied' | 'cancelled' | 'unsupported'
  * Raíz pública: la de compilación si la hay, y si no la del navegador, siempre con barra final.
  *
  * La base sale de `BASE_URL` y no de `window.location.pathname`: desde que el enrutado dejó el
- * hash, el camino de la página es `/lugar/tomassa` o `/en/place/tomassa`, así que leerlo
+ * hash, el camino de la página es `/es/lugar/tomassa` o `/en/place/tomassa`, así que leerlo
  * devolvería la ficha abierta como si fuera la raíz del sitio.
  */
 function siteRoot(): string {
@@ -38,7 +38,7 @@ function siteRoot(): string {
 
 /** La URL canónica de un lugar: la misma desde cualquier filtro, idioma o pantalla. */
 export function placeUrl(slug: string): string {
-  return `${siteRoot()}lugar/${slug}`
+  return `${siteRoot()}es/lugar/${slug}`
 }
 
 /**

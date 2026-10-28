@@ -1,19 +1,24 @@
 /**
  * Estado compartible en la ruta, con un árbol por idioma.
  *
- *   /                                 inicio
- *   /zona/paseo-zibata                zona seleccionada
- *   /lugar/tomassa                    ficha de un lugar (su plaza se deduce)
- *   /categoria/italiana               una categoría sola: su propia página
- *   /zona/paseo-zibata?categoria=italiana   una categoría dentro de una zona: un filtro
- *   /info/privacidad                  una página de información
+ *   /es                               inicio
+ *   /es/zona/paseo-zibata             zona seleccionada
+ *   /es/lugar/tomassa                 ficha de un lugar (su plaza se deduce)
+ *   /es/categoria/italiana            una categoría sola: su propia página
+ *   /es/zona/paseo-zibata?categoria=italiana   una categoría dentro de una zona: un filtro
+ *   /es/info/privacidad               una página de información
  *
- *   /en/                              lo mismo en inglés, con los segmentos traducidos
+ *   /en                               lo mismo en inglés, con los segmentos traducidos
  *   /en/area/paseo-zibata
  *   /en/place/tomassa
  *   /en/category/italian
  *   /en/area/paseo-zibata?category=italian
  *   /en/info/privacy
+ *
+ * Cada idioma lleva su prefijo, el español también (decidido el 28 de octubre de 2026; antes era el
+ * idioma sin prefijo). Las direcciones sin prefijo (`/lugar/tomassa`) son las de antes: el Worker las
+ * redirige con un 301 a su `/es/...` y este módulo las sigue leyendo como español, para que también
+ * sirvan donde no hay Worker (la vista previa de las pruebas, un subdirectorio).
  *
  * Hasta la v4.6.0 todo esto vivía en el hash (`#/lugar/tomassa`), porque GitHub Pages no sabe
  * reescribir rutas. Ya no: el sitio lo sirve un Worker con un archivo por ruta. El cambio no es
@@ -50,8 +55,8 @@ const INFO_SLUGS = {
   en: { acerca: 'about', privacidad: 'privacy', sugerir: 'suggest', tutorial: 'tutorial' },
 } as const satisfies Record<Locale, Record<InfoTopic, string>>
 
-/** Prefijo de ruta de cada idioma. El español no lleva: es el idioma por omisión del sitio. */
-const PREFIX: Record<Locale, string> = { es: '', en: 'en' }
+/** Prefijo de ruta de cada idioma. Todos llevan el suyo; el español sin prefijo es solo el formato anterior. */
+const PREFIX: Record<Locale, string> = { es: 'es', en: 'en' }
 
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 
@@ -62,7 +67,7 @@ const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
  * Acotarla a estas rutas conserva esa propiedad también mientras se desarrolla.
  */
 export const APP_ROUTE =
-  /^(?:en\/?)?(?:(?:lugar|zona|categoria|place|area|category|info)\/[a-z0-9-]+)?$/
+  /^(?:(?:(?:es|en)\/)?(?:(?:lugar|zona|categoria|place|area|category|info)\/[a-z0-9-]+)?|es|en)$/
 
 export interface UrlState {
   locale: Locale
@@ -82,16 +87,19 @@ function segmentsOf(pathname: string, base: string): string[] {
 
 /**
  * El idioma que pide la URL. Se usa antes de que exista el estado de la aplicación, en el arranque
- * de i18n, para que un enlace a `/en/place/x` mande sobre la preferencia guardada del dispositivo.
+ * de i18n, para que un enlace a `/en/place/x` o a `/es/lugar/x` mande sobre la preferencia guardada
+ * del dispositivo. Una dirección sin prefijo (el formato anterior) no pide ninguno.
  */
 export function localeFromPath(pathname: string, base: string): Locale | null {
-  return segmentsOf(pathname, base)[0] === PREFIX.en ? 'en' : null
+  const first = segmentsOf(pathname, base)[0]
+  return first === PREFIX.en ? 'en' : first === PREFIX.es ? 'es' : null
 }
 
 export function parsePath(pathname: string, search: string, base: string): UrlState {
   const segments = segmentsOf(pathname, base)
   const locale: Locale = segments[0] === PREFIX.en ? 'en' : 'es'
-  if (locale === 'en') segments.shift()
+  // Se quita el prefijo de quien lo lleve; sin prefijo es el español del formato anterior.
+  if (segments[0] === PREFIX.en || segments[0] === PREFIX.es) segments.shift()
 
   const words = SEGMENTS[locale]
   const params = new URLSearchParams(search)
@@ -122,11 +130,10 @@ export function buildPath(state: UrlState, base: string): string {
   const { locale } = state
   const words = SEGMENTS[locale]
   const root = base.endsWith('/') ? base : `${base}/`
-  // El prefijo del idioma va SIN barra final: cada ruta es un archivo `.html` plano, y así se
-  // sirve tal cual en vez de redirigir al índice de una carpeta. La portada española es la raíz,
-  // que sí la lleva por definición.
-  const prefix = PREFIX[locale] ? `${root}${PREFIX[locale]}` : root
-  const inner = PREFIX[locale] ? `${prefix}/` : prefix
+  // El prefijo del idioma va SIN barra final: cada ruta es un archivo `.html` plano (`es.html`,
+  // `en.html`), y así se sirve tal cual en vez de redirigir al índice de una carpeta.
+  const prefix = `${root}${PREFIX[locale]}`
+  const inner = `${prefix}/`
 
   // Una página de información es su propia ruta: al cerrarla se vuelve a la plaza o ficha que sigue
   // en el estado, y el enlace se puede compartir tal cual.
@@ -149,7 +156,7 @@ export function buildPath(state: UrlState, base: string): string {
 export function vistaDe(path: string): string {
   const sinConsulta = path.split('?')[0] ?? path
   const sinCategoria = sinConsulta.replace(/\/(?:categoria|category)\/[a-z0-9-]+$/, '')
-  // Sin barra final, salvo la raíz: `/en` y `/en/` son la misma vista.
+  // Sin barra final: `/es` y `/es/` son la misma vista (y `/` es la portada del formato anterior).
   return sinCategoria.replace(/\/+$/, '') || '/'
 }
 

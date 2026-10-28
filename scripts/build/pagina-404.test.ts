@@ -44,7 +44,7 @@ describe('la página 404', () => {
 
   it('respeta la base para publicar en un subdirectorio', () => {
     const enSubruta = html404('/visit-zibata/')
-    expect(enSubruta).toContain('href="/visit-zibata/"')
+    expect(enSubruta).toContain('href="/visit-zibata/es"')
     expect(enSubruta).toContain('src="/visit-zibata/logo.svg"')
   })
 

@@ -29,7 +29,7 @@ test.describe('Plazas y lugares', () => {
 
     await region.getByRole('link', { name: 'Ver detalles de Bendito Bocado' }).click()
     await expect(region.getByRole('heading', { level: 2, name: 'Bendito Bocado' })).toBeVisible()
-    await expect(page).toHaveURL(/\/lugar\/bendito-bocado$/)
+    await expect(page).toHaveURL(/\/es\/lugar\/bendito-bocado$/)
     // Enlace oficial verificado en la investigación (research/business-audit.json).
     await expect(region.getByRole('link', { name: /Facebook/ })).toHaveAttribute(
       'href',
@@ -134,7 +134,7 @@ test.describe('Plazas y lugares', () => {
     await page
       .getByRole('combobox', { name: 'Filtrar por zona' })
       .selectOption({ label: 'Plaza Zielo' })
-    await expect(page).toHaveURL(/\/zona\/plaza-zielo$/)
+    await expect(page).toHaveURL(/\/es\/zona\/plaza-zielo$/)
     await expect(panel(page).getByRole('heading', { level: 2, name: 'Plaza Zielo' })).toBeVisible()
     await page.goBack()
     await expect(page).not.toHaveURL(/plaza-zielo/)

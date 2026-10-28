@@ -96,7 +96,7 @@ describe.each(['es', 'en'] as const)('plantillas con registros de peor caso (%s)
       const ficha = fichaDe(lugar.slug)
       expect(ficha?.title.trim().length).toBeGreaterThan(0)
       expect(ficha?.description.trim().length).toBeGreaterThan(0)
-      expect(ficha?.href).toMatch(/^\/(en\/place|lugar)\/[a-z0-9-]+$/)
+      expect(ficha?.href).toMatch(/^\/(en\/place|es\/lugar)\/[a-z0-9-]+$/)
       const todo = `${ficha?.title} ${ficha?.description} ${ficha?.contenido}`
       expect(todo).not.toMatch(/\b(undefined|NaN)\b|\[object Object\]/)
       expect(ficha?.contenido).not.toMatch(/href=""/)

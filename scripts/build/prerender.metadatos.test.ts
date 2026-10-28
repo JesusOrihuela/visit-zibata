@@ -35,7 +35,7 @@ const de = (idioma: Idioma, href: string) => {
   return pagina
 }
 const ficha = (idioma: Idioma, slug: string) =>
-  de(idioma, idioma === 'es' ? `/lugar/${slug}` : `/en/place/${slug}`)
+  de(idioma, idioma === 'es' ? `/es/lugar/${slug}` : `/en/place/${slug}`)
 const textoDelDato = (place: Place, idioma: Idioma): string =>
   (idioma === 'en' ? place.description?.en : undefined) ?? place.description?.es ?? ''
 
@@ -68,7 +68,7 @@ describe.each(idiomas)('metadatos de las páginas (%s)', (idioma) => {
     for (const pagina of todas) {
       expect(pagina.title.length, pagina.href).toBeGreaterThan(0)
       // Unos 60; las categorías llevan además sus giros y admiten un poco más.
-      const tope = /^\/(?:en\/category|categoria)\//.test(pagina.href) ? 65 : 60
+      const tope = /^\/(?:en\/category|es\/categoria)\//.test(pagina.href) ? 65 : 60
       expect(pagina.title.length, `título de ${pagina.href}`).toBeLessThanOrEqual(tope)
       expect(pagina.description.length, pagina.href).toBeGreaterThan(0)
       expect(pagina.description.length, `descripción de ${pagina.href}`).toBeLessThanOrEqual(160)
@@ -236,7 +236,7 @@ describe('lo que se comprobó en las fichas concretas de la auditoría', () => {
 describe('la portada', () => {
   it('presenta la guía como un lugar para descubrir Zibatá, sin reducirla a restaurantes', () => {
     for (const idioma of idiomas) {
-      const portada = de(idioma, idioma === 'es' ? '/' : '/en')
+      const portada = de(idioma, idioma === 'es' ? '/es' : '/en')
       expect(portada.title).toContain('Visit Zibatá')
       expect(portada.title.length).toBeLessThanOrEqual(60)
       expect(portada.description.length).toBeLessThanOrEqual(160)
@@ -245,15 +245,15 @@ describe('la portada', () => {
         expect(texto).toContain('Zibatá')
       }
     }
-    expect(de('es', '/').title).toMatch(/guía local/i)
-    expect(de('es', '/').description).toMatch(/negocios y lugares/)
+    expect(de('es', '/es').title).toMatch(/guía local/i)
+    expect(de('es', '/es').description).toMatch(/negocios y lugares/)
     expect(de('en', '/en').description).toMatch(/businesses and places/)
   })
 })
 
 describe('las zonas y la información no cambian de plantilla', () => {
   it('conservan el título "{nombre} · Visit Zibatá" y su propia descripción', () => {
-    const condesa = de('es', '/zona/condesa')
+    const condesa = de('es', '/es/zona/condesa')
     expect(condesa.title).toBe('Plaza Condesa · Visit Zibatá')
     expect(condesa.description).toBe(
       'Zona comercial del desarrollo Riscos Condesa I, frente a la Universidad Anáhuac.',
@@ -263,12 +263,12 @@ describe('las zonas y la información no cambian de plantilla', () => {
 
 describe('los enlaces entre fichas del HTML servido', () => {
   const hrefs = (contenido: string | undefined) =>
-    [...(contenido ?? '').matchAll(/<a href="(\/lugar\/[a-z0-9-]+)"/g)].map((m) => m[1] ?? '')
+    [...(contenido ?? '').matchAll(/<a href="(\/es\/lugar\/[a-z0-9-]+)"/g)].map((m) => m[1] ?? '')
 
   it('casi ninguna ficha queda con un único enlace entrante: solo las que están solas en su zona', () => {
     const entrantes = new Map<string, number>()
     for (const pagina of paginas.es) {
-      if (pagina.href.startsWith('/zona/') || pagina.href.startsWith('/lugar/')) {
+      if (pagina.href.startsWith('/es/zona/') || pagina.href.startsWith('/es/lugar/')) {
         for (const destino of new Set(hrefs(pagina.contenido))) {
           entrantes.set(destino, (entrantes.get(destino) ?? 0) + 1)
         }
@@ -278,9 +278,9 @@ describe('los enlaces entre fichas del HTML servido', () => {
       .map((plaza) => data.places.filter((place) => place.plazaId === plaza.id))
       .filter((locales) => locales.length === 1)
       .flat()
-      .map((place) => `/lugar/${place.slug}`)
+      .map((place) => `/es/lugar/${place.slug}`)
     const conUno = data.places
-      .map((place) => `/lugar/${place.slug}`)
+      .map((place) => `/es/lugar/${place.slug}`)
       .filter((href) => (entrantes.get(href) ?? 0) <= 1)
     // Antes del reparto eran 37: los ocho primeros de cada zona grande recibían todos los enlaces.
     expect(conUno.sort()).toEqual(solas.sort())
@@ -288,7 +288,7 @@ describe('los enlaces entre fichas del HTML servido', () => {
 
   it('la ficha en español y la inglesa enlazan a los mismos locales', () => {
     for (const place of data.places) {
-      const es = hrefs(ficha('es', place.slug).contenido).map((h) => h.replace('/lugar/', ''))
+      const es = hrefs(ficha('es', place.slug).contenido).map((h) => h.replace('/es/lugar/', ''))
       const en = [
         ...(ficha('en', place.slug).contenido ?? '').matchAll(
           /<a href="\/en\/place\/([a-z0-9-]+)"/g,
@@ -301,7 +301,8 @@ describe('los enlaces entre fichas del HTML servido', () => {
 
 describe.each(idiomas)('las páginas de categoría (%s)', (idioma) => {
   const todas = paginas[idioma]
-  const ruta = (slug: string) => (idioma === 'es' ? `/categoria/${slug}` : `/en/category/${slug}`)
+  const ruta = (slug: string) =>
+    idioma === 'es' ? `/es/categoria/${slug}` : `/en/category/${slug}`
   const deCategoria = todas.filter((p) => p.href.startsWith(ruta('')))
   const categoriaDeGiro = new Map(
     data.categories.flatMap((c) => c.giros.map((g) => [g.id, c.id] as const)),
@@ -393,7 +394,7 @@ describe.each(idiomas)('las páginas de categoría (%s)', (idioma) => {
   })
 
   it('se llega a cada una desde la portada, desde las zonas donde hay y desde las fichas que son suyas', () => {
-    const portada = de(idioma, idioma === 'es' ? '/' : '/en')
+    const portada = de(idioma, idioma === 'es' ? '/es' : '/en')
     for (const categoria of conLocales) {
       const destino = ruta(categoria.slug[idioma])
       expect(portada.contenido, `portada -> ${destino}`).toContain(`href="${destino}"`)
@@ -412,7 +413,10 @@ describe.each(idiomas)('las páginas de categoría (%s)', (idioma) => {
       }
     }
     for (const plaza of data.plazas.filter((p) => p.active)) {
-      const pagina = de(idioma, idioma === 'es' ? `/zona/${plaza.slug}` : `/en/area/${plaza.slug}`)
+      const pagina = de(
+        idioma,
+        idioma === 'es' ? `/es/zona/${plaza.slug}` : `/en/area/${plaza.slug}`,
+      )
       for (const categoria of data.categories) {
         const hay = data.places.some((p) => p.plazaId === plaza.id && idsDe(p).has(categoria.id))
         expect(
@@ -442,7 +446,7 @@ describe('las páginas de categoría en los dos idiomas', () => {
     const posiciones = (idioma: Idioma) =>
       paginas[idioma]
         .map((p, i) => [p.href, i] as const)
-        .filter(([href]) => /^\/(en\/category|categoria)\//.test(href))
+        .filter(([href]) => /^\/(en\/category|es\/categoria)\//.test(href))
         .map(([, i]) => i)
     expect(posiciones('es')).toEqual(posiciones('en'))
     expect(posiciones('es').length).toBe(conLocales.length)

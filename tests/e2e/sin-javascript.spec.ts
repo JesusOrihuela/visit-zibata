@@ -26,7 +26,7 @@ test.describe('Sin JavaScript', () => {
     baseURL,
   }) => {
     const base = baseDe(baseURL)
-    await page.goto(new URL('lugar/tomassa', baseURL).href)
+    await page.goto(new URL('es/lugar/tomassa', baseURL).href)
 
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(/Tomassa/)
     await expect(page.getByRole('heading', { name: 'Horario' })).toBeVisible()
@@ -35,23 +35,23 @@ test.describe('Sin JavaScript', () => {
     // Los enlaces son lo que de verdad importa: sin ellos el sitio no tiene grafo que rastrear.
     await expect(page.getByRole('link', { name: 'Paseo Zibatá' })).toBeVisible()
     await expect(page.getByRole('link', { name: 'Instagram' })).toBeVisible()
-    const internos = page.locator(`a[href^="${base}lugar/"], a[href^="${base}zona/"]`)
+    const internos = page.locator(`a[href^="${base}es/lugar/"], a[href^="${base}es/zona/"]`)
     expect(await internos.count()).toBeGreaterThan(3)
   })
 
   test('una zona lista sus locales, y la portada sus zonas', async ({ page, baseURL }) => {
     const base = baseDe(baseURL)
-    await page.goto(new URL('zona/paseo-zibata', baseURL).href)
+    await page.goto(new URL('es/zona/paseo-zibata', baseURL).href)
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(/Paseo Zibatá/)
-    expect(await page.locator(`a[href^="${base}lugar/"]`).count()).toBeGreaterThan(3)
+    expect(await page.locator(`a[href^="${base}es/lugar/"]`).count()).toBeGreaterThan(3)
 
-    await page.goto(new URL('', baseURL).href)
-    expect(await page.locator(`a[href^="${base}zona/"]`).count()).toBeGreaterThan(5)
+    await page.goto(new URL('es', baseURL).href)
+    expect(await page.locator(`a[href^="${base}es/zona/"]`).count()).toBeGreaterThan(5)
   })
 
   test('la política de privacidad se puede leer', async ({ page, baseURL }) => {
     // Una política que solo existe si se ejecuta JavaScript no se puede citar ni archivar.
-    await page.goto(new URL('info/privacidad', baseURL).href)
+    await page.goto(new URL('es/info/privacidad', baseURL).href)
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(/Privacidad/)
     await expect(page.getByText(/no usa cuentas ni cookies de rastreo/)).toBeVisible()
   })

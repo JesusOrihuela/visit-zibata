@@ -89,7 +89,7 @@ export function html404(base: string): string {
       <h1>Esta página no existe</h1>
       <p>La dirección no corresponde a ningún lugar ni zona de la guía. Puede que esté mal escrita, o que ese lugar ya no esté publicado.</p>
       <p class="en" lang="en">This page doesn’t exist. The address doesn’t match any place or area in the guide: it may be mistyped, or that place may no longer be listed.</p>
-      <a href="${base}">Ir a la guía</a>
+      <a href="${base}es">Ir a la guía</a>
     </main>
   </body>
 </html>

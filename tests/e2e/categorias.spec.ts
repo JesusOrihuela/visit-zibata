@@ -18,7 +18,7 @@ test.describe('Páginas de categoría', () => {
     await openApp(page, { path: 'categoria/italiana' })
     const region = panel(page)
     await expect(region.getByRole('heading', { name: 'Resultados' })).toBeVisible()
-    await expect(page).toHaveURL(/\/categoria\/italiana$/)
+    await expect(page).toHaveURL(/\/es\/categoria\/italiana$/)
     await expect(cápsulas(page).getByRole('link', { name: /^Italiana/ })).toHaveAttribute(
       'aria-current',
       'true',
@@ -39,7 +39,7 @@ test.describe('Páginas de categoría', () => {
       ;(window as unknown as { __marca: string }).__marca = 'misma-carga'
     })
     await italiana.click()
-    await expect(page).toHaveURL(/\/categoria\/italiana$/)
+    await expect(page).toHaveURL(/\/es\/categoria\/italiana$/)
     // Sin recarga: la marca puesta en la página sigue ahí.
     expect(await page.evaluate(() => (window as unknown as { __marca?: string }).__marca)).toBe(
       'misma-carga',
@@ -47,9 +47,9 @@ test.describe('Páginas de categoría', () => {
     await expect(italiana).toHaveAttribute('aria-current', 'true')
 
     // Volver a pulsarla la quita, y la cápsula elegida apunta a la vista sin categoría.
-    await expect(italiana).toHaveAttribute('href', /\/$/)
+    await expect(italiana).toHaveAttribute('href', /\/es$/)
     await italiana.click()
-    await expect(page).toHaveURL(/\/$/)
+    await expect(page).toHaveURL(/\/es$/)
     await expect(cápsulas(page).getByRole('link', { name: /^Todo/ })).toHaveAttribute(
       'aria-current',
       'true',
@@ -64,9 +64,9 @@ test.describe('Páginas de categoría', () => {
     await cápsulas(page)
       .getByRole('link', { name: /^Italiana/ })
       .click()
-    await expect(page).toHaveURL(/\/categoria\/italiana$/)
+    await expect(page).toHaveURL(/\/es\/categoria\/italiana$/)
     await cápsulas(page).getByRole('link', { name: /^Bar / }).click()
-    await expect(page).toHaveURL(/\/categoria\/bar$/)
+    await expect(page).toHaveURL(/\/es\/categoria\/bar$/)
     expect(await page.evaluate(() => window.history.length)).toBe(antes)
   })
 
@@ -74,7 +74,7 @@ test.describe('Páginas de categoría', () => {
     page,
   }) => {
     await openApp(page, { path: '?categoria=italiana' })
-    await expect(page).toHaveURL(/\/categoria\/italiana$/)
+    await expect(page).toHaveURL(/\/es\/categoria\/italiana$/)
     await expect(cápsulas(page).getByRole('link', { name: /^Italiana/ })).toHaveAttribute(
       'aria-current',
       'true',
@@ -95,7 +95,7 @@ test.describe('Páginas de categoría', () => {
       /\/zona\/paseo-zibata\?categoria=desayunos-y-cafe$/,
     )
     await enlace.click()
-    await expect(page).toHaveURL(/\/zona\/paseo-zibata\?categoria=desayunos-y-cafe$/)
+    await expect(page).toHaveURL(/\/es\/zona\/paseo-zibata\?categoria=desayunos-y-cafe$/)
   })
 
   test('con Ctrl el enlace no se intercepta: apunta a una página que existe', async ({ page }) => {
@@ -116,7 +116,7 @@ test.describe('Páginas de categoría', () => {
       () => (window as unknown as { __clic: Promise<boolean> }).__clic,
     )
     expect(cancelado).toBe(false)
-    await expect(page).toHaveURL(/\/$/)
+    await expect(page).toHaveURL(/\/es$/)
     const respuesta = await page.request.get(new URL(href ?? '', page.url()).href)
     expect(respuesta.status()).toBe(200)
   })

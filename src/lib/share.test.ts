@@ -26,7 +26,7 @@ describe('placeUrl', () => {
   })
 
   it('es la ruta sin almohadilla, que es la que indexan los buscadores', () => {
-    expect(placeUrl('tomassa')).toMatch(/\/lugar\/tomassa$/)
+    expect(placeUrl('tomassa')).toMatch(/\/es\/lugar\/tomassa$/)
     expect(placeUrl('tomassa')).not.toContain('#')
   })
 
