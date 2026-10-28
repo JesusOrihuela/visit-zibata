@@ -112,6 +112,72 @@ async function fetchSentinel(): Promise<void> {
   )
 }
 
+/**
+ * Altura de cada celda de 4 m según Open Buildings 2.5D Temporal (Google Research, 2023), leída por
+ * rangos del nivel de 4 m de los mosaicos que cubren el área. Se guarda como una rejilla Float32
+ * (NaN donde no hay dato) más su geometría en metros UTM.
+ */
+async function fetchAlturas(): Promise<void> {
+  const { fuente, mosaicos, ladoM, anchoPx, resolucionM } = realismo.alturas
+  const [oeste, sur, este, norte] = config.area.bbox
+  const esquinas = (
+    [
+      [oeste, norte],
+      [este, norte],
+      [este, sur],
+      [oeste, sur],
+    ] as [number, number][]
+  ).map(([lng, lat]) => toUtm(lng, lat))
+  const xmin = Math.floor(Math.min(...esquinas.map((p) => p[0])))
+  const xmax = Math.ceil(Math.max(...esquinas.map((p) => p[0])))
+  const ymin = Math.floor(Math.min(...esquinas.map((p) => p[1])))
+  const ymax = Math.ceil(Math.max(...esquinas.map((p) => p[1])))
+  const width = Math.ceil((xmax - xmin) / resolucionM)
+  const height = Math.ceil((ymax - ymin) / resolucionM)
+  const rejilla = new Float32Array(width * height).fill(Number.NaN)
+  const paso = ladoM / anchoPx
+  for (const mosaico of mosaicos) {
+    const tiff = await fromUrl(fuente + mosaico.archivo)
+    let nivel: Awaited<ReturnType<typeof tiff.getImage>> | null = null
+    for (let k = 0; k < (await tiff.getImageCount()); k++) {
+      const candidata = await tiff.getImage(k)
+      if (candidata.getWidth() === anchoPx) {
+        nivel = candidata
+        break
+      }
+    }
+    if (!nivel) throw new Error(`${mosaico.archivo} no tiene el nivel de ${resolucionM} m`)
+    const px0 = Math.max(0, Math.floor((xmin - mosaico.x0) / paso))
+    const px1 = Math.min(anchoPx, Math.ceil((xmax - mosaico.x0) / paso))
+    const py0 = Math.max(0, Math.floor((mosaico.y1 - ymax) / paso))
+    const py1 = Math.min(anchoPx, Math.ceil((mosaico.y1 - ymin) / paso))
+    if (px1 <= px0 || py1 <= py0) continue
+    const banda = (
+      (await nivel.readRasters({
+        window: [px0, py0, px1, py1],
+        samples: [1],
+      })) as ArrayLike<number>[]
+    )[0]
+    if (!banda) throw new Error(`${mosaico.archivo}: sin banda de altura`)
+    for (let j = 0; j < py1 - py0; j++) {
+      for (let i = 0; i < px1 - px0; i++) {
+        const x = mosaico.x0 + (px0 + i) * paso
+        const y = mosaico.y1 - (py0 + j) * paso
+        const gx = Math.floor((x - xmin) / resolucionM)
+        const gy = Math.floor((ymax - y) / resolucionM)
+        if (gx >= 0 && gx < width && gy >= 0 && gy < height) {
+          rejilla[gy * width + gx] = banda[j * (px1 - px0) + i] ?? Number.NaN
+        }
+      }
+    }
+  }
+  mkdirSync(dirname(paths.rawAlturasOpenBuildings), { recursive: true })
+  writeFileSync(paths.rawAlturasOpenBuildings, Buffer.from(rejilla.buffer))
+  writeJson(paths.rawAlturasMeta, { xmin, xmax, ymin, ymax, resolucionM, width, height, fuente })
+  const validas = rejilla.filter((v) => Number.isFinite(v) && v > -90).length
+  console.log(`✓ Open Buildings 2.5D: ${validas} de ${width * height} celdas con altura`)
+}
+
 interface ViasOverpass {
   elements: unknown[]
   osm3s?: { timestamp_osm_base?: string }
@@ -162,8 +228,9 @@ out geom;`
   console.log(`✓ ${mejor.data.elements.length} tramos de calles principales (${mejor.endpoint})`)
 }
 
-// Sin argumentos baja todo; con uno (relieve, sentinel o vias) repite solo ese paso.
+// Sin argumentos baja todo; con uno (relieve, sentinel, alturas o vias) repite solo ese paso.
 const paso = process.argv[2]
 if (!paso || paso === 'relieve') await fetchRelieve()
 if (!paso || paso === 'sentinel') await fetchSentinel()
+if (!paso || paso === 'alturas') await fetchAlturas()
 if (!paso || paso === 'vias') await fetchVias()

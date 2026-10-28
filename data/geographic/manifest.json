@@ -208,6 +208,29 @@
         "attribution": "© OpenStreetMap contributors",
         "url": "https://www.openstreetmap.org/copyright",
         "method": "Overpass API (scripts/map/realismo/fetch-realismo.ts); archivo derivado bajo ODbL 1.0"
+      },
+      {
+        "id": "open-buildings-2-5d",
+        "name": "Open Buildings 2.5D Temporal (Google Research, 2023, 4 m): altura de los edificios",
+        "layers": [
+          "edificios"
+        ],
+        "license": "CC-BY-4.0 u ODbL-1.0, a elegir",
+        "attribution": "Google Research, Open Buildings 2.5D Temporal (con datos de Copernicus Sentinel-2)",
+        "url": "https://sites.research.google/gr/open-buildings/temporal/",
+        "method": "Mosaicos tile_S-lhXvyY7Ns.tif, tile_7FOeswr9uSI.tif (scripts/map/realismo/fetch-realismo.ts). Altura estimada: híbrida de datos y de superficie, en pisos de 3 m; sin validar con alturas medidas"
+      },
+      {
+        "id": "mallas-3d",
+        "name": "Mallas 3D de edificios y árboles dentro del contorno",
+        "layers": [
+          "edificios",
+          "arboles"
+        ],
+        "license": "ODbL-1.0",
+        "attribution": "© OpenStreetMap contributors, Overture Maps Foundation",
+        "url": "https://docs.overturemaps.org/attribution/",
+        "method": "Derivadas de las huellas de Overture y de OSM que entran a las teselas (scripts/map/realismo/build-mallas.ts); bases de datos derivadas bajo ODbL 1.0"
       }
     ],
     "outputs": {
@@ -222,6 +245,14 @@
       "public/map/realismo/vias.geojson": {
         "bytes": 946262,
         "sha256": "d350b7d5fa67c8db0b9293206e631b5f813ae27a977fcb5f12f01839062a5a9a"
+      },
+      "public/map/realismo/edificios.bin": {
+        "bytes": 3886944,
+        "sha256": "1c706d2dcda7833c737fcd1b1257196f1479e8bcabcffe3c3c7fe055ace0080f"
+      },
+      "public/map/realismo/arboles.bin": {
+        "bytes": 127140,
+        "sha256": "8955ca45a9375c71845f9ebfda3d080239446e01abceabaa800db2b0b45d2d30"
       }
     }
   }

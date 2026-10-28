@@ -28,6 +28,11 @@ export const paths = {
   rawSentinelRegion: `${ROOT}data/geographic/raw/sentinel-region.png`,
   rawSentinelMeta: `${ROOT}data/geographic/raw/sentinel.meta.json`,
   rawViasContexto: `${ROOT}data/geographic/raw/osm-vias-contexto.json`,
+  rawAlturasOpenBuildings: `${ROOT}data/geographic/raw/open-buildings-alturas.bin`,
+  rawAlturasMeta: `${ROOT}data/geographic/raw/open-buildings-alturas.meta.json`,
+  /** Huellas y árboles tal como entran a las teselas: de aquí salen las mallas 3D de realismo. */
+  rawEdificiosBase: `${ROOT}data/geographic/raw/edificios-base.geojson`,
+  rawArbolesBase: `${ROOT}data/geographic/raw/arboles-base.geojson`,
 }
 
 export interface GeoConfig {
@@ -61,6 +66,14 @@ export interface GeoConfig {
     /** Bloque de teselas z12 de relieve (Copernicus GLO-30 vía Mapterhorn), ambos extremos incluidos. */
     relieve: { fuente: string; zoom: number; x: [number, number]; y: [number, number] }
     contexto: { pixeles: number; anilloM: number; difuminadoOrilla: number }
+    /** Open Buildings 2.5D Temporal (Google Research): mosaicos UTM 14N de 12,5 km, con origen (x0, y1) en metros. */
+    alturas: {
+      fuente: string
+      mosaicos: { archivo: string; x0: number; y1: number }[]
+      ladoM: number
+      anchoPx: number
+      resolucionM: number
+    }
     vias: { clases: Record<string, string[]> }
   }
 }
