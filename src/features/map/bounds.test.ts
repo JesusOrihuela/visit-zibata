@@ -79,7 +79,7 @@ describe('constrainCenter', () => {
     })
 
     it('la esquina vacía del rectángulo se lleva al borde del contorno', () => {
-      const corner = { lng: BBOX[2] - 0.001, lat: BBOX[3] - 0.001 }
+      const corner = { lng: BBOX[2] - 0.003, lat: BBOX[3] - 0.002 }
       const result = constrainCenter(corner, 18, DESKTOP, BBOX, RING)
       // Sin el contorno se quedaría en la esquina vacía (el rectángulo la permite).
       expect(constrainCenter(corner, 18, DESKTOP, BBOX)).toEqual(corner)

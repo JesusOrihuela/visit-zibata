@@ -14,9 +14,9 @@
 
 import type { Polygon } from 'geojson'
 import { LngLat, type Map as MapLibreMap, Point } from 'maplibre-gl'
-import type { createCameraConstraint } from '../bounds.ts'
-import { prefersReducedMotion } from '../mapRuntime.ts'
+import type { createCameraConstraint } from './bounds.ts'
 import { cameraTransform } from './internals.ts'
+import { prefersReducedMotion } from './mapRuntime.ts'
 
 /** Radio que la vista puede alcanzar: la imagen de contexto, menos su orilla difuminada y el desvío del centro. */
 const VIEW_RADIUS_M = 17_500
@@ -109,74 +109,81 @@ export function installCameraLimits(
       .map((v) => Math.round(v ?? 0))
       .join('|')
     if (key === lastKey && !force) return
-    const t = cameraTransform(map)
-    if (!t) return
-    t.setMinZoom(0)
-    t.setMaxZoom(24)
-    t.setMinPitch(0)
-    t.setMaxPitch(85)
-    t.resize(container.clientWidth, container.clientHeight)
-    t.setPadding(pad)
-    t.setBearing(map.getBearing())
-    const pitch = map.getPitch()
-    const free = {
-      x0: (pad.left ?? 0) + FIT_MARGIN.x,
-      y0: (pad.top ?? 0) + FIT_MARGIN.y,
-      x1: container.clientWidth - (pad.right ?? 0) - FIT_MARGIN.x,
-      y1: container.clientHeight - (pad.bottom ?? 0) - FIT_MARGIN.y,
-    }
-    // Cuanto más lejos, menor la inclinación máxima: el encuadre se calcula con la que habrá en ese zoom.
-    const pitchAt = (center: [number, number], zoom: number): number =>
-      Math.min(pitch, maxPitchFor(map, zoom, center[1]))
-    const place = (center: [number, number], zoom: number): void => {
-      t.setCenter(new LngLat(center[0], center[1]))
-      t.setZoom(zoom)
-      t.setPitch(pitchAt(center, zoom))
-    }
-    const bounds = () => {
-      let x0 = 1e9
-      let y0 = 1e9
-      let x1 = -1e9
-      let y1 = -1e9
-      for (const p of ring) {
-        const q = t.locationToScreenPoint(p)
-        x0 = Math.min(x0, q.x)
-        x1 = Math.max(x1, q.x)
-        y0 = Math.min(y0, q.y)
-        y1 = Math.max(y1, q.y)
-      }
-      return { x0, y0, x1, y1 }
-    }
-    const fits = (center: [number, number], zoom: number): boolean => {
-      place(center, zoom)
-      const k = bounds()
-      return k.x0 >= free.x0 && k.x1 <= free.x1 && k.y0 >= free.y0 && k.y1 <= free.y1
-    }
-
+    // Las copias de la cámara pasan por la misma restricción: se aparta mientras se calcula (ver bounds.ts).
+    constraint.suspend(true)
     let center: [number, number] = [(box[0] + box[2]) / 2, (box[1] + box[3]) / 2]
     let zoom = 6
-    // El mayor zoom en que cabe; después se centra el contorno en el espacio libre y se repite (la inclinación lo descentra).
-    for (let round = 0; round < 3; round++) {
-      let lo = 6
-      let hi = 17
-      for (let i = 0; i < 12; i++) {
-        const z = (lo + hi) / 2
-        if (fits(center, z)) lo = z
-        else hi = z
+    try {
+      const t = cameraTransform(map)
+      if (!t) return
+      t.setMinZoom(0)
+      t.setMaxZoom(24)
+      t.setMinPitch(0)
+      t.setMaxPitch(85)
+      t.resize(container.clientWidth, container.clientHeight)
+      t.setPadding(pad)
+      t.setBearing(map.getBearing())
+      const pitch = map.getPitch()
+      const free = {
+        x0: (pad.left ?? 0) + FIT_MARGIN.x,
+        y0: (pad.top ?? 0) + FIT_MARGIN.y,
+        x1: container.clientWidth - (pad.right ?? 0) - FIT_MARGIN.x,
+        y1: container.clientHeight - (pad.bottom ?? 0) - FIT_MARGIN.y,
       }
-      zoom = lo
-      place(center, zoom)
-      const k = bounds()
-      const dx = (free.x0 + free.x1) / 2 - (k.x0 + k.x1) / 2
-      const dy = (free.y0 + free.y1) / 2 - (k.y0 + k.y1) / 2
-      if (Math.abs(dx) < 2 && Math.abs(dy) < 2) break
-      const p0 = t.locationToScreenPoint(new LngLat(center[0], center[1]))
-      const moved = t.screenPointToLocation(new Point(p0.x - dx, p0.y - dy))
-      center = [moved.lng, moved.lat]
+      // Cuanto más lejos, menor la inclinación máxima: el encuadre se calcula con la que habrá en ese zoom.
+      const pitchAt = (center: [number, number], zoom: number): number =>
+        Math.min(pitch, maxPitchFor(map, zoom, center[1]))
+      const place = (center: [number, number], zoom: number): void => {
+        t.setCenter(new LngLat(center[0], center[1]))
+        t.setZoom(zoom)
+        t.setPitch(pitchAt(center, zoom))
+      }
+      const bounds = () => {
+        let x0 = 1e9
+        let y0 = 1e9
+        let x1 = -1e9
+        let y1 = -1e9
+        for (const p of ring) {
+          const q = t.locationToScreenPoint(p)
+          x0 = Math.min(x0, q.x)
+          x1 = Math.max(x1, q.x)
+          y0 = Math.min(y0, q.y)
+          y1 = Math.max(y1, q.y)
+        }
+        return { x0, y0, x1, y1 }
+      }
+      const fits = (center: [number, number], zoom: number): boolean => {
+        place(center, zoom)
+        const k = bounds()
+        return k.x0 >= free.x0 && k.x1 <= free.x1 && k.y0 >= free.y0 && k.y1 <= free.y1
+      }
+
+      // El mayor zoom en que cabe; después se centra el contorno en el espacio libre y se repite (la inclinación lo descentra).
+      for (let round = 0; round < 3; round++) {
+        let lo = 6
+        let hi = 17
+        for (let i = 0; i < 12; i++) {
+          const z = (lo + hi) / 2
+          if (fits(center, z)) lo = z
+          else hi = z
+        }
+        zoom = lo
+        place(center, zoom)
+        const k = bounds()
+        const dx = (free.x0 + free.x1) / 2 - (k.x0 + k.x1) / 2
+        const dy = (free.y0 + free.y1) / 2 - (k.y0 + k.y1) / 2
+        if (Math.abs(dx) < 2 && Math.abs(dy) < 2) break
+        const p0 = t.locationToScreenPoint(new LngLat(center[0], center[1]))
+        const moved = t.screenPointToLocation(new Point(p0.x - dx, p0.y - dy))
+        center = [moved.lng, moved.lat]
+      }
+      // Si a ese zoom la vista rebasa lo que cubre el contexto (espacio libre muy pequeño), el límite se queda donde todavía cubre.
+      const radius = visibleRadius(map, pitchAt(center, zoom), zoom, center[1])
+      if (radius > VIEW_RADIUS_M && Number.isFinite(radius))
+        zoom += Math.log2(radius / VIEW_RADIUS_M)
+    } finally {
+      constraint.suspend(false)
     }
-    // Si a ese zoom la vista rebasa lo que cubre el contexto (espacio libre muy pequeño), el límite se queda donde todavía cubre.
-    const radius = visibleRadius(map, pitchAt(center, zoom), zoom, center[1])
-    if (radius > VIEW_RADIUS_M && Number.isFinite(radius)) zoom += Math.log2(radius / VIEW_RADIUS_M)
     constraint.setAnchor(center)
     lastKey = key
     // Visible en el contenedor: sirve para comprobar el límite desde fuera y para depurar en un equipo real.

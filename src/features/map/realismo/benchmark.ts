@@ -6,7 +6,7 @@
  * las etapas para probar la herramienta.
  */
 import type { Map as MapLibreMap } from 'maplibre-gl'
-import { glContext } from './internals.ts'
+import { glContext } from '../internals.ts'
 import { applyLevel, type Quality, type QualityLevel } from './quality.ts'
 
 interface View {

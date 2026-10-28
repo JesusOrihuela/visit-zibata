@@ -16,7 +16,10 @@ import type { Bbox } from '../../config/map.ts'
 const METERS_PER_PIXEL_Z0 = 40075016.686 / 512
 const METERS_PER_DEGREE_LAT = 110574
 const METERS_PER_DEGREE_LNG_EQUATOR = 111320
-/** Cuánto de media pantalla puede quedar fuera de Zibatá: 0 sería nada, 1 que el centro llegue al borde. */
+/**
+ * Cuánto de media pantalla puede quedar fuera de Zibatá cuando el centro está en el borde: 0 sería nada y 1
+ * que el centro llegue al mismo borde. Con 0,35, el centro se queda a 0,65 de media pantalla del borde.
+ */
 const SHARE_OUTSIDE = 0.35
 
 export interface View {
@@ -91,10 +94,11 @@ export function constrainCenter(
   const cos = Math.abs(Math.cos(angle))
   const sin = Math.abs(Math.sin(angle))
   // Rectángulo que abarca la pantalla, alineado con este y norte, aunque el mapa esté girado.
+  const stay = 1 - SHARE_OUTSIDE
   const insetLng =
-    (SHARE_OUTSIDE * (cos * halfWidth + sin * halfHeight)) /
+    (stay * (cos * halfWidth + sin * halfHeight)) /
     (METERS_PER_DEGREE_LNG_EQUATOR * Math.cos((lat * Math.PI) / 180))
-  const insetLat = (SHARE_OUTSIDE * (sin * halfWidth + cos * halfHeight)) / METERS_PER_DEGREE_LAT
+  const insetLat = (stay * (sin * halfWidth + cos * halfHeight)) / METERS_PER_DEGREE_LAT
   const axis = (value: number, low: number, high: number, fallback: number): number =>
     low > high ? fallback : Math.min(Math.max(value, low), high)
   const boxed = {
@@ -114,9 +118,10 @@ export function constrainCenter(
 export function createCameraConstraint(bbox: Bbox, ring?: readonly Position[]) {
   let map: MapLibreMap | null = null
   let anchor: [number, number] | undefined
+  let suspended = false
   return {
     constrain(center: LngLat, zoom: number): { center: LngLat; zoom: number } {
-      if (!map) return { center, zoom }
+      if (!map || suspended) return { center, zoom }
       // Con una restricción propia MapLibre deja de acotar el zoom por su cuenta: se hace aquí.
       const bounded = Math.min(Math.max(zoom, map.getMinZoom()), map.getMaxZoom())
       const container = map.getContainer()
@@ -134,6 +139,14 @@ export function createCameraConstraint(bbox: Bbox, ring?: readonly Position[]) {
     },
     setAnchor(next: [number, number]): void {
       anchor = next
+    },
+    /**
+     * Las copias de la cámara con las que se calcula el alejamiento máximo (cameraLimits.ts) pasan por la misma
+     * función: acotadas al mínimo de zoom y al centro de ahora darían un alejamiento máximo que depende de dónde esté
+     * la cámara. Mientras se calcula, la restricción se aparta.
+     */
+    suspend(value: boolean): void {
+      suspended = value
     },
   }
 }

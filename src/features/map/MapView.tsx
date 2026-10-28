@@ -20,6 +20,7 @@ import type { Plaza } from '../../types/domain.ts'
 import { createCameraConstraint } from './bounds.ts'
 import { ComingSoonMarkers } from './ComingSoonMarkers.tsx'
 import { focusPlaza, initialCamera, resetCamera, updatePadding } from './camera.ts'
+import { installCameraLimits } from './cameraLimits.ts'
 import { MapControls } from './MapControls.tsx'
 import { MapErrorMessage } from './MapErrorMessage.tsx'
 import styles from './MapView.module.css'
@@ -160,6 +161,9 @@ export default function MapView({
     // El mapa no se aleja de Zibatá: la restricción ya está en la cámara (ver bounds.ts), así que ni a
     // mitad de un gesto se puede dejar a Zibatá fuera de la pantalla.
     constraint.attach(instance)
+    // Alejamiento máximo e inclinación máxima: valen con y sin realismo, porque lo que cuidan (que Zibatá siga en
+    // pantalla y que no se vea el horizonte vacío) no depende de lo que se dibuje.
+    const stopLimits = installCameraLimits(instance, ZIBATA_EXTENT.boundary, constraint)
 
     // Si el mapa 3D se usa: el primer gesto de la persona (arrastrar, girar, inclinar o acercar),
     // una vez por carga. Los movimientos de la propia guía no traen `originalEvent`.
@@ -209,8 +213,6 @@ export default function MapView({
         void import('./realismo/install.ts')
           .then(({ installRealism }) =>
             installRealism(instance, absoluteAssetUrl(MAP_ASSETS.realismo), {
-              boundary: ZIBATA_EXTENT.boundary,
-              constraint,
               benchmark: latest.current.medir,
             }),
           )
@@ -236,6 +238,7 @@ export default function MapView({
     latest.current.onMapInstance?.(instance)
     return () => {
       window.clearTimeout(timeout)
+      stopLimits()
       latest.current.onMapInstance?.(null)
       setMap(null)
       instance.remove()
