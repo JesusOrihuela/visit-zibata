@@ -223,9 +223,10 @@ function ReadyExperience({ catalog }: { catalog: Catalog }) {
   const sheetPeekHeight = collapsedHeightFor(sheetPeek, viewportHeight, sheetTopReserved)
   const [map, setMap] = useState<MapLibreMap | null>(null)
   const [debugRequested] = useState(() => new URLSearchParams(window.location.search).has('debug'))
-  // Se lee al montar: la sincronización de la URL descarta los parámetros que no conoce.
+  // El realismo va encendido; `?realismo=no` lo apaga. Se lee al montar: la sincronización de la URL
+  // descarta los parámetros que no conoce.
   const [realismo] = useState(
-    () => new URLSearchParams(window.location.search).get('realismo') === 'si',
+    () => new URLSearchParams(window.location.search).get('realismo') !== 'no',
   )
   const [medir] = useState<'si' | 'corto' | undefined>(() => {
     const value = new URLSearchParams(window.location.search).get('medir')

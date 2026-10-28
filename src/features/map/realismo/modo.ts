@@ -1,8 +1,8 @@
 /**
- * Opciones del realismo para el estilo. Quien lo pide (hoy solo `?realismo=si`, que lee Experience al
- * montar porque la sincronización de la URL descarta los parámetros que no conoce) decide si va; aquí
- * solo se resuelve qué se descarga. Se enciende para todos en la última fase, cuando el respaldo por
- * falla y la calidad adaptable ya están probados.
+ * Opciones del realismo para el estilo. El realismo va encendido para todos y `?realismo=no` lo apaga;
+ * lo lee Experience al montar (la sincronización de la URL descarta los parámetros que no conoce) y
+ * aquí solo se resuelve qué se descarga. Si algo falla, el respaldo por falla devuelve el mapa de siempre
+ * y la calidad adaptable baja el costo en equipos lentos (ver install.ts y quality.ts).
  */
 import type { RealismoStyleOptions } from '../style/layers/realismo.ts'
 

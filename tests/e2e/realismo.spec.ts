@@ -2,15 +2,23 @@ import { expect, test } from '@playwright/test'
 import { openApp, waitForMap } from './helpers.ts'
 
 test.describe('Realismo del mapa @mapa', () => {
-  test('sin el parámetro no se pide ninguna capa de realismo', async ({ page }) => {
+  test('con ?realismo=no no se pide ninguna capa de realismo', async ({ page }) => {
     const pedidas: string[] = []
     page.on('request', (request) => {
       if (request.url().includes('/map/realismo/')) pedidas.push(request.url())
     })
-    await openApp(page)
+    await openApp(page, { path: '?realismo=no' })
     await waitForMap(page)
     await page.waitForTimeout(1500)
     expect(pedidas).toEqual([])
+  })
+
+  test('sin parámetro el realismo va encendido y llega a completo', async ({ page }) => {
+    await openApp(page)
+    await waitForMap(page)
+    await expect(page.locator('[data-realismo]')).toHaveAttribute('data-realismo', 'completo', {
+      timeout: 60_000,
+    })
   })
 
   test('con ?realismo=si carga suelo, contexto, calles y relieve del mismo origen, con sus créditos', async ({
@@ -151,8 +159,8 @@ test.describe('Realismo del mapa @mapa', () => {
     await expect(page.locator('button[data-mode]').first()).toBeVisible()
   })
 
-  test('sin el parámetro no se monta ninguna capa propia', async ({ page }) => {
-    await openApp(page)
+  test('con ?realismo=no no se monta ninguna capa propia', async ({ page }) => {
+    await openApp(page, { path: '?realismo=no' })
     await waitForMap(page)
     await page.waitForTimeout(1500)
     await expect(page.locator('[data-realismo]')).toHaveCount(0)
