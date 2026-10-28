@@ -30,10 +30,7 @@ jobs:
   deploy:
     name: Validar, testear, compilar y publicar
     runs-on: ubuntu-latest
-    # 50 y no 40: con el realismo encendido por defecto cada prueba que abre el mapa dibuja las capas
-    # propias en software, y el humo de escritorio pasó de unos 17 minutos en el runner (medido en el
-    # despliegue de #60) a algo más; localmente son 7. Con 40 quedaba sin margen para publicar.
-    timeout-minutes: 50
+    timeout-minutes: 40
     environment:
       name: cloudflare
       url: ${{ steps.publicar.outputs.url }}
@@ -85,7 +82,7 @@ jobs:
       #
       # Pero algo tiene que correr: al fusionar con squash, el commit que llega a main es un commit
       # nuevo que nunca existió en el pull request. Esto comprueba ese artefacto exacto, el que se
-      # va a publicar, en un recorrido de unos siete minutos en una máquina local y unos 17 en el runner (medido en #60, antes de encender el realismo).
+      # va a publicar, en un recorrido de unos siete minutos.
       - name: Humo contra el build que se publica
         run: npx playwright test --project=desktop
       - name: Informe de Playwright
