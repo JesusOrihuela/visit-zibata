@@ -28,7 +28,7 @@ import { GuideBar } from '../features/about/GuideBar.tsx'
 import { LocaleSwitch } from '../features/about/LocaleSwitch.tsx'
 import { FilterBar } from '../features/filters/FilterBar.tsx'
 import { MapErrorBoundary } from '../features/map/MapErrorBoundary.tsx'
-import { realismoPedido } from '../features/map/realismo/modo.ts'
+import { realismoActivo } from '../features/map/realismo/modo.ts'
 import type { MapStatus } from '../features/map/types.ts'
 import { hasSeenOnboarding } from '../features/onboarding/seen.ts'
 import { ExplorePanel } from '../features/plazas/ExplorePanel.tsx'
@@ -224,14 +224,13 @@ function ReadyExperience({ catalog }: { catalog: Catalog }) {
   const sheetPeekHeight = collapsedHeightFor(sheetPeek, viewportHeight, sheetTopReserved)
   const [map, setMap] = useState<MapLibreMap | null>(null)
   const [debugRequested] = useState(() => new URLSearchParams(window.location.search).has('debug'))
-  // El realismo va encendido, salvo con renderizado por software (sin GPU no hay 3D que valga el
-  // costo); `?realismo=no` lo apaga y `?realismo=si` lo fuerza. Se lee al montar: la sincronización de
-  // la URL descarta los parámetros que no conoce.
-  const [realismo] = useState(() => realismoPedido(window.location.search))
+  // Se leen al montar: la sincronización de la URL descarta los parámetros que no conoce.
   const [medir] = useState<'si' | 'corto' | undefined>(() => {
     const value = new URLSearchParams(window.location.search).get('medir')
     return value === null ? undefined : value === 'corto' ? 'corto' : 'si'
   })
+  // El mapa es el realista; solo se apaga donde no puede dibujarlo (ver realismo/modo.ts). Medir lo exige.
+  const [realismo] = useState(() => medir !== undefined || realismoActivo())
   const searchInputRef = useRef<HTMLInputElement>(null)
   const returnFocus = useReturnFocus(searchInputRef)
   useUrlSync(catalog)

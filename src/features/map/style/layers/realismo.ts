@@ -18,8 +18,6 @@ import { SOURCE } from '../ids.ts'
 export interface RealismoStyleOptions {
   /** URL absoluta de la carpeta con los datos (termina en "/"). */
   baseUrl: string
-  /** Sin contexto (Save-Data): no se descargan la imagen de la región ni las calles. */
-  conContexto: boolean
 }
 
 const ATTRIBUTION = {
@@ -87,14 +85,12 @@ export function realismoSources(
       attribution: `${ATTRIBUTION.relieve} · ${ATTRIBUTION.sentinel} · ${ATTRIBUTION.alturas}`,
     },
   }
-  if (options.conContexto) {
-    sources[SOURCE.context] = {
-      type: 'image',
-      url: `${baseUrl}contexto.webp`,
-      coordinates: descriptor.contexto.coordenadas as Esquinas,
-    }
-    sources[SOURCE.contextRoads] = { type: 'geojson', data: `${baseUrl}vias.geojson` }
+  sources[SOURCE.context] = {
+    type: 'image',
+    url: `${baseUrl}contexto.webp`,
+    coordinates: descriptor.contexto.coordenadas as Esquinas,
   }
+  sources[SOURCE.contextRoads] = { type: 'geojson', data: `${baseUrl}vias.geojson` }
   return sources
 }
 
@@ -186,45 +182,44 @@ const ROAD_CLASSES: [string, number, number][] = [
  * Lo que sustituye al velo exterior: la imagen de contexto (satélite apagado, laderas y tinte ya
  * horneados, transparente dentro del contorno), las calles principales de la región y la línea del contorno.
  */
-export function realismoOutsideLayers(options: RealismoStyleOptions): LayerSpecification[] {
-  const layers: LayerSpecification[] = []
-  if (options.conContexto) {
-    layers.push({
+export function realismoOutsideLayers(): LayerSpecification[] {
+  const layers: LayerSpecification[] = [
+    {
       id: 'realismo-contexto',
       type: 'raster',
       source: SOURCE.context,
       paint: { 'raster-fade-duration': 0 },
-    })
-    for (const [clase, a, b] of ROAD_CLASSES) {
-      const filter: ExpressionSpecification = ['==', ['get', 'clase'], clase]
-      const layout = { 'line-cap': 'round', 'line-join': 'round' } as const
-      layers.push(
-        {
-          id: `realismo-vias-borde-${clase}`,
-          type: 'line',
-          source: SOURCE.contextRoads,
-          filter,
-          layout,
-          paint: {
-            'line-color': realismoTheme.roadCasing,
-            'line-opacity': 0.3,
-            'line-width': roadWidth(a + 0.8, b + 1.2),
-          },
+    },
+  ]
+  for (const [clase, a, b] of ROAD_CLASSES) {
+    const filter: ExpressionSpecification = ['==', ['get', 'clase'], clase]
+    const layout = { 'line-cap': 'round', 'line-join': 'round' } as const
+    layers.push(
+      {
+        id: `realismo-vias-borde-${clase}`,
+        type: 'line',
+        source: SOURCE.contextRoads,
+        filter,
+        layout,
+        paint: {
+          'line-color': realismoTheme.roadCasing,
+          'line-opacity': 0.3,
+          'line-width': roadWidth(a + 0.8, b + 1.2),
         },
-        {
-          id: `realismo-vias-${clase}`,
-          type: 'line',
-          source: SOURCE.contextRoads,
-          filter,
-          layout,
-          paint: {
-            'line-color': realismoTheme.road,
-            'line-opacity': 0.5,
-            'line-width': roadWidth(a, b),
-          },
+      },
+      {
+        id: `realismo-vias-${clase}`,
+        type: 'line',
+        source: SOURCE.contextRoads,
+        filter,
+        layout,
+        paint: {
+          'line-color': realismoTheme.road,
+          'line-opacity': 0.5,
+          'line-width': roadWidth(a, b),
         },
-      )
-    }
+      },
+    )
   }
   layers.push({
     id: 'zibata-edge',

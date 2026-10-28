@@ -138,7 +138,7 @@ export function buildMapStyle(options: MapStyleOptions): StyleSpecification {
       ...(realismo ? withRealismoGround(groundLayers()) : groundLayers()),
       ...plazaGroundLayers(tones),
       ...roadLayers(),
-      ...(realismo ? realismoOutsideLayers(realismo) : outsideVeilLayers()),
+      ...(realismo ? realismoOutsideLayers() : outsideVeilLayers()),
       ...treeLayers(),
       ...buildingLayers(),
       ...plazaBuildingLayers(tones),

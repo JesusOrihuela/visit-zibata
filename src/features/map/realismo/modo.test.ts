@@ -1,16 +1,27 @@
 // @vitest-environment jsdom
-import { describe, expect, it } from 'vitest'
-import { realismoPedido } from './modo.ts'
+import { afterEach, describe, expect, it } from 'vitest'
+import { realismoActivo } from './modo.ts'
 
-describe('realismoPedido', () => {
-  it('?realismo=no lo apaga y ?realismo=si lo fuerza', () => {
-    expect(realismoPedido('?realismo=no')).toBe(false)
-    expect(realismoPedido('?realismo=si')).toBe(true)
+const conexion = (valor: unknown) =>
+  Object.defineProperty(navigator, 'connection', { value: valor, configurable: true })
+
+afterEach(() => {
+  Reflect.deleteProperty(navigator, 'connection')
+})
+
+describe('realismoActivo', () => {
+  it('va encendido cuando no se detecta renderizado por software ni ahorro de datos', () => {
+    // jsdom no tiene WebGL: no se puede saber, y se supone que el equipo aguanta.
+    expect(realismoActivo()).toBe(true)
   })
 
-  it('sin parámetro va encendido cuando no se detecta renderizado por software', () => {
-    // jsdom no tiene WebGL: no se puede saber, y se supone que el equipo aguanta.
-    expect(realismoPedido('')).toBe(true)
-    expect(realismoPedido('?otro=1')).toBe(true)
+  it('con Save-Data queda apagado', () => {
+    conexion({ saveData: true })
+    expect(realismoActivo()).toBe(false)
+  })
+
+  it('con Save-Data apagado sigue encendido', () => {
+    conexion({ saveData: false })
+    expect(realismoActivo()).toBe(true)
   })
 })

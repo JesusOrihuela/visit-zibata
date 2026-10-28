@@ -11,7 +11,7 @@ const base = {
   areaBbox: ZIBATA_EXTENT.areaBbox,
   center: ZIBATA_EXTENT.center,
 }
-const realismo = { baseUrl: 'http://localhost/map/realismo/', conContexto: true }
+const realismo = { baseUrl: 'http://localhost/map/realismo/' }
 
 const ids = (style: ReturnType<typeof buildMapStyle>) => style.layers.map((layer) => layer.id)
 
@@ -43,14 +43,6 @@ describe('estilo del mapa', () => {
     expect(layerIds).not.toContain('outside-veil')
     expect(pos('road-street')).toBeLessThan(pos('realismo-contexto'))
     expect(pos('realismo-contexto')).toBeLessThan(pos('buildings'))
-  })
-
-  it('con ahorro de datos no se descarga el contexto ni las calles de la región', () => {
-    const style = buildMapStyle({ ...base, realismo: { ...realismo, conContexto: false } })
-    expect(ids(style)).not.toContain('realismo-contexto')
-    expect(Object.keys(style.sources)).not.toContain('realismo-contexto')
-    expect(Object.keys(style.sources)).not.toContain('realismo-vias')
-    expect(ids(style)).toContain('zibata-edge')
   })
 
   it('acredita el relieve y Sentinel-2 en la atribución de la fuente de relieve', () => {
