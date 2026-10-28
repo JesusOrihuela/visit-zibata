@@ -39,7 +39,7 @@
 }
 
 .row[data-today="true"] {
-  font-weight: 600;
+  font-weight: var(--weight-strong);
 }
 
 .today {

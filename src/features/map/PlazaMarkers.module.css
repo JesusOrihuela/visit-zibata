@@ -85,7 +85,7 @@
   background: var(--sand-25);
   color: var(--plaza-accent, var(--olive-700));
   font-size: var(--text-xs);
-  font-weight: 700;
+  font-weight: var(--weight-heavy);
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
@@ -115,7 +115,7 @@
   background: var(--plaza-accent, var(--olive-600));
   color: var(--sand-25);
   font-size: var(--text-xs);
-  font-weight: 700;
+  font-weight: var(--weight-heavy);
   letter-spacing: -0.005em;
   white-space: nowrap;
   clip-path: polygon(0 0, calc(100% - 11px) 0, 100% 50%, calc(100% - 11px) 100%, 0 100%);

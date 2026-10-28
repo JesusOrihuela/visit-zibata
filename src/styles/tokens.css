@@ -105,8 +105,9 @@
 
   /*
    * Una sola familia, Special Gothic, en un archivo variable (src/styles/fonts.css). Los títulos y el
-   * resto del texto son la misma letra: lo que cambia es el ancho. Los títulos la pintan al 75 %
-   * (`--title-stretch`) y a 700, el máximo de su eje de peso; el cuerpo, al 100 %, con 400 y 600.
+   * resto del texto son la misma letra: lo que cambia es el ancho. Los títulos la pintan al 80 %
+   * (`--title-stretch`) y a 700, el máximo de su eje de peso; el cuerpo, al 100 %, con 400 y la negrita
+   * de la interfaz (`--weight-strong`).
    *
    * Special Gothic mide un 96 % de la altura de x del Archivo que sustituye, así que el cuerpo se ve
    * algo más pequeño a los mismos 14 px (docs/TIPOGRAFIA.md lo mide). Los títulos suben de tamaño
@@ -116,7 +117,16 @@
     "Special Gothic", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-display:
     "Special Gothic", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --title-stretch: 75%;
+  --title-stretch: 80%;
+  /*
+   * Las negritas de la interfaz, sin llegar a 700 (que es de los títulos). El eje de peso es continuo, así que
+   * no hace falta ceñirse a 500, 600 o 700: se elige el que se lee como énfasis sin pesar.
+   *   strong  píldoras de filtro, botones, subtítulos, cifras y datos
+   *   heavy   lo que va dentro de un fondo de color y necesita aguantarlo: el nombre y la cuenta de la etiqueta
+   *           de una plaza en el mapa, la gota de plaza, los días marcados (el sello de zona y la firma son Kode Mono y conservan su peso)
+   */
+  --weight-strong: 520;
+  --weight-heavy: 600;
   /* Solo para la firma de autoría: monoespaciada, como la marca de aurariola. */
   --font-mono: "Kode Mono", ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
 

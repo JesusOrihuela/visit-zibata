@@ -52,7 +52,7 @@ test.describe('Subtítulos', () => {
 
     const [primero] = estilos
     for (const estilo of estilos) expect(estilo).toEqual(primero)
-    expect(primero).toMatchObject({ size: '17px', weight: '600', transform: 'none' })
+    expect(primero).toMatchObject({ size: '17px', weight: '520', transform: 'none' })
   })
 })
 
@@ -97,7 +97,7 @@ test.describe('Rótulos de formulario', () => {
     const cuerpo = await medir(dialogo.locator('p').first())
     for (const nombre of ['¿Quién escribe?', 'Tu mensaje']) {
       const rotulo = await medir(dialogo.getByText(nombre, { exact: true }))
-      expect(rotulo, nombre).toMatchObject({ size: 17, weight: '600' })
+      expect(rotulo, nombre).toMatchObject({ size: 17, weight: '520' })
       expect(rotulo.size, nombre).toBeGreaterThan(cuerpo.size)
     }
   })
@@ -124,7 +124,7 @@ test.describe('Títulos', () => {
       expect(estilo.family).toContain('Special Gothic')
       expect(estilo.cargada, 'la fuente de los títulos debe estar cargada').toBe(true)
       expect(estilo.weight).toBe('700')
-      expect(estilo.stretch).toBe('75%')
+      expect(estilo.stretch).toBe('80%')
       expect(estilo.tracking).toBe(0)
       expect([34, 28, 24]).toContain(estilo.size)
       return estilo
@@ -154,7 +154,7 @@ test.describe('Títulos', () => {
     for (const estilo of [ficha, info, perfil]) expect(estilo.lineHeight).toBeCloseTo(1.05, 2)
   })
 
-  test('el eje de ancho se aplica de verdad: el mismo texto mide menos al 75 % que al 100 %', async ({
+  test('el eje de ancho se aplica de verdad: el mismo texto mide menos al 80 % que al 100 %', async ({
     page,
   }) => {
     await openApp(page, { path: 'zona/xentric-zibata' })
@@ -170,7 +170,7 @@ test.describe('Títulos', () => {
         span.remove()
         return width
       }
-      return { condensado: medir('75%'), normal: medir('100%') }
+      return { condensado: medir('80%'), normal: medir('100%') }
     })
     // El eje de ancho de Special Gothic recorta el texto mucho más de un 5 %.
     expect(anchos.condensado / anchos.normal).toBeLessThan(0.95)

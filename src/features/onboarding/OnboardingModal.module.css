@@ -97,7 +97,7 @@
 
 .progress {
   font-size: var(--text-xs);
-  font-weight: 600;
+  font-weight: var(--weight-strong);
   color: var(--olive-600);
 }
 

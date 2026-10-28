@@ -128,7 +128,7 @@ test.describe('catálogo de interactuables', () => {
         const c = getComputedStyle(el)
         const letra = Math.round(Number.parseFloat(c.fontSize))
         const esCampo = clases.includes('_campo_')
-        const bien = esCampo ? letra === 16 : letra === 13 && c.fontWeight === '600'
+        const bien = esCampo ? letra === 16 : letra === 13 && c.fontWeight === '520'
         if (!bien) fuera.push({ pieza: clases, letra, peso: c.fontWeight })
       }
       return fuera
