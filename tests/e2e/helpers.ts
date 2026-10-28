@@ -148,3 +148,22 @@ export async function plazaMarker(page: Page, name: string): Promise<Locator> {
   }
   throw new Error(`La plaza "${name}" no llega a tener marcador propio`)
 }
+
+/**
+ * El mapa es el realista, pero se apaga con renderizado por software, y Playwright dibuja con SwiftShader
+ * (sin GPU). Para probar el realismo, la página cree que hay una GPU de verdad: el nombre del renderizador
+ * es lo único que se cambia, el dibujo sigue siendo en software.
+ */
+export async function conGpu(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    for (const proto of [WebGLRenderingContext.prototype, WebGL2RenderingContext.prototype]) {
+      const original = proto.getParameter
+      proto.getParameter = function (this: WebGLRenderingContext, parametro: number) {
+        // 0x9246 es UNMASKED_RENDERER_WEBGL
+        return parametro === 0x9246
+          ? 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 Direct3D11)'
+          : original.call(this, parametro)
+      }
+    }
+  })
+}
