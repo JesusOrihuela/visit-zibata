@@ -441,6 +441,16 @@
       "anilloM": 100,
       "difuminadoOrilla": 0.14
     },
+    "alturas": {
+      "fuente": "https://storage.googleapis.com/open-buildings-temporal-data/v1/geotiffs/85d34_2023_06_30/",
+      "mosaicos": [
+        { "archivo": "tile_S-lhXvyY7Ns.tif", "x0": 353704, "y1": 2299340 },
+        { "archivo": "tile_7FOeswr9uSI.tif", "x0": 353704, "y1": 2286840 }
+      ],
+      "ladoM": 12500,
+      "anchoPx": 3125,
+      "resolucionM": 4
+    },
     "vias": {
       "clases": {
         "autopista": ["motorway", "motorway_link"],

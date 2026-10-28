@@ -76,9 +76,12 @@ const BUDGET = {
   // (93,7 KB). Son datos nuevos de verdad, no descuido; se deja ~150 KB para la siguiente versión.
   tiles: 2600,
   largestTile: 140,
-  // Lo que baja quien ve el realismo (suelo, contexto, calles de la región y una tesela de relieve), comprimido.
-  // Hoy ronda 315 KB; los edificios y árboles 3D de la siguiente fase se suman aquí, no al conjunto de teselas.
-  realismoDatos: 340,
+  // Lo que baja quien ve el realismo, comprimido: suelo, contexto, calles de la region, las mallas de
+  // edificios y arboles y una tesela de relieve. Hoy ronda 935 KB medidos con gzip (con Brotli en el CDN
+  // son unos 100 KB menos); los edificios son casi dos tercios. Sube solo si cambian los datos.
+  realismoDatos: 1000,
+  // El código de las capas propias (edificios, árboles, respaldo): un chunk aparte que solo baja quien ve el realismo.
+  realismoJs: 12,
 }
 
 const gz = (file: string) => gzipSync(readFileSync(file)).byteLength / KB
@@ -91,6 +94,8 @@ const referenced = (ext: string) =>
 const sum = (names: string[]) =>
   names.reduce((total, name) => total + gz(`${DIST}assets/${name}`), 0)
 const matching = (pattern: RegExp) => assets.filter((name) => pattern.test(name))
+/** El chunk que carga `MapView` con `import('./realismo/install.ts')`. */
+const REALISMO_CHUNK = /^install-.*\.js$/
 
 /** Recorre `dist/map/tiles` y mide cada tesela comprimida, que es como la recibe el navegador. */
 function medirTeselas(dir: string): { total: number; mayor: number } {
@@ -118,8 +123,8 @@ function medirRealismo(dir: string): number {
   const relieve = readdirSync(`${dir}/relieve/12`, { recursive: true })
     .filter((nombre): nombre is string => typeof nombre === 'string' && nombre.endsWith('.webp'))
     .map((nombre) => gz(`${dir}/relieve/12/${nombre}`))
-  const fijos = ['suelo.webp', 'contexto.webp', 'vias.geojson'].map((nombre) =>
-    gz(`${dir}/${nombre}`),
+  const fijos = ['suelo.webp', 'contexto.webp', 'vias.geojson', 'edificios.bin', 'arboles.bin'].map(
+    (nombre) => gz(`${dir}/${nombre}`),
   )
   return fijos.reduce((total, peso) => total + peso, 0) + Math.max(0, ...relieve)
 }
@@ -132,6 +137,7 @@ const measured = {
   dataJs: sum(matching(/^(categories|plazas|places)-.*\.js$/)),
   tiles: teselas.total,
   largestTile: teselas.mayor,
+  realismoJs: sum(matching(REALISMO_CHUNK)),
   realismoDatos: medirRealismo(`${DIST}map/realismo`),
 }
 
@@ -146,6 +152,11 @@ for (const [key, limit] of Object.entries(BUDGET) as [keyof typeof BUDGET, numbe
 }
 if (referenced('.js').length === 0) {
   console.error('✗ No se encontró el JS inicial en dist/index.html')
+  failed = true
+}
+// Si el chunk se renombrara, la suma daría 0 y el límite pasaría sin medir nada.
+if (matching(REALISMO_CHUNK).length === 0) {
+  console.error('✗ No se encontró el chunk de las capas de realismo (install-*.js) en dist/assets')
   failed = true
 }
 process.exit(failed ? 1 : 0)

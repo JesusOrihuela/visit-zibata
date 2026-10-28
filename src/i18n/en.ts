@@ -293,7 +293,7 @@ export const en = {
 
   'about.credits': 'Data and credits',
   'about.creditsBody':
-    'Our own map built from OpenStreetMap, Overture Maps and ESA WorldCover data, drawn with MapLibre. Ground and terrain use Copernicus DEM GLO-30 (© DLR e.V. and Airbus, provided by the European Union and ESA, via Mapterhorn) and "Contains modified Copernicus Sentinel data 2026". Icons from Lucide and Simple Icons, flags from circle-flags and delivery logos from Wikimedia Commons.',
+    'Our own map built from OpenStreetMap, Overture Maps and ESA WorldCover data, drawn with MapLibre. Ground and terrain use Copernicus DEM GLO-30 (© DLR e.V. and Airbus, provided by the European Union and ESA, via Mapterhorn) and "Contains modified Copernicus Sentinel data 2026". Building heights are estimated with Open Buildings 2.5D (Google Research), not measured. Icons from Lucide and Simple Icons, flags from circle-flags and delivery logos from Wikimedia Commons.',
   'about.version': 'Version {version}',
   'about.close': 'Close',
 

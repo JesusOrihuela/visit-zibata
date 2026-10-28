@@ -24,6 +24,7 @@ export interface RealismoStyleOptions {
 
 const ATTRIBUTION = {
   sentinel: `Contains modified Copernicus Sentinel data ${descriptor.creditos.anio}`,
+  alturas: `Alturas estimadas con <a href="https://sites.research.google/gr/open-buildings/temporal/" target="_blank" rel="noopener">Open Buildings 2.5D</a> (Google Research)`,
   relieve:
     'Copernicus DEM GLO-30 © DLR e.V. y Airbus Defence and Space, provisto por la Unión Europea y la ESA, vía ' +
     '<a href="https://mapterhorn.com/attribution" target="_blank" rel="noopener">Mapterhorn</a>',
@@ -83,7 +84,7 @@ export function realismoSources(
       maxzoom: descriptor.relieve.zoom,
       bounds: bounds(descriptor.contexto.coordenadas as Esquinas),
       encoding: 'terrarium',
-      attribution: `${ATTRIBUTION.relieve} · ${ATTRIBUTION.sentinel}`,
+      attribution: `${ATTRIBUTION.relieve} · ${ATTRIBUTION.sentinel} · ${ATTRIBUTION.alturas}`,
     },
   }
   if (options.conContexto) {

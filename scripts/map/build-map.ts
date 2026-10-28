@@ -477,6 +477,10 @@ const fieldsOf = (features: Feature[]) => {
   return fields
 }
 
+// Las mallas 3D de realismo (scripts/map/realismo/build-mallas.ts) parten de las mismas huellas y árboles que las teselas.
+writeJson(paths.rawEdificiosBase, turf.featureCollection(baseBuildings), false)
+writeJson(paths.rawArbolesBase, turf.featureCollection(trees), false)
+
 const boundaryCenter = turf.centroid(boundary).geometry.coordinates as [number, number]
 const attribution = '© OpenStreetMap contributors · Overture Maps Foundation'
 const archive = writePmtiles(tiles, {

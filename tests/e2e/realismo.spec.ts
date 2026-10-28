@@ -59,5 +59,50 @@ test.describe('Realismo del mapa @mapa', () => {
     expect(atribucion).toContain('OpenStreetMap')
     expect(atribucion).toContain('Copernicus DEM GLO-30')
     expect(atribucion).toContain('Contains modified Copernicus Sentinel data')
+    expect(atribucion).toContain('Open Buildings')
+  })
+
+  test('con ?realismo=si las capas propias de edificios y árboles llegan a "completo"', async ({
+    page,
+  }) => {
+    await openApp(page, { path: '?realismo=si' })
+    await waitForMap(page)
+    // El estado se calcula de lo que está visible: si el sombreador no compilara o la capa fallara al
+    // dibujar, quedaría en "degradado" o "respaldo". Las sombras en vivo dependen de un campo interno
+    // de MapLibre que no cambia el estado si falta, y por eso tienen su propio atributo: si una subida
+    // de MapLibre lo quita, esta prueba falla aquí.
+    const mapa = page.locator('[data-realismo]')
+    await expect(mapa).toHaveAttribute('data-realismo', 'completo', { timeout: 60_000 })
+    await expect(mapa).toHaveAttribute('data-realismo-sombras', 'si')
+  })
+
+  test('si falla la descarga de los edificios el mapa sigue y queda degradado', async ({
+    page,
+  }) => {
+    await page.route('**/map/realismo/edificios.bin', (route) => route.abort())
+    await openApp(page, { path: '?realismo=si' })
+    await waitForMap(page)
+    await expect(page.locator('[data-realismo]')).toHaveAttribute('data-realismo', 'degradado', {
+      timeout: 60_000,
+    })
+    // Sigue habiendo mapa: los marcadores de plazas están y no se bloquea nada.
+    await expect(page.locator('button[data-mode]').first()).toBeVisible()
+  })
+
+  test('si fallan las dos mallas el mapa vuelve al de siempre', async ({ page }) => {
+    await page.route('**/map/realismo/{edificios,arboles}.bin', (route) => route.abort())
+    await openApp(page, { path: '?realismo=si' })
+    await waitForMap(page)
+    await expect(page.locator('[data-realismo]')).toHaveAttribute('data-realismo', 'respaldo', {
+      timeout: 60_000,
+    })
+    await expect(page.locator('button[data-mode]').first()).toBeVisible()
+  })
+
+  test('sin el parámetro no se monta ninguna capa propia', async ({ page }) => {
+    await openApp(page)
+    await waitForMap(page)
+    await page.waitForTimeout(1500)
+    await expect(page.locator('[data-realismo]')).toHaveCount(0)
   })
 })
