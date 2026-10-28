@@ -107,7 +107,7 @@
   background: transparent;
   color: var(--ink-900);
   font-size: var(--text-sm);
-  font-weight: 600;
+  font-weight: var(--weight-strong);
   text-overflow: ellipsis;
   appearance: none;
   cursor: pointer;

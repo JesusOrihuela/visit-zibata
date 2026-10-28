@@ -19,7 +19,7 @@
 }
 
 .value {
-  font-weight: 600;
+  font-weight: var(--weight-strong);
   font-variant-numeric: tabular-nums;
 }
 

@@ -5,7 +5,6 @@
 
 import gothic400 from '@fontsource/special-gothic/files/special-gothic-latin-400-normal.woff2?url'
 import gothic500 from '@fontsource/special-gothic/files/special-gothic-latin-500-normal.woff2?url'
-import gothic600 from '@fontsource/special-gothic/files/special-gothic-latin-600-normal.woff2?url'
 import type { Feature, FeatureCollection, Polygon } from 'geojson'
 import type { StyleSpecification } from 'maplibre-gl'
 import type { Bbox } from '../../../config/map.ts'
@@ -90,7 +89,6 @@ export function buildMapStyle(options: MapStyleOptions): StyleSpecification {
     name: 'Zibatá: maqueta',
     'font-faces': {
       [FONT.sans]: absolute(gothic500),
-      [FONT.sansStrong]: absolute(gothic600),
       [FONT.serif]: absolute(gothic400),
     },
     sources: {

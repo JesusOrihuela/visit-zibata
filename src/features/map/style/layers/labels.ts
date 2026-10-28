@@ -10,7 +10,6 @@ import { mapTheme as t } from '../theme.ts'
  */
 export const FONT = {
   sans: 'Special Gothic Medium',
-  sansStrong: 'Special Gothic SemiBold',
   serif: 'Special Gothic Regular',
 } as const
 
@@ -56,7 +55,7 @@ export function labelLayers(): LayerSpecification[] {
       filter: ['==', ['get', 'class'], 'district'],
       layout: {
         'text-field': ['upcase', ['get', 'name']],
-        'text-font': [FONT.sansStrong],
+        'text-font': [FONT.sans],
         'text-size': 10,
         'text-letter-spacing': 0.14,
         'text-max-width': 8,

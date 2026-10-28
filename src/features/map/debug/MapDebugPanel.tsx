@@ -105,7 +105,7 @@ export default function MapDebugPanel({ map }: { map: MapLibreMap }) {
           ['get', 'plazaId'],
           ['case', ['get', 'active'], '', ' (inactiva)'],
         ],
-        'text-font': ['Special Gothic SemiBold'],
+        'text-font': ['Special Gothic Medium'],
         'text-size': 11,
         'text-allow-overlap': true,
       },
