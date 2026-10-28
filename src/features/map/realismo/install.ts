@@ -46,8 +46,14 @@ export function installRealism(
   const broken = new Set<Part>()
   const resetStencil = stencilReset(map)
 
-  const isVisible = (id: string): boolean =>
-    map.getLayer(id) !== undefined && map.getLayoutProperty(id, 'visibility') !== 'none'
+  // Con el contexto perdido MapLibre destruye el estilo y consultarlo lanza: ahí nada se ve.
+  const isVisible = (id: string): boolean => {
+    try {
+      return map.getLayer(id) !== undefined && map.getLayoutProperty(id, 'visibility') !== 'none'
+    } catch {
+      return false
+    }
+  }
 
   const statusOf = (part: Part): Status => {
     const native = PARTS[part].native
@@ -140,15 +146,23 @@ export function installRealism(
   // Alejamiento, inclinación y recentrado que cuidan que no se vea el borde de la imagen de contexto.
   const stopCamera = installCameraLimits(map, options.boundary)
 
-  // Si el contexto WebGL se pierde (sobre todo en móviles al cambiar de app), las capas propias dejan de
-  // servir: se vuelve a las extrusiones nativas, que MapLibre repinta cuando recupera el contexto.
-  map.getCanvas().addEventListener('webglcontextlost', () => {
+  // Si el contexto WebGL se pierde (sobre todo en móviles al cambiar de app), MapLibre destruye el estilo y,
+  // al recuperarlo, lo vuelve a montar SIN las capas propias (no sabe restaurarlas) y con las nativas como
+  // las dejamos: ocultas. Por eso al recuperar el contexto se les devuelve la vista. Mientras tanto el
+  // estado queda en "cargando": con el estilo destruido no hay nada que afirmar.
+  const canvas = map.getCanvas()
+  canvas.addEventListener('webglcontextlost', () => {
     stopGovernor()
     for (const part of Object.keys(PARTS) as Part[]) {
       broken.add(part)
       ready.delete(part)
-      restore(part, `realismo-${part}`)
     }
+    publish()
+  })
+  canvas.addEventListener('webglcontextrestored', () => {
+    map.once('idle', () => {
+      for (const part of Object.keys(PARTS) as Part[]) restore(part, `realismo-${part}`)
+    })
   })
   map.once('remove', () => {
     stopGovernor()

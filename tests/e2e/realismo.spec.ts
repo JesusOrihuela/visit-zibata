@@ -133,6 +133,24 @@ test.describe('Realismo del mapa @mapa', () => {
     await expect(page.locator('[data-realismo]')).toHaveAttribute('data-realismo-nivel', '3')
   })
 
+  test('si se pierde el contexto WebGL el mapa vuelve al de siempre', async ({ page }) => {
+    await openApp(page, { path: '?realismo=si' })
+    await waitForMap(page)
+    const mapa = page.locator('[data-realismo]')
+    await expect(mapa).toHaveAttribute('data-realismo', 'completo', { timeout: 60_000 })
+    // Pedir el mismo tipo de contexto devuelve el que ya usa el mapa. Al perderlo MapLibre destruye el
+    // estilo, y al recuperarlo lo monta sin las capas propias y con las nativas ocultas.
+    await page.evaluate(async () => {
+      const canvas = document.querySelector<HTMLCanvasElement>('canvas.maplibregl-canvas')
+      const lose = canvas?.getContext('webgl2')?.getExtension('WEBGL_lose_context')
+      lose?.loseContext()
+      await new Promise((resolve) => setTimeout(resolve, 500))
+      lose?.restoreContext()
+    })
+    await expect(mapa).toHaveAttribute('data-realismo', 'respaldo', { timeout: 60_000 })
+    await expect(page.locator('button[data-mode]').first()).toBeVisible()
+  })
+
   test('sin el parámetro no se monta ninguna capa propia', async ({ page }) => {
     await openApp(page)
     await waitForMap(page)
