@@ -1,29 +1,46 @@
-import { expect, test } from '@playwright/test'
+import { expect, type Page, test } from '@playwright/test'
 import { openApp, waitForMap } from './helpers.ts'
 
-test.describe('Realismo del mapa @mapa', () => {
-  test('con ?realismo=no no se pide ninguna capa de realismo', async ({ page }) => {
-    const pedidas: string[] = []
-    page.on('request', (request) => {
-      if (request.url().includes('/map/realismo/')) pedidas.push(request.url())
-    })
-    await openApp(page, { path: '?realismo=no' })
-    await waitForMap(page)
-    await page.waitForTimeout(1500)
-    expect(pedidas).toEqual([])
+/**
+ * El mapa es el realista, pero se apaga con renderizado por software, y Playwright dibuja con SwiftShader
+ * (sin GPU). Para probar el realismo, la página cree que hay una GPU de verdad: el nombre del renderizador
+ * es lo único que se cambia, el dibujo sigue siendo en software.
+ */
+async function conGpu(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    for (const proto of [WebGLRenderingContext.prototype, WebGL2RenderingContext.prototype]) {
+      const original = proto.getParameter
+      proto.getParameter = function (this: WebGLRenderingContext, parametro: number) {
+        // 0x9246 es UNMASKED_RENDERER_WEBGL
+        return parametro === 0x9246
+          ? 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 Direct3D11)'
+          : original.call(this, parametro)
+      }
+    }
   })
+}
 
-  test('sin parámetro y con renderizado por software el realismo va apagado', async ({
+async function abrirConRealismo(page: Page, path = ''): Promise<void> {
+  await conGpu(page)
+  await openApp(page, { path })
+}
+
+function peticionesDeRealismo(page: Page): string[] {
+  const pedidas: string[] = []
+  page.on('request', (request) => {
+    if (request.url().includes('/map/realismo/')) pedidas.push(request.url())
+  })
+  return pedidas
+}
+
+test.describe('Realismo del mapa @mapa', () => {
+  test('con renderizado por software queda apagado: ni se pide ni se monta nada', async ({
     page,
   }, testInfo) => {
     // WebKit se presenta como "Apple GPU" aunque dibuje en software: no se puede detectar ahí.
     test.skip(testInfo.project.name === 'webkit-iphone', 'WebKit no revela el renderizador')
-    // Playwright dibuja con SwiftShader (sin GPU): ahí el 3D propio deja el mapa inservible, y por eso el
-    // realismo se apaga solo. Con GPU real, sin parámetro va encendido.
-    const pedidas: string[] = []
-    page.on('request', (request) => {
-      if (request.url().includes('/map/realismo/')) pedidas.push(request.url())
-    })
+    // Playwright dibuja con SwiftShader: ahí el 3D propio deja el mapa inservible, y por eso se apaga solo.
+    const pedidas = peticionesDeRealismo(page)
     await openApp(page)
     await waitForMap(page)
     await page.waitForTimeout(1500)
@@ -31,7 +48,23 @@ test.describe('Realismo del mapa @mapa', () => {
     await expect(page.locator('[data-realismo]')).toHaveCount(0)
   })
 
-  test('con ?realismo=si carga suelo, contexto, calles y relieve del mismo origen, con sus créditos', async ({
+  test('con Save-Data queda apagado aunque haya GPU', async ({ page }) => {
+    await conGpu(page)
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'connection', {
+        value: { saveData: true },
+        configurable: true,
+      })
+    })
+    const pedidas = peticionesDeRealismo(page)
+    await openApp(page)
+    await waitForMap(page)
+    await page.waitForTimeout(1500)
+    expect(pedidas).toEqual([])
+    await expect(page.locator('[data-realismo]')).toHaveCount(0)
+  })
+
+  test('con GPU carga suelo, contexto, calles y relieve del mismo origen, con sus créditos', async ({
     page,
     baseURL,
   }) => {
@@ -61,7 +94,7 @@ test.describe('Realismo del mapa @mapa', () => {
       if (response.status() >= 400) fallidas.push(`${response.status()} ${url}`)
     })
 
-    await openApp(page, { path: '?realismo=si' })
+    await abrirConRealismo(page)
     await waitForMap(page)
     // Tiempo para que el mapa pida las imágenes y las teselas de relieve de la vista.
     await page.waitForTimeout(3000)
@@ -80,10 +113,8 @@ test.describe('Realismo del mapa @mapa', () => {
     expect(atribucion).toContain('Open Buildings')
   })
 
-  test('con ?realismo=si las capas propias de edificios y árboles llegan a "completo"', async ({
-    page,
-  }) => {
-    await openApp(page, { path: '?realismo=si' })
+  test('con GPU las capas propias de edificios y árboles llegan a "completo"', async ({ page }) => {
+    await abrirConRealismo(page)
     await waitForMap(page)
     // El estado se calcula de lo que está visible: si el sombreador no compilara o la capa fallara al
     // dibujar, quedaría en "degradado" o "respaldo". Las sombras en vivo dependen de un campo interno
@@ -98,7 +129,7 @@ test.describe('Realismo del mapa @mapa', () => {
     page,
   }) => {
     await page.route('**/map/realismo/edificios.bin', (route) => route.abort())
-    await openApp(page, { path: '?realismo=si' })
+    await abrirConRealismo(page)
     await waitForMap(page)
     await expect(page.locator('[data-realismo]')).toHaveAttribute('data-realismo', 'degradado', {
       timeout: 60_000,
@@ -109,7 +140,7 @@ test.describe('Realismo del mapa @mapa', () => {
 
   test('si fallan las dos mallas el mapa vuelve al de siempre', async ({ page }) => {
     await page.route('**/map/realismo/{edificios,arboles}.bin', (route) => route.abort())
-    await openApp(page, { path: '?realismo=si' })
+    await abrirConRealismo(page)
     await waitForMap(page)
     await expect(page.locator('[data-realismo]')).toHaveAttribute('data-realismo', 'respaldo', {
       timeout: 60_000,
@@ -118,7 +149,7 @@ test.describe('Realismo del mapa @mapa', () => {
   })
 
   test('la cámara fija el alejamiento máximo y arranca en calidad 3', async ({ page }) => {
-    await openApp(page, { path: '?realismo=si' })
+    await abrirConRealismo(page)
     await waitForMap(page)
     const mapa = page.locator('[data-realismo]')
     await expect(mapa).toHaveAttribute('data-realismo', 'completo', { timeout: 60_000 })
@@ -138,7 +169,8 @@ test.describe('Realismo del mapa @mapa', () => {
   }, testInfo) => {
     test.skip(testInfo.project.name !== 'desktop', 'es una herramienta; basta probarla una vez')
     test.setTimeout(300_000)
-    await openApp(page, { path: '?realismo=si&medir=corto' })
+    // Medir exige el realismo aunque el renderizado sea por software: es justo lo que se quiere medir.
+    await openApp(page, { path: '?medir=corto' })
     const resultado = page.getByLabel('Resultado de la medición')
     await expect(resultado).toBeVisible({ timeout: 240_000 })
     const filas = (await resultado.inputValue())
@@ -153,7 +185,7 @@ test.describe('Realismo del mapa @mapa', () => {
   })
 
   test('si se pierde el contexto WebGL el mapa vuelve al de siempre', async ({ page }) => {
-    await openApp(page, { path: '?realismo=si' })
+    await abrirConRealismo(page)
     await waitForMap(page)
     const mapa = page.locator('[data-realismo]')
     await expect(mapa).toHaveAttribute('data-realismo', 'completo', { timeout: 60_000 })
@@ -168,12 +200,5 @@ test.describe('Realismo del mapa @mapa', () => {
     })
     await expect(mapa).toHaveAttribute('data-realismo', 'respaldo', { timeout: 60_000 })
     await expect(page.locator('button[data-mode]').first()).toBeVisible()
-  })
-
-  test('con ?realismo=no no se monta ninguna capa propia', async ({ page }) => {
-    await openApp(page, { path: '?realismo=no' })
-    await waitForMap(page)
-    await page.waitForTimeout(1500)
-    await expect(page.locator('[data-realismo]')).toHaveCount(0)
   })
 })
