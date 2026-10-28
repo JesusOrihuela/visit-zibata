@@ -49,6 +49,16 @@
           }
         }
       }
+    },
+    {
+      "includes": ["src/features/map/realismo/**"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "useHookAtTopLevel": "off"
+          }
+        }
+      }
     }
   ],
   "javascript": {

@@ -209,6 +209,15 @@ export default function MapView({
       loaded = true
       window.clearTimeout(timeout)
       if (!baseFailed) update({ state: 'ready' })
+      if (latest.current.realismo) {
+        // Edificios y árboles propios: un chunk aparte que el mapa de siempre no descarga. Si no
+        // carga, no se ha ocultado nada nativo y el mapa sigue como estaba.
+        void import('./realismo/install.ts')
+          .then(({ installRealism }) =>
+            installRealism(instance, absoluteAssetUrl(MAP_ASSETS.realismo)),
+          )
+          .catch((error) => console.error('[realismo]', error))
+      }
     })
     instance.on('error', (event) => {
       console.error('[mapa]', event.error)
