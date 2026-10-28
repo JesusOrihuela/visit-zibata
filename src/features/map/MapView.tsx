@@ -160,10 +160,15 @@ export default function MapView({
 
     // El mapa no se aleja de Zibatá: la restricción ya está en la cámara (ver bounds.ts), así que ni a
     // mitad de un gesto se puede dejar a Zibatá fuera de la pantalla.
-    constraint.attach(instance)
+    constraint.attach(instance, () => latest.current.padding)
     // Alejamiento máximo e inclinación máxima: valen con y sin realismo, porque lo que cuidan (que Zibatá siga en
     // pantalla y que no se vea el horizonte vacío) no depende de lo que se dibuje.
-    const stopLimits = installCameraLimits(instance, ZIBATA_EXTENT.boundary, constraint)
+    const stopLimits = installCameraLimits(
+      instance,
+      ZIBATA_EXTENT.boundary,
+      constraint,
+      () => latest.current.padding,
+    )
 
     // Si el mapa 3D se usa: el primer gesto de la persona (arrastrar, girar, inclinar o acercar),
     // una vez por carga. Los movimientos de la propia guía no traen `originalEvent`.

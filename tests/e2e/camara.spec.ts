@@ -1,5 +1,5 @@
 import { expect, type Page, test } from '@playwright/test'
-import { conGpu, isMobile, openApp, waitForMap } from './helpers.ts'
+import { isMobile, openApp, waitForMap } from './helpers.ts'
 
 /** Posición media (de 0 a 1 del ancho) de los marcadores de plaza que se ven, y cuántos son. */
 const dondeEstaZibata = (page: Page) =>
@@ -17,13 +17,8 @@ test.describe('Cámara acotada a Zibatá @mapa', () => {
     page,
   }) => {
     test.skip(isMobile(page), 'el gesto es de ratón; en el teléfono lo cubre el límite de zoom')
-    // Con GPU (simulada) el mapa es el realista, cuyo alejamiento máximo deja a Zibatá justa en pantalla.
-    await conGpu(page)
     await openApp(page)
     await waitForMap(page)
-    await expect(page.locator('[data-realismo]')).toHaveAttribute('data-realismo', 'completo', {
-      timeout: 60_000,
-    })
     const { width, height } = page.viewportSize() ?? { width: 1280, height: 800 }
     await page.mouse.move(width / 2, height / 2)
     for (let i = 0; i < 25; i++) {

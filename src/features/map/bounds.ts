@@ -10,7 +10,7 @@
  */
 
 import type { Position } from 'geojson'
-import { LngLat, type Map as MapLibreMap } from 'maplibre-gl'
+import { LngLat, type Map as MapLibreMap, type PaddingOptions } from 'maplibre-gl'
 import type { Bbox } from '../../config/map.ts'
 
 const METERS_PER_PIXEL_Z0 = 40075016.686 / 512
@@ -111,12 +111,13 @@ export function constrainCenter(
 
 /**
  * La restricción lista para pasarle a MapLibre al crear el mapa. Necesita el mapa para saber el tamaño de la
- * pantalla y el rumbo, y el mapa necesita la restricción para crearse: `attach` cierra ese círculo. `setAnchor`
+ * pantalla y el rumbo, y el mapa necesita la restricción para crearse: `attach` cierra ese círculo y recibe el padding que pide la interfaz. `setAnchor`
  * fija a dónde va el centro cuando el alejamiento máximo no deja margen (el que calcula realismo/camera.ts, que
  * ya cuenta la inclinación).
  */
 export function createCameraConstraint(bbox: Bbox, ring?: readonly Position[]) {
   let map: MapLibreMap | null = null
+  let targetPadding: () => PaddingOptions = () => ({ top: 0, bottom: 0, left: 0, right: 0 })
   let anchor: [number, number] | undefined
   let suspended = false
   return {
@@ -125,7 +126,9 @@ export function createCameraConstraint(bbox: Bbox, ring?: readonly Position[]) {
       // Con una restricción propia MapLibre deja de acotar el zoom por su cuenta: se hace aquí.
       const bounded = Math.min(Math.max(zoom, map.getMinZoom()), map.getMaxZoom())
       const container = map.getContainer()
-      const padding = map.getPadding()
+      // El padding que pide la interfaz, no el que el mapa tiene a mitad de una animación: con el de la
+      // animación (casi sin márgenes) la pantalla parecía enorme y el centro se iba al ancla.
+      const padding = targetPadding()
       const view: View = {
         width: container.clientWidth - (padding.left ?? 0) - (padding.right ?? 0),
         height: container.clientHeight - (padding.top ?? 0) - (padding.bottom ?? 0),
@@ -134,8 +137,9 @@ export function createCameraConstraint(bbox: Bbox, ring?: readonly Position[]) {
       const next = constrainCenter(center, bounded, view, bbox, ring, anchor)
       return { center: new LngLat(next.lng, next.lat), zoom: bounded }
     },
-    attach(instance: MapLibreMap): void {
+    attach(instance: MapLibreMap, padding: () => PaddingOptions): void {
       map = instance
+      targetPadding = padding
     },
     setAnchor(next: [number, number]): void {
       anchor = next

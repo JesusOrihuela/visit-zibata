@@ -8,12 +8,16 @@
  *  - inclinación máxima según el zoom: cuanto más lejos se mira, más terreno ve el borde superior, y el
  *    contexto es finito;
  *
+ * El encuadre se calcula con el padding que pide la interfaz (`targetPadding`), no con el que tiene el mapa en
+ * ese instante: la vista general (`resetCamera`) y las animaciones de la hoja lo dejan un momento en un margen
+ * mínimo, y un límite calculado entonces acercaba la cámara a un zoom que ya no corresponde.
+ *
  * Que el centro no se aleje de Zibatá lo restringe la propia cámara (../bounds.ts); aquí solo se le da el
  * ancla: a dónde va el centro en el alejamiento máximo, que ya cuenta la inclinación.
  */
 
 import type { Polygon } from 'geojson'
-import { LngLat, type Map as MapLibreMap, Point } from 'maplibre-gl'
+import { LngLat, type Map as MapLibreMap, type PaddingOptions, Point } from 'maplibre-gl'
 import type { createCameraConstraint } from './bounds.ts'
 import { cameraTransform } from './internals.ts'
 import { prefersReducedMotion } from './mapRuntime.ts'
@@ -27,11 +31,16 @@ const MIN_MAX_PITCH = 30
 const FIT_MARGIN = { x: 12, y: 16 } as const
 
 /** Distancia (m) del centro de la vista al punto más lejano de las esquinas de arriba; Infinity si ve el horizonte. */
-function visibleRadius(map: MapLibreMap, pitchDeg: number, zoom: number, latitude: number): number {
+function visibleRadius(
+  map: MapLibreMap,
+  pad: PaddingOptions,
+  pitchDeg: number,
+  zoom: number,
+  latitude: number,
+): number {
   const container = map.getContainer()
   const width = container.clientWidth
   const height = container.clientHeight
-  const pad = map.getPadding()
   const f = height / 2 / Math.tan(FOV / 2)
   const lat = (latitude * Math.PI) / 180
   const metersPerPixel = (EARTH_CIRCUMFERENCE * Math.cos(lat)) / (512 * 2 ** zoom)
@@ -58,17 +67,18 @@ function visibleRadius(map: MapLibreMap, pitchDeg: number, zoom: number, latitud
 /** La mayor inclinación (grados enteros) con la que el borde de arriba todavía cae dentro del contexto. */
 function maxPitchFor(
   map: MapLibreMap,
+  pad: PaddingOptions,
   zoom = map.getZoom(),
   latitude = map.getCenter().lat,
 ): number {
   for (let deg = 72; deg > 0; deg--) {
-    if (visibleRadius(map, deg, zoom, latitude) <= VIEW_RADIUS_M) return deg
+    if (visibleRadius(map, pad, deg, zoom, latitude) <= VIEW_RADIUS_M) return deg
   }
   return MIN_MAX_PITCH
 }
 
-function limitPitch(map: MapLibreMap): void {
-  const max = maxPitchFor(map)
+function limitPitch(map: MapLibreMap, pad: PaddingOptions): void {
+  const max = maxPitchFor(map, pad)
   if (Math.abs(map.getMaxPitch() - max) >= 0.5) map.setMaxPitch(max)
 }
 
@@ -77,6 +87,7 @@ export function installCameraLimits(
   map: MapLibreMap,
   boundary: Polygon,
   constraint: ReturnType<typeof createCameraConstraint>,
+  targetPadding: () => PaddingOptions,
 ): () => void {
   const ring = (boundary.coordinates[0] ?? []).map(([lng = 0, lat = 0]) => new LngLat(lng, lat))
   const box = ring.reduce(
@@ -95,7 +106,7 @@ export function installCameraLimits(
     // Con el mapa en movimiento (p. ej. la animación de padding de la guía) no se toca la cámara.
     if (map.isMoving()) return
     const container = map.getContainer()
-    const pad = map.getPadding()
+    const pad = targetPadding()
     const key = [
       container.clientWidth,
       container.clientHeight,
@@ -132,7 +143,7 @@ export function installCameraLimits(
       }
       // Cuanto más lejos, menor la inclinación máxima: el encuadre se calcula con la que habrá en ese zoom.
       const pitchAt = (center: [number, number], zoom: number): number =>
-        Math.min(pitch, maxPitchFor(map, zoom, center[1]))
+        Math.min(pitch, maxPitchFor(map, pad, zoom, center[1]))
       const place = (center: [number, number], zoom: number): void => {
         t.setCenter(new LngLat(center[0], center[1]))
         t.setZoom(zoom)
@@ -178,7 +189,7 @@ export function installCameraLimits(
         center = [moved.lng, moved.lat]
       }
       // Si a ese zoom la vista rebasa lo que cubre el contexto (espacio libre muy pequeño), el límite se queda donde todavía cubre.
-      const radius = visibleRadius(map, pitchAt(center, zoom), zoom, center[1])
+      const radius = visibleRadius(map, pad, pitchAt(center, zoom), zoom, center[1])
       if (radius > VIEW_RADIUS_M && Number.isFinite(radius))
         zoom += Math.log2(radius / VIEW_RADIUS_M)
     } finally {
@@ -204,9 +215,9 @@ export function installCameraLimits(
 
   const pitchEvents = ['zoom', 'resize', 'moveend'] as const
   const fitEvents = ['resize', 'moveend', 'idle', 'rotateend', 'pitchend'] as const
-  const onPitch = (): void => limitPitch(map)
+  const onPitch = (): void => limitPitch(map, targetPadding())
   const onFit = (): void => fitMinZoom()
-  limitPitch(map)
+  limitPitch(map, targetPadding())
   for (const name of pitchEvents) map.on(name, onPitch)
   for (const name of fitEvents) map.on(name, onFit)
 
