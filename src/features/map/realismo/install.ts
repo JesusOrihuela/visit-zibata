@@ -31,8 +31,6 @@ type Status = 'cargando' | 'propia' | 'nativa' | 'incoherente'
 export interface RealismOptions {
   /** Contorno de Zibatá: de él sale el límite de alejamiento. */
   boundary: Polygon
-  /** Medición en el dispositivo (?medir): 'si' o 'corto' para probar la herramienta. */
-  benchmark?: 'si' | 'corto'
 }
 
 export function installRealism(
@@ -169,13 +167,5 @@ export function installRealism(
     stopCamera()
   })
 
-  if (options.benchmark) {
-    const short = options.benchmark === 'corto'
-    map.once('idle', () => {
-      void import('./benchmark.ts')
-        .then(({ runBenchmark }) => runBenchmark(map, quality, { short }))
-        .catch((error) => console.error('[realismo] medición:', error))
-    })
-  }
   return { quality }
 }

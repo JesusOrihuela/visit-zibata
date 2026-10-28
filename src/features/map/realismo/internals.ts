@@ -58,9 +58,3 @@ export function cameraTransform(map: MapLibreMap): TransformLike | null {
   const transform = painterOf(map)?.transform
   return typeof transform?.clone === 'function' ? (transform as TransformLike).clone() : null
 }
-
-/** El contexto WebGL del mapa, para leer el modelo de gráfica en la medición. */
-export function glContext(map: MapLibreMap): WebGL2RenderingContext | null {
-  const context = (map as unknown as { painter?: { context?: { gl?: unknown } } }).painter?.context
-  return (context?.gl as WebGL2RenderingContext | undefined) ?? null
-}
