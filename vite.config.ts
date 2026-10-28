@@ -197,14 +197,12 @@ function cloudflareHeaders(): Plugin {
 # comprime, y con el tipo propio de la extension no esta garantizado que lo haga.
 /map/realismo/vias.geojson
   Content-Type: application/json
-  Cache-Control: public, max-age=86400
 
 # Las mallas 3D (edificios y arboles) son binarias y application/octet-stream no se comprime: los 3,9 MB
 # de los edificios pasan a unos 0,6 MB con el mismo truco de las teselas. Si el hosting no lo lee, el
 # mapa funciona igual, solo mas pesado.
 /map/realismo/*.bin
   Content-Type: application/x-protobuf
-  Cache-Control: public, max-age=86400
 
 /*.html
   Cache-Control: public, max-age=0, must-revalidate

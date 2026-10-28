@@ -94,6 +94,8 @@ const referenced = (ext: string) =>
 const sum = (names: string[]) =>
   names.reduce((total, name) => total + gz(`${DIST}assets/${name}`), 0)
 const matching = (pattern: RegExp) => assets.filter((name) => pattern.test(name))
+/** El chunk que carga `MapView` con `import('./realismo/install.ts')`. */
+const REALISMO_CHUNK = /^install-.*\.js$/
 
 /** Recorre `dist/map/tiles` y mide cada tesela comprimida, que es como la recibe el navegador. */
 function medirTeselas(dir: string): { total: number; mayor: number } {
@@ -135,7 +137,7 @@ const measured = {
   dataJs: sum(matching(/^(categories|plazas|places)-.*\.js$/)),
   tiles: teselas.total,
   largestTile: teselas.mayor,
-  realismoJs: sum(matching(/^install-.*.js$/)),
+  realismoJs: sum(matching(REALISMO_CHUNK)),
   realismoDatos: medirRealismo(`${DIST}map/realismo`),
 }
 
@@ -150,6 +152,11 @@ for (const [key, limit] of Object.entries(BUDGET) as [keyof typeof BUDGET, numbe
 }
 if (referenced('.js').length === 0) {
   console.error('✗ No se encontró el JS inicial en dist/index.html')
+  failed = true
+}
+// Si el chunk se renombrara, la suma daría 0 y el límite pasaría sin medir nada.
+if (matching(REALISMO_CHUNK).length === 0) {
+  console.error('✗ No se encontró el chunk de las capas de realismo (install-*.js) en dist/assets')
   failed = true
 }
 process.exit(failed ? 1 : 0)

@@ -333,7 +333,7 @@ export const es = {
 
   'about.credits': 'Datos y créditos',
   'about.creditsBody':
-    'Mapa propio con datos de OpenStreetMap, Overture Maps y ESA WorldCover, dibujado con MapLibre. Suelo y relieve con Copernicus DEM GLO-30 (© DLR e.V. y Airbus, provisto por la Unión Europea y la ESA, vía Mapterhorn) y "Contains modified Copernicus Sentinel data 2026". Iconos de Lucide y Simple Icons, banderas de circle-flags y logotipos de reparto de Wikimedia Commons.',
+    'Mapa propio con datos de OpenStreetMap, Overture Maps y ESA WorldCover, dibujado con MapLibre. Suelo y relieve con Copernicus DEM GLO-30 (© DLR e.V. y Airbus, provisto por la Unión Europea y la ESA, vía Mapterhorn) y "Contains modified Copernicus Sentinel data 2026". Alturas de los edificios estimadas con Open Buildings 2.5D (Google Research), no medidas. Iconos de Lucide y Simple Icons, banderas de circle-flags y logotipos de reparto de Wikimedia Commons.',
   'about.version': 'Versión {version}',
   'about.close': 'Cerrar',
 

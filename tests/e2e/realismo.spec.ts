@@ -59,6 +59,7 @@ test.describe('Realismo del mapa @mapa', () => {
     expect(atribucion).toContain('OpenStreetMap')
     expect(atribucion).toContain('Copernicus DEM GLO-30')
     expect(atribucion).toContain('Contains modified Copernicus Sentinel data')
+    expect(atribucion).toContain('Open Buildings')
   })
 
   test('con ?realismo=si las capas propias de edificios y árboles llegan a "completo"', async ({
@@ -66,11 +67,13 @@ test.describe('Realismo del mapa @mapa', () => {
   }) => {
     await openApp(page, { path: '?realismo=si' })
     await waitForMap(page)
-    // Si MapLibre cambiara los campos internos que usan las sombras, o el sombreador no compilara,
-    // aquí quedaría en "degradado" o "respaldo": esta prueba es la alarma de una subida de MapLibre.
-    await expect(page.locator('[data-realismo]')).toHaveAttribute('data-realismo', 'completo', {
-      timeout: 60_000,
-    })
+    // El estado se calcula de lo que está visible: si el sombreador no compilara o la capa fallara al
+    // dibujar, quedaría en "degradado" o "respaldo". Las sombras en vivo dependen de un campo interno
+    // de MapLibre que no cambia el estado si falta, y por eso tienen su propio atributo: si una subida
+    // de MapLibre lo quita, esta prueba falla aquí.
+    const mapa = page.locator('[data-realismo]')
+    await expect(mapa).toHaveAttribute('data-realismo', 'completo', { timeout: 60_000 })
+    await expect(mapa).toHaveAttribute('data-realismo-sombras', 'si')
   })
 
   test('si falla la descarga de los edificios el mapa sigue y queda degradado', async ({
