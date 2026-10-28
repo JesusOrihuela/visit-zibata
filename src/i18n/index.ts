@@ -65,9 +65,10 @@ function storedLocale(): Locale | null {
  *
  * Ya NO se usa el idioma del navegador. Es deliberado y tiene costo: quien llegue por primera vez
  * con el navegador en inglés verá la portada en español y tendrá que tocar el botón de idioma (una
- * vez: a partir de ahí se recuerda). A cambio, `/` es español de forma determinista. Si se dejara
- * el idioma del navegador, un rastreador (que pide inglés) sería reenviado de `/` a `/en/` y la
- * portada en español dejaría de indexarse bien, que es justo lo que este cambio vino a arreglar.
+ * vez: a partir de ahí se recuerda). A cambio, `/es` es español de forma determinista (y `/`, que el
+ * Worker redirige a `/es`, también). Si se dejara el idioma del navegador, un rastreador (que pide
+ * inglés) sería reenviado de `/es` a `/en` y la portada en español dejaría de indexarse bien, que es
+ * justo lo que este cambio vino a arreglar.
  */
 function resolveLocale(): Locale {
   if (typeof window === 'undefined') return DEFAULT_LOCALE

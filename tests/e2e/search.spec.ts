@@ -129,7 +129,7 @@ test.describe('Búsqueda y filtros', () => {
     await expect(topCategories.getByRole('link', { name: /^Todo/ })).toHaveAccessibleName(
       `Todo ${placesInPlaza('Paseo Zibatá')}`,
     )
-    await expect(page).toHaveURL(/\/zona\/paseo-zibata\?categoria=desayunos-y-cafe$/)
+    await expect(page).toHaveURL(/\/es\/zona\/paseo-zibata\?categoria=desayunos-y-cafe$/)
 
     await page.getByRole('button', { name: 'Limpiar filtros' }).first().click()
     await expect(page.getByRole('combobox', { name: 'Filtrar por zona' })).toHaveValue('')
@@ -149,7 +149,7 @@ test.describe('Búsqueda y filtros', () => {
       .getByRole('link', { name: /^Bar / })
       .click()
     // Una categoría sola es su propia página: la barra de direcciones lo dice.
-    await expect(page).toHaveURL(/\/categoria\/bar$/)
+    await expect(page).toHaveURL(/\/es\/categoria\/bar$/)
     const region = panel(page)
     await expect(region.getByRole('heading', { name: 'Resultados' })).toBeVisible()
     // Una lista, no una sección por plaza: ya no hay cabecera de zona que enlazar.

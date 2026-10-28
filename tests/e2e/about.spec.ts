@@ -29,7 +29,7 @@ test.describe('Información de la guía', () => {
     await expect(privacy.getByRole('heading', { name: 'Términos de uso' })).toBeVisible()
     await expect(privacy).toContainText('No tiene relación comercial')
     await expect(privacy).toContainText('sin garantía de que cada dato sea exacto hoy')
-    await expect(page).toHaveURL(/\/info\/privacidad$/)
+    await expect(page).toHaveURL(/\/es\/info\/privacidad$/)
     /*
      * Todo lo que dice se cumple aquí dentro: no hay un enlace que mande a leerlo a otro sitio.
      *
@@ -44,11 +44,11 @@ test.describe('Información de la guía', () => {
     await expect(
       page.getByRole('dialog', { name: 'Sugiere un cambio o contáctanos' }),
     ).toBeVisible()
-    await expect(page).toHaveURL(/\/info\/sugerir$/)
+    await expect(page).toHaveURL(/\/es\/info\/sugerir$/)
 
     await page.getByRole('dialog').getByRole('button', { name: 'Cerrar', exact: true }).click()
     await expect(page.getByRole('dialog')).toHaveCount(0)
-    await expect(page).toHaveURL(/\/$/)
+    await expect(page).toHaveURL(/\/es$/)
   })
 
   test('una ruta de información se puede abrir directamente', async ({ page }) => {
@@ -77,13 +77,13 @@ test.describe('Información de la guía', () => {
     // Por el id del título: la hoja de debajo también tiene un "Explora Zibatá".
     await expect(page.locator('#onboarding-title')).toHaveText('Explora Zibatá')
     // Tiene ruta propia, como las otras tres, y la hoja de debajo se cierra.
-    await expect(page).toHaveURL(/\/info\/tutorial$/)
+    await expect(page).toHaveURL(/\/es\/info\/tutorial$/)
     await expect(page.getByRole('dialog', { name: 'Acerca de esta guía' })).toHaveCount(0)
 
     // Y por eso el botón atrás lo cierra en vez de sacarte de la guía.
     await page.goBack()
     await expect(page.getByRole('button', { name: 'Saltar' })).toHaveCount(0)
-    await expect(page).toHaveURL(/\/info\/acerca$/)
+    await expect(page).toHaveURL(/\/es\/info\/acerca$/)
   })
 
   test('la página del tutorial se abre directamente, como las otras tres', async ({ page }) => {

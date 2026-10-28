@@ -18,23 +18,27 @@ describe('robots.txt', () => {
   })
 
   it('bloquea el filtro de categoría dentro de una zona, en los dos idiomas', () => {
-    expect(bloqueada(texto, '/zona/xentric-anahuac?categoria=italiana')).toBe(true)
+    expect(bloqueada(texto, '/es/zona/xentric-anahuac?categoria=italiana')).toBe(true)
     expect(bloqueada(texto, '/en/area/xentric-anahuac?category=italian')).toBe(true)
+    // Y las de antes del prefijo, que el Worker redirige: no se rastrean una por una.
+    expect(bloqueada(texto, '/zona/xentric-anahuac?categoria=italiana')).toBe(true)
   })
 
   it('no bloquea nada que sea una página', () => {
     for (const ruta of [
       '/',
+      '/es',
       '/en',
-      '/zona/xentric-anahuac',
+      '/es/zona/xentric-anahuac',
       '/en/area/xentric-anahuac',
-      '/lugar/tomassa',
+      '/es/lugar/tomassa',
       '/en/place/tomassa',
-      '/categoria/italiana',
+      '/es/categoria/italiana',
       '/en/category/italian',
-      '/info/privacidad',
+      '/es/info/privacidad',
       // La portada con parámetro la redirige el Worker: el rastreador tiene que poder llegar.
       '/?categoria=italiana',
+      '/es?categoria=italiana',
       '/en?category=italian',
       '/sitemap.xml',
     ]) {
@@ -43,13 +47,13 @@ describe('robots.txt', () => {
   })
 
   it('no bloquea una zona con otro parámetro (la regla es solo del filtro de categoría)', () => {
-    expect(bloqueada(texto, '/zona/condesa?utm_source=x')).toBe(false)
+    expect(bloqueada(texto, '/es/zona/condesa?utm_source=x')).toBe(false)
   })
 
   it('con una subruta, las reglas llevan la base', () => {
     const sub = robotsTxt('/visit-zibata/')
-    expect(bloqueada(sub, '/visit-zibata/zona/condesa?categoria=bar')).toBe(true)
-    expect(bloqueada(sub, '/zona/condesa?categoria=bar')).toBe(false)
+    expect(bloqueada(sub, '/visit-zibata/es/zona/condesa?categoria=bar')).toBe(true)
+    expect(bloqueada(sub, '/es/zona/condesa?categoria=bar')).toBe(false)
     expect(sub).not.toContain('Sitemap:')
   })
 

@@ -63,7 +63,7 @@
     /*
      * El Worker corre **solo** en las rutas de página, y por eso van enumeradas una a una en vez de
      * poner `true`. Con `true` cada tesela, cada imagen y cada archivo de `assets/` sería una
-     * invocación facturada, y son cientos por visita; así son diez patrones y ni un archivo
+     * invocación facturada, y son cientos por visita; así son quince patrones y ni un archivo
      * estático pasa por el código.
      *
      * Es una lista blanca a propósito: si mañana aparece un tipo de ruta nuevo, no se contará hasta
@@ -76,6 +76,11 @@
       "/zona/*",
       "/categoria/*",
       "/info/*",
+      "/es",
+      "/es/lugar/*",
+      "/es/zona/*",
+      "/es/categoria/*",
+      "/es/info/*",
       "/en",
       "/en/place/*",
       "/en/area/*",

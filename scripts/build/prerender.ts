@@ -669,14 +669,17 @@ export function prerender(options: { base: string; siteUrl?: string }): Plugin {
           }
           comprobarUnicas(html, page.href)
 
-          // Archivos planos (`lugar/tomassa.html`) y no carpetas con índice: así `/lugar/tomassa`
-          // se sirve directo, mientras que una carpeta obligaría a redirigir a `/lugar/tomassa/`.
+          // Archivos planos (`es/lugar/tomassa.html`) y no carpetas con índice: así `/es/lugar/tomassa`
+          // se sirve directo, mientras que una carpeta obligaría a redirigir a `/es/lugar/tomassa/`.
           // Un salto extra en cada enlace compartido, y una URL canónica distinta de la que se
-          // comparte. La portada española es la raíz y sí es un índice.
+          // comparte.
           const relative = page.href.slice(base.length)
-          const file = join(dist, relative === '' ? 'index.html' : `${relative}.html`)
+          const file = join(dist, `${relative}.html`)
           mkdirSync(dirname(file), { recursive: true })
           writeFileSync(file, html)
+          // La raíz (`/`) la redirige el Worker a `/es`. Donde no hay Worker (una vista previa, un
+          // subdirectorio) sirve la misma portada, con el canónico en `/es`: no cuenta como otra página.
+          if (relative === 'es') writeFileSync(join(dist, 'index.html'), html)
           written.push({ href: page.href, lastmod: page.lastmod })
         })
       }

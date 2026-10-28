@@ -60,7 +60,7 @@ const sintetico: Dataset = { categories: [categoria], plazas: [plaza], places: [
 const absoluta = (href: string) => `https://visitzibata.com${href}`
 
 describe.each([
-  ['es', '/lugar/estilo-x', 'Peluquería en Plaza Prueba, Zibatá. Cortes y color.'],
+  ['es', '/es/lugar/estilo-x', 'Peluquería en Plaza Prueba, Zibatá. Cortes y color.'],
   ['en', '/en/place/estilo-x', 'Hair salon at Plaza Prueba, Zibatá. Haircuts and colour.'],
 ] as const)('una categoría que no es de comida (%s)', (idioma, href, descripcion) => {
   const paginas = pagesFor(idioma, sintetico, '/', absoluta)

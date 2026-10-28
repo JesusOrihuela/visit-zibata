@@ -34,6 +34,21 @@ describe('qué se cuenta', () => {
     })
   })
 
+  it('el español con /es se apunta en la fila de siempre, para no partir el historial', () => {
+    expect(visitaDe(visita({ url: 'https://visitzibata.com/es/lugar/tomassa' }))).toEqual(
+      visitaDe(visita({ url: 'https://visitzibata.com/lugar/tomassa' })),
+    )
+    expect(visitaDe(visita({ url: 'https://visitzibata.com/es' }))).toMatchObject({
+      ruta: '/',
+      idioma: 'es',
+    })
+    expect(visitaDe(visita({ url: 'https://visitzibata.com/es/' }))).toMatchObject({ ruta: '/' })
+    // Solo el prefijo exacto: una ruta que empieza por "es" no es el idioma.
+    expect(visitaDe(visita({ url: 'https://visitzibata.com/espacio' }))).toMatchObject({
+      ruta: '/espacio',
+    })
+  })
+
   it('el filtro no abre una fila nueva: la ruta va sin parámetros', () => {
     expect(
       visitaDe(visita({ url: 'https://visitzibata.com/zona/condesa?categoria=bebidas' })),

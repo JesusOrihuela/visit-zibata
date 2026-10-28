@@ -78,6 +78,18 @@ export function placeById(id: string): DatasetPlace {
 }
 
 /**
+ * La ruta con el prefijo de su idioma. Las pruebas escriben el español como siempre (`zona/condesa`,
+ * `lugar/tomassa?categoria=x`, vacío para la portada) y el inglés con su `en/`; el español se abre en su
+ * árbol (`es/zona/condesa`). Las direcciones sin prefijo, que ahora redirige el Worker, las cubre
+ * `es-ruta.spec.ts` con `page.goto` directo.
+ */
+export function rutaConIdioma(path: string): string {
+  if (/^(?:es|en)(?:[/?]|$)/.test(path)) return path
+  if (path === '') return 'es'
+  return path.startsWith('?') ? `es${path}` : `es/${path}`
+}
+
+/**
  * Abre la app sin el tutorial, salvo que se pida lo contrario.
  *
  * `path` va relativo a la base (`zona/condesa`, no `/zona/condesa`), que es lo que hace que la
@@ -87,7 +99,7 @@ export async function openApp(page: Page, { path = '', onboarding = false } = {}
   if (!onboarding) {
     await page.addInitScript(() => window.localStorage.setItem('zibata:onboarding-visto', '1'))
   }
-  await page.goto(`./${path}`)
+  await page.goto(`./${rutaConIdioma(path)}`)
 }
 
 /** Espera a que el mapa haya cargado (los marcadores de plazas solo aparecen con el mapa listo). */

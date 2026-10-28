@@ -84,6 +84,9 @@ function paginaDe(peticion: PeticionObservada): string | null {
   } catch {
     return null
   }
+  // El español lleva `/es` desde el 28 de octubre de 2026, pero la fila sigue siendo la de siempre
+  // (`/lugar/x`, `/`): así el historial y el panel no se parten en dos. El idioma ya dice que es español.
+  ruta = ruta.replace(/^\/es(?=\/|$)/, '') || '/'
   // Sin barra final salvo la portada, para que `/lugar/x` y `/lugar/x/` no sean dos filas.
   if (ruta.length > 1 && ruta.endsWith('/')) ruta = ruta.slice(0, -1)
   return ruta === '' ? '/' : ruta

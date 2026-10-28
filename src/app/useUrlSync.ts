@@ -68,11 +68,12 @@ export function useUrlSync(catalog: Catalog): void {
       if (explicit) {
         // La URL dice el idioma y manda: también al volver atrás desde el otro árbol.
         if (explicit !== active) void setLocale(explicit)
-      } else if (inicial && active !== parsed.locale) {
-        // Portada española con el inglés recordado en este dispositivo: se lleva a su árbol sin
-        // perder la página. Solo al cargar; si lo hiciera también con atrás, pelearía con el
-        // botón atrás y no se podría volver al árbol español. Un rastreador no tiene preferencia
-        // guardada, así que nunca pasa por aquí y `/` sigue siendo español de forma determinista.
+      } else if (inicial) {
+        // Una dirección sin prefijo (el formato anterior, que el Worker ya redirige con un 301 pero
+        // que sigue llegando donde no hay Worker): se lleva a su árbol sin perder la página, el del
+        // idioma recordado en este dispositivo si lo hay y si no el español. Solo al cargar; si lo
+        // hiciera también con atrás, pelearía con el botón atrás. Un rastreador no tiene preferencia
+        // guardada, así que siempre acaba en `/es/...` de forma determinista.
         replace(
           buildPath(
             {

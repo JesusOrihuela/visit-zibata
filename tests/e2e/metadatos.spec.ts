@@ -1,4 +1,5 @@
 import { type APIRequestContext, expect, test } from '@playwright/test'
+import { rutaConIdioma } from './helpers.ts'
 
 /**
  * Los metadatos tal como salen en el HTML que se publica (`dist/`), no como los calcula el
@@ -33,7 +34,7 @@ const todos = (html: string, patron: RegExp) =>
   [...html.matchAll(patron)].map((m) => decodificar(m[1] ?? ''))
 
 async function cabecera(request: APIRequestContext, ruta: string): Promise<Cabecera> {
-  const respuesta = await request.get(ruta)
+  const respuesta = await request.get(rutaConIdioma(ruta))
   expect(respuesta.status(), ruta).toBe(200)
   const html = await respuesta.text()
   return {
@@ -106,7 +107,9 @@ test.describe('Metadatos del HTML publicado', () => {
     const agave = await cabecera(request, 'lugar/agave-grill')
     expect(agave.description[0]).not.toMatch(/^Cerrado temporalmente/)
     const sitemap = await (await request.get('sitemap.xml')).text()
-    const entrada = /<loc>[^<]*\/lugar\/agave-grill<\/loc><lastmod>([^<]*)<\/lastmod>/.exec(sitemap)
+    const entrada = /<loc>[^<]*\/es\/lugar\/agave-grill<\/loc><lastmod>([^<]*)<\/lastmod>/.exec(
+      sitemap,
+    )
     expect(entrada?.[1]).toBeDefined()
   })
 
