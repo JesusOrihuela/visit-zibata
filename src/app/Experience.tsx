@@ -54,9 +54,8 @@ const mapViewModule =
   typeof window !== 'undefined' ? import('../features/map/MapView.tsx') : undefined
 mapViewModule?.catch(() => {})
 const MapView = lazy(() => mapViewModule ?? import('../features/map/MapView.tsx'))
-// La depuración del mapa solo existe en desarrollo (o si se habilita explícitamente al compilar).
-const DEBUG_ENABLED = import.meta.env.DEV || import.meta.env.VITE_ENABLE_MAP_DEBUG === 'true'
-const MapDebugPanel = DEBUG_ENABLED
+// La depuración del mapa solo existe en desarrollo: el build de producción ni la incluye ni lee `?debug`.
+const MapDebugPanel = import.meta.env.DEV
   ? lazy(() => import('../features/map/debug/MapDebugPanel.tsx'))
   : null
 /** El tutorial solo se ve en la primera visita: no tiene por qué pesar en el arranque. */
@@ -223,7 +222,9 @@ function ReadyExperience({ catalog }: { catalog: Catalog }) {
   const sheetTopReserved = topbarBottom + 150 + overSheetFor(!controlsFitColumn(firstPeek))
   const sheetPeekHeight = collapsedHeightFor(sheetPeek, viewportHeight, sheetTopReserved)
   const [map, setMap] = useState<MapLibreMap | null>(null)
-  const [debugRequested] = useState(() => new URLSearchParams(window.location.search).has('debug'))
+  const [debugRequested] = useState(
+    () => import.meta.env.DEV && new URLSearchParams(window.location.search).has('debug'),
+  )
   // El mapa es el realista; solo se apaga donde no puede dibujarlo (ver realismo/modo.ts).
   const [realismo] = useState(realismoActivo)
   const searchInputRef = useRef<HTMLInputElement>(null)
