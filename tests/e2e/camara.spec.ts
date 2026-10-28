@@ -17,19 +17,22 @@ test.describe('Cámara acotada a Zibatá @mapa', () => {
     page,
   }) => {
     test.skip(isMobile(page), 'el gesto es de ratón; en el teléfono lo cubre el límite de zoom')
+    // En CI cada paso de rueda o de arrastre cuesta de 1 a 7 s (el mapa se dibuja por software en una pantalla
+    // ancha): pocos pasos grandes y más tiempo, en vez de muchos pequeños.
+    test.slow()
     await openApp(page)
     await waitForMap(page)
     const { width, height } = page.viewportSize() ?? { width: 1280, height: 800 }
     await page.mouse.move(width / 2, height / 2)
-    for (let i = 0; i < 25; i++) {
-      await page.mouse.wheel(0, 400)
+    for (let i = 0; i < 8; i++) {
+      await page.mouse.wheel(0, 1200)
       await page.waitForTimeout(60)
     }
     // Arrastrar una y otra vez en la misma dirección, cada vez más lejos de donde empezó.
     for (let i = 0; i < 6; i++) {
       await page.mouse.move(width * 0.8, height / 2)
       await page.mouse.down()
-      await page.mouse.move(width * 0.1, height / 2 - 100, { steps: 12 })
+      await page.mouse.move(width * 0.1, height / 2 - 100, { steps: 4 })
       await page.mouse.up()
       await page.waitForTimeout(250)
     }
