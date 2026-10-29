@@ -5,8 +5,8 @@ import styles from './Brand.module.css'
  * El símbolo vive en public como SVG y entra por <img>, no en línea.
  *
  * Son dos recortes del mismo dibujo, como una tipografía tiene su versión de texto: por debajo de
- * 40 px el trazo, el aro y las puntas van más gordos y el hueco entre las dos mitades más chico,
- * porque el corte grande se cierra y la Z deja de leerse. El corte chico vive en `simbolo.svg` y no
+ * 40 px el aro y la Z van más gordos y el hueco entre las dos mitades más chico (las cuatro puntas
+ * son las mismas), porque el corte grande se cierra y la Z deja de leerse. El corte chico vive en `simbolo.svg` y no
  * en `favicon.svg`, que es el mismo dibujo pero ya montado sobre su baldosa para la pestaña. Van por archivo porque en línea suman
  * cerca de 3 KB gzip al paquete inicial, que está a 119 de 120 KB de presupuesto.
  */

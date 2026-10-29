@@ -65,8 +65,13 @@ type Mapa = {
 // El símbolo sale de public/logo.svg, igual que los iconos: una sola fuente para toda la marca.
 const logo = readFileSync(`${ROOT}public/logo.svg`, 'utf8').trim()
 
+/*
+ * Con la GPU de verdad y no con SwiftShader: desde que el mapa realista se apaga solo con renderizado
+ * por software (modo.ts), una captura hecha con SwiftShader sale con el mapa de respaldo. En Windows
+ * hay que pedir D3D11 a mano: sin eso Chromium sin cabeza cae en SwiftShader aunque haya GPU.
+ */
 const browser = await chromium.launch({
-  args: ['--enable-unsafe-swiftshader', '--use-angle=swiftshader', '--ignore-gpu-blocklist'],
+  args: ['--ignore-gpu-blocklist', ...(process.platform === 'win32' ? ['--use-angle=d3d11'] : [])],
 })
 try {
   const context = await browser.newContext({
@@ -79,6 +84,12 @@ try {
   await page.waitForFunction(() => document.querySelectorAll('[data-mode]').length > 0, null, {
     timeout: 90_000,
   })
+  // La imagen es del mapa realista: si quedó en respaldo o degradado, no se genera una imagen con otro mapa.
+  await page.waitForFunction(
+    () => document.querySelector('[data-realismo]')?.getAttribute('data-realismo') === 'completo',
+    null,
+    { timeout: 90_000 },
+  )
   await page.waitForTimeout(3000)
 
   // Primero se oculta la interfaz y después se encuadra: al quitar la cabecera y el pie el mapa cambia de tamaño, y
