@@ -38,6 +38,7 @@ import {
   diasDe,
   MAS_CALIFICADOS,
   MAS_GUARDADOS,
+  origenPropio,
   POR_DIA,
   POR_IDIOMA,
   POR_PAGINA,
@@ -50,7 +51,14 @@ import {
   type FilaNotas,
   senalesDe,
 } from './senales.ts'
-import { GUARDAR, SIN_ATENDER, sugerenciaDe, ULTIMAS } from './sugerencias.ts'
+import {
+  ATENDER,
+  GUARDAR,
+  ID_DE_SUGERENCIA,
+  SIN_ATENDER,
+  sugerenciaDe,
+  ULTIMAS,
+} from './sugerencias.ts'
 
 export interface EntornoApi extends EntornoAcceso {
   ANALITICA?: Base
@@ -211,6 +219,27 @@ export async function atenderApi(peticion: Request, entorno: EntornoApi): Promis
       return json({ error: 'no se pudo guardar' }, 409)
     }
     return json({ ok: true }, 201)
+  }
+
+  /*
+   * Marcar una sugerencia como atendida. Es la única escritura del panel, y por eso lleva dos cosas
+   * que las lecturas no necesitan: la puerta de Access y la comprobación de que la petición salió de
+   * esta misma página (ver `origenPropio`).
+   */
+  const atender = ruta.match(/^\/api\/panel\/sugerencias\/([A-Za-z0-9_-]+)$/)
+  if (atender && peticion.method === 'POST') {
+    if (!(await puedeVerElPanel(peticion, entorno))) return json({ error: 'sin permiso' }, 403)
+    if (!origenPropio(peticion)) return json({ error: 'origen no permitido' }, 403)
+    const id = atender[1] as string
+    if (!ID_DE_SUGERENCIA.test(id)) return json({ error: 'identificador no válido' }, 400)
+    try {
+      await entorno.ANALITICA.prepare(ATENDER).bind(id).run()
+    } catch (error) {
+      console.error('[panel]', error)
+      return json({ error: 'no se pudo guardar' }, 500)
+    }
+    const pendientes = await entorno.ANALITICA.prepare(SIN_ATENDER).first<{ total: number }>()
+    return json({ ok: true, sinAtender: pendientes?.total ?? 0 })
   }
 
   /*
