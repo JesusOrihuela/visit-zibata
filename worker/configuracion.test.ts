@@ -40,3 +40,15 @@ describe('las rutas del despliegue cubren las de la aplicación', () => {
     expect(configuracion).toContain('"not_found_handling": "404-page"')
   })
 })
+
+describe('el aviso diario', () => {
+  it('va a la dirección del dominio, no al buzón personal', () => {
+    expect(configuracion).toContain('"name": "CORREO"')
+    expect(configuracion).toContain('"destination_address": "avisos@visitzibata.com"')
+  })
+
+  it('se dispara una vez al día, a las 9 de Zibatá', () => {
+    // 15:00 UTC: America/Mexico_City es UTC-6 todo el año desde 2022.
+    expect(configuracion).toContain('"crons": ["0 15 * * *"]')
+  })
+})

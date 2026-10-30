@@ -7,8 +7,8 @@
  * seguridad para algo que podemos guardar nosotros.
  *
  * Lo que se gana: `connect-src` vuelve a ser solo `'self'`, no hay clave que configurar ni que
- * caduque, y las sugerencias quedan en la base, donde el panel privado las lee. Lo que se pierde:
- * el aviso por correo. Hay que entrar al panel a mirar, y por eso el panel las cuenta.
+ * caduque, y las sugerencias quedan en la base, donde el panel privado las lee. El aviso no se
+ * pierde: lo manda el Worker una vez al día si queda algo sin atender (ver worker/correo.ts).
  *
  * ## Qué frena el spam
  *
@@ -84,6 +84,15 @@ SELECT id, creada, quien, lugar, mensaje, contacto, atendida
 `.trim()
 
 export const SIN_ATENDER = 'SELECT COUNT(*) AS total FROM sugerencia WHERE atendida = 0'
+
+/** Las que van en el aviso diario. El tope es el mismo que el del correo (worker/correo.ts). */
+export const PENDIENTES = `
+SELECT creada, quien, lugar, mensaje, contacto
+  FROM sugerencia
+ WHERE atendida = 0
+ ORDER BY creada DESC
+ LIMIT 30
+`.trim()
 
 /**
  * El identificador de una sugerencia: 16 bytes aleatorios en base64url. Se valida antes de tocar la

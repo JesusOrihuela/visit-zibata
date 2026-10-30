@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { GUARDAR, MAXIMO_MENSAJE, SIN_ATENDER, sugerenciaDe, ULTIMAS } from './sugerencias.ts'
+import {
+  GUARDAR,
+  MAXIMO_MENSAJE,
+  PENDIENTES,
+  SIN_ATENDER,
+  sugerenciaDe,
+  ULTIMAS,
+} from './sugerencias.ts'
 
 const SELLO = 'sello-de-prueba-que-no-vale-nada-aaaaaaaaaa'
 const buena = { quien: 'negocio', lugar: 'Tomassa', mensaje: 'Cambió el horario', sello: SELLO }
@@ -50,7 +57,7 @@ describe('lo que se guarda y lo que no', () => {
   })
 
   it('no se guarda nada de quien escribe más allá de lo que escribió', () => {
-    const sql = [GUARDAR, ULTIMAS, SIN_ATENDER].join(' ').toLowerCase()
+    const sql = [GUARDAR, ULTIMAS, SIN_ATENDER, PENDIENTES].join(' ').toLowerCase()
     for (const prohibido of ['ip', 'user_agent', 'cuenta_id', 'referente', 'secreto']) {
       expect(sql).not.toContain(prohibido)
     }
@@ -59,5 +66,10 @@ describe('lo que se guarda y lo que no', () => {
   it('el panel lee las últimas y no la tabla entera', () => {
     expect(ULTIMAS).toContain('LIMIT')
     expect(ULTIMAS).toContain('ORDER BY creada DESC')
+  })
+
+  it('el aviso diario lee solo las que siguen sin atender', () => {
+    expect(PENDIENTES).toContain('atendida = 0')
+    expect(PENDIENTES).toContain('LIMIT')
   })
 })

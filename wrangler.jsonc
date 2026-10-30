@@ -57,6 +57,25 @@
       "database_id": "b24fe264-0bb4-47fc-bac5-091ce9459669"
     }
   ],
+  /*
+   * El aviso diario de sugerencias (ver worker/correo.ts). El destino es una dirección del dominio,
+   * no el buzón personal: Email Routing la reenvía a su destino verificado, así que el correo de
+   * quien mantiene la guía no aparece en un repositorio público. El enlace solo puede mandar a esa
+   * dirección, y a ninguna otra.
+   */
+  "send_email": [
+    {
+      "name": "CORREO",
+      "destination_address": "avisos@visitzibata.com"
+    }
+  ],
+  /*
+   * Las 15:00 UTC son las 9:00 en Zibatá (America/Mexico_City, UTC-6). Una vez al día y no más: el
+   * resumen incluye todas las que sigan sin atender, así que repetirlo cada hora no añade nada.
+   */
+  "triggers": {
+    "crons": ["0 15 * * *"]
+  },
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",

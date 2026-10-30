@@ -18,14 +18,19 @@
  * Solo se ejecuta en las rutas de página (ver `run_worker_first` en wrangler.jsonc). Las teselas,
  * los assets y las imágenes se sirven sin pasar por aquí: así no cuestan invocación ni se cuentan
  * como visitas.
+ *
+ * Aparte de la petición, hay una tarea programada: una vez al día mira si quedan sugerencias sin
+ * atender y, si las hay, manda un solo correo con todas (ver worker/correo.ts).
  */
 
 import type { EntornoAcceso } from './acceso.ts'
 import { APUNTE, APUNTE_COMPARTICION, comparticionDe, visitaDe } from './analitica.ts'
 import { atenderApi } from './api.ts'
+import { avisar, type Correo, type Pendiente } from './correo.ts'
 import type { Base } from './cuenta.ts'
 import { APUNTE_EVENTO, origenDe, pideNoSerMedido } from './eventos.ts'
 import { redireccionDe } from './redireccion.ts'
+import { PENDIENTES, SIN_ATENDER } from './sugerencias.ts'
 
 /** Lo mínimo de la plataforma que este Worker usa. */
 interface Entorno extends EntornoAcceso {
@@ -35,6 +40,8 @@ interface Entorno extends EntornoAcceso {
    * responde que no hay base, pero el sitio se sirve igual.
    */
   ANALITICA?: Base
+  /** El enlace para mandar correo. Puede faltar en desarrollo; entonces no se avisa y ya. */
+  CORREO?: Correo
 }
 
 interface Contexto {
@@ -117,5 +124,24 @@ export default {
     const respuesta = await entorno.ASSETS.fetch(peticion)
     contexto.waitUntil(contar(peticion, respuesta, entorno))
     return respuesta
+  },
+
+  /**
+   * El aviso diario. Solo mira la base, no lee nada de la petición porque no hay petición.
+   *
+   * Va en `waitUntil` y con `catch` por la misma razón que el contador: un correo que no sale se
+   * apunta en el registro y no rompe nada. Si no hay base o no hay enlace de correo, se calla.
+   */
+  scheduled(_evento: unknown, entorno: Entorno, contexto: Contexto): void {
+    contexto.waitUntil(
+      (async () => {
+        if (!entorno.ANALITICA) return
+        const pendientes = await entorno.ANALITICA.prepare(SIN_ATENDER).first<{ total: number }>()
+        const total = pendientes?.total ?? 0
+        if (total === 0) return
+        const filas = await entorno.ANALITICA.prepare(PENDIENTES).all<Pendiente>()
+        await avisar(entorno.CORREO, filas.results ?? [], total)
+      })().catch((error) => console.error('[correo]', error)),
+    )
   },
 }
