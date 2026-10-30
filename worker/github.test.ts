@@ -4,7 +4,8 @@ import { leerArchivo, prAbierta, publicar } from './github.ts'
 const REPO = 'aurariola-studio/visit-zibata'
 const entorno = {
   GITHUB_REPO: REPO,
-  GITHUB_TOKEN: 'token-de-prueba',
+  // Un valor de mentira, no un testigo: que no parezca una credencial ni en el escaneo de secretos.
+  GITHUB_TOKEN: 'testigo-falso',
   GITHUB_RAMA: 'panel-contenido',
 }
 
@@ -111,7 +112,7 @@ describe('publicar', () => {
     expect(llamadas.some((llamada) => llamada.metodo === 'POST' && llamada.ruta === '/pulls')).toBe(
       true,
     )
-    expect(llamadas[0]?.autorizacion).toBe('Bearer token-de-prueba')
+    expect(llamadas[0]?.autorizacion).toBe('Bearer testigo-falso')
   })
 
   it('si ya hay PR abierta, añade el commit y no abre otra', async () => {
