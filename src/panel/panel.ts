@@ -107,7 +107,7 @@ function tabla(
  * Las visitas por día, en barras. SVG dibujado a mano y no una librería: son rectángulos sobre una
  * escala lineal.
  */
-function grafica(porDia: Dia[], dias: number, desde: string): string {
+function grafica(porDia: Dia[], dias: number, desde: string, ancho: number): string {
   if (porDia.length === 0) return '<p class="vacio">Todavía no hay visitas.</p>'
   /*
    * La base devuelve solo los días con visitas, y pintarlos seguidos sería mentir. Se rellena el
@@ -122,7 +122,6 @@ function grafica(porDia: Dia[], dias: number, desde: string): string {
     return { fecha, visitas: conteo.get(fecha) ?? 0 }
   })
 
-  const ancho = 1000
   const alto = 180
   const margen = 24
   const mayor = Math.max(...serie.map((dia) => dia.visitas), 1)
@@ -195,7 +194,13 @@ function pintar(datos: Datos): void {
 
     <section>
       <h2>Visitas por día <span class="nota">${texto(reparto)}</span></h2>
-      ${grafica(datos.porDia ?? [], datos.dias ?? 30, datos.desde ?? '')}
+      ${grafica(
+        datos.porDia ?? [],
+        datos.dias ?? 30,
+        datos.desde ?? '',
+        // El ancho de la vista es el del SVG, así el texto de dentro no se encoge en un teléfono.
+        contenido.clientWidth || 1000,
+      )}
     </section>
 
     <div class="columnas">
