@@ -103,7 +103,7 @@ export const PLAZA_COLORS: Readonly<Record<string, string>> = {
   'plaza-luna': '#021f4f',
   'mol-jamadi': '#3b1548',
   'campo-de-golf': '#02467d',
-  'plaza-zielo': '#147ba8', // #53bdeb
+  'plaza-zielo': '#189ad2', // #53bdeb
 }
 
 function tonoDeZona(color: string): PlazaTone {
