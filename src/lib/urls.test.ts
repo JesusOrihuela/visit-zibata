@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { makePlaza } from '../test/fixtures.ts'
 import { directionsUrl, plazaDirectionsUrl, telUrl, whatsappUrl } from './maps-url.ts'
 import {
+  APP_ROUTE,
   buildPath,
   localeFromPath,
   parsePath,
@@ -162,6 +163,48 @@ describe('estado en la URL · árbol inglés', () => {
     expect(parsePath('/visit-zibata/es/place/tomassa', '', BASE).placeSlug).toBeNull()
     // Y el parámetro español tampoco filtra en el árbol inglés.
     expect(parsePath('/visit-zibata/en/', '?categoria=italiana', BASE).categorySlug).toBeNull()
+  })
+})
+
+describe('la lista de rutas del servidor de desarrollo', () => {
+  // Es la que decide si una petición recibe `index.html` (una página) o se sirve tal cual (un
+  // archivo). Si casa con todo, el servidor entrega HTML también para `/src/main.tsx` y la
+  // aplicación se queda en blanco, que es exactamente lo que pasó.
+  const sirve = (ruta: string) => APP_ROUTE.test(ruta.replace(/\/$/, ''))
+
+  it('entrega la página en las rutas de la aplicación', () => {
+    for (const ruta of [
+      '',
+      '/',
+      'es',
+      'en',
+      'lugar/tomassa',
+      'es/lugar/tomassa',
+      'es/zona/paseo-zibata',
+      'en/area/paseo-zibata',
+      'es/categoria/italiana',
+      'en/category/italian',
+      'info/privacidad',
+      'en/info/privacy',
+    ]) {
+      expect(sirve(ruta), ruta || '(raíz)').toBe(true)
+    }
+  })
+
+  it('no entrega la página a los archivos ni a un camino inventado', () => {
+    for (const ruta of [
+      'src/main.tsx',
+      'src/lib/url-state.ts',
+      'assets/index-CjR7qGXK.js',
+      '@vite/client',
+      'node_modules/.vite/deps/react.js',
+      'es/lugar/tomassa/extra',
+      'zonas',
+      'es/nada',
+      'map/zibata.pmtiles',
+    ]) {
+      expect(sirve(ruta), ruta).toBe(false)
+    }
   })
 })
 

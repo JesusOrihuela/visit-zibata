@@ -14,14 +14,26 @@
  * La regla sin prefijo (`/zona/*?categoria=`) se queda: son las direcciones de antes de `/es/`, que el Worker
  * redirige, y así un rastreador no pide una por una las cien que tuvieron filtro.
  */
+import type { Locale } from '../../src/i18n/index.ts'
+import { PREFIX, SEGMENTS } from '../../src/lib/url-state.ts'
+
 export function robotsTxt(base: string, sitemapUrl?: string): string {
   const raiz = base.endsWith('/') ? base : `${base}/`
+  // Una regla por idioma, sacada de la tabla de rutas: el segmento de la zona y el nombre del
+  // parámetro cambian con el idioma, y escribirlos a mano aquí era la cuarta copia de lo mismo.
+  const filtros = (Object.keys(SEGMENTS) as Locale[]).map(
+    (locale) =>
+      `Disallow: ${raiz}${PREFIX[locale]}/${SEGMENTS[locale].plaza}/*?${SEGMENTS[locale].category}=`,
+  )
+  // Y la de antes del prefijo, que el Worker redirige: así un rastreador no pide una por una las cien
+  // que tuvieron filtro.
+  const legado = `Disallow: ${raiz}${SEGMENTS.es.plaza}/*?${SEGMENTS.es.category}=`
   return [
     'User-agent: *',
     'Allow: /',
-    `Disallow: ${raiz}es/zona/*?categoria=`,
-    `Disallow: ${raiz}zona/*?categoria=`,
-    `Disallow: ${raiz}en/area/*?category=`,
+    filtros[0] as string,
+    legado,
+    ...filtros.slice(1),
     ...(sitemapUrl ? [`Sitemap: ${sitemapUrl}`] : []),
     '',
   ].join('\n')
