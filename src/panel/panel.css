@@ -96,6 +96,13 @@ main {
   margin: var(--space-6) 0;
 }
 
+/* Ocho cifras son cuatro y cuatro: en pantalla ancha no queda una tarjeta sola en su fila. */
+@media (min-width: 60rem) {
+  .tarjetas {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
 .tarjeta {
   padding: var(--space-3) var(--space-4);
   border: 1px solid var(--color-border);
@@ -249,4 +256,36 @@ td.barra span {
   margin-top: var(--space-2);
   color: var(--color-text-muted);
   font-size: var(--text-sm);
+}
+
+/*
+ * Atendida se hunde al fondo de la página, no se transparenta: sigue en la lista, que es el
+ * registro, pero deja de pedir atención. Con opacidad el texto perdía el contraste que la guía
+ * exige, y el estado ya lo dice la palabra.
+ */
+.recado[data-atendida="true"] {
+  background: var(--color-bg);
+}
+
+.recado .atender {
+  margin-top: var(--space-3);
+}
+
+.recado .hecha {
+  margin: var(--space-3) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+/* En escritorio las tres listas van en dos columnas: son tablas cortas que se leen de un vistazo. */
+.columnas {
+  display: grid;
+  gap: 0 var(--space-6);
+}
+
+@media (min-width: 60rem) {
+  .columnas {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
 }

@@ -311,6 +311,16 @@ function devRoutes(): Plugin {
   return {
     name: 'zibata-dev-routes',
     apply: 'serve',
+    /*
+     * En desarrollo Vite mete los estilos en etiquetas `<style>`, y la CSP del panel (que sí vale en
+     * producción) las bloquea: el panel se vería sin una sola regla. Se permite solo aquí, solo en
+     * el servidor de desarrollo y solo en `panel.html`; lo que se publica no cambia.
+     */
+    transformIndexHtml(html, contexto) {
+      return contexto.filename.endsWith('panel.html')
+        ? html.replace("style-src 'self'", "style-src 'self' 'unsafe-inline'")
+        : html
+    },
     configureServer(server) {
       server.middlewares.use((req, _res, next) => {
         const path = (req.url ?? '/').split('?')[0] ?? '/'

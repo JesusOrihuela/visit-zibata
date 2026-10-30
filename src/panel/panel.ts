@@ -8,6 +8,7 @@
  * Todo lo que se pinta viene de `/api/panel`, detrás de la misma puerta de Cloudflare Access que
  * esta página. Si la puerta no está puesta, el Worker responde 403 y aquí se dice con esas palabras.
  */
+import controls from '../styles/controls.module.css'
 import './panel.css'
 
 interface Dia {
@@ -155,7 +156,11 @@ function sugerencias(filas: Sugerencia[]): string {
         .filter(Boolean)
         .join(' · ')
       const contacto = fila.contacto ? `<p class="contacto">${texto(fila.contacto)}</p>` : ''
-      return `<article class="recado"><p class="meta">${cabecera}</p><p>${texto(fila.mensaje)}</p>${contacto}</article>`
+      // El botón lleva la clase del catálogo, no una dibujada aquí: es un botón de ejecutar.
+      const atender = fila.atendida
+        ? '<p class="hecha">Atendida</p>'
+        : `<button type="button" class="${controls.base} ${controls.boton} ${controls.principal} atender" data-id="${texto(fila.id)}">Marcar como atendida</button>`
+      return `<article class="recado" data-atendida="${fila.atendida ? 'true' : 'false'}"><p class="meta">${cabecera}</p><p>${texto(fila.mensaje)}</p>${contacto}${atender}</article>`
     })
     .join('')}</div>`
 }
@@ -163,7 +168,7 @@ function sugerencias(filas: Sugerencia[]): string {
 function pintar(datos: Datos): void {
   if (!contenido) return
   const r = datos.resumen ?? {}
-  const tarjetas: [string, unknown][] = [
+  const tarjetas: [string, unknown, string?][] = [
     ['Visitas', r.visitas],
     ['Páginas vistas', r.paginas],
     ['Enlaces compartidos', r.comparticiones],
@@ -171,11 +176,12 @@ function pintar(datos: Datos): void {
     ['Corazones', r.corazones],
     ['Calificaciones', r.notas],
     ['Visitas marcadas', r.visitasMarcadas],
-    ['Sugerencias sin leer', datos.sinAtender],
+    ['Sugerencias sin leer', datos.sinAtender, 'sinAtender'],
   ]
   const cifras = tarjetas
     .map(
-      ([nombre, valor]) => `<div class="tarjeta"><dt>${nombre}</dt><dd>${numero(valor)}</dd></div>`,
+      ([nombre, valor, gancho]) =>
+        `<div class="tarjeta"><dt>${nombre}</dt><dd${gancho ? ` data-cifra="${gancho}"` : ''}>${numero(valor)}</dd></div>`,
     )
     .join('')
 
@@ -192,6 +198,7 @@ function pintar(datos: Datos): void {
       ${grafica(datos.porDia ?? [], datos.dias ?? 30, datos.desde ?? '')}
     </section>
 
+    <div class="columnas">
     <section>
       <h2>Páginas más abiertas</h2>
       ${tabla(
@@ -219,6 +226,7 @@ function pintar(datos: Datos): void {
         (fila: { veces: number }) => fila.veces,
       )}
     </section>
+    </div>
 
     <section>
       <h2>Lugares más guardados</h2>
@@ -295,5 +303,33 @@ async function cargar(dias: number): Promise<void> {
 for (const boton of botones) {
   boton.addEventListener('click', () => void cargar(Number(boton.dataset.dias)))
 }
+
+/*
+ * Marcar una sugerencia como atendida. Delegado en el contenedor porque las tarjetas se repintan
+ * cada vez que cambia la ventana de tiempo; y sin recargar la página, para no perder la posición.
+ */
+contenido?.addEventListener('click', (evento) => {
+  const boton = (evento.target as HTMLElement | null)?.closest<HTMLButtonElement>('.atender')
+  if (!boton || !contenido) return
+  const id = boton.dataset.id
+  if (!id) return
+  void (async () => {
+    boton.disabled = true
+    try {
+      const respuesta = await fetch(`/api/panel/sugerencias/${id}`, { method: 'POST' })
+      if (!respuesta.ok) throw new Error(String(respuesta.status))
+      const { sinAtender } = (await respuesta.json()) as { sinAtender: number }
+      boton.closest('.recado')?.setAttribute('data-atendida', 'true')
+      boton.replaceWith(
+        Object.assign(document.createElement('p'), { className: 'hecha', textContent: 'Atendida' }),
+      )
+      const contador = contenido.querySelector<HTMLElement>('[data-cifra="sinAtender"]')
+      if (contador) contador.textContent = numero(sinAtender)
+    } catch {
+      boton.disabled = false
+      boton.textContent = 'No se pudo. Reintentar'
+    }
+  })()
+})
 
 void cargar(30)
