@@ -1,0 +1,252 @@
+/*
+ * El panel privado. Usa el sistema de la guía, no uno propio: los tokens, la letra y las esquinas
+ * salen de `src/styles/tokens.css` y del catálogo, y la página entra en el build como segunda
+ * entrada. Antes era un archivo suelto en `public/` con su propia paleta y la letra del sistema,
+ * que es justo la deriva que el catálogo evita en el resto del proyecto.
+ *
+ * Lo que no lleva: tema oscuro. La guía tiene uno solo y una segunda paleta inventada aquí sería
+ * otra identidad.
+ */
+@import "../styles/fonts.css";
+@import "../styles/tokens.css";
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0 var(--space-4) var(--space-8);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.5;
+}
+
+.cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-6);
+  align-items: baseline;
+  justify-content: space-between;
+  max-width: 68rem;
+  margin: 0 auto;
+  padding: var(--space-6) 0 var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--title-md);
+  font-weight: 700;
+  font-stretch: var(--title-stretch);
+  line-height: 1;
+}
+
+/* La ventana de tiempo es elegir de un conjunto: cápsulas, la familia 1 del catálogo. */
+.ventana {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.ventana button {
+  padding: 0 var(--space-3);
+  height: var(--control-h);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-solid);
+  color: var(--ink-600);
+  font: var(--weight-strong) var(--text-sm) / 1 var(--font-sans);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.ventana button:hover {
+  background: var(--hover-quiet);
+}
+
+.ventana button[aria-current="true"] {
+  border-color: var(--olive-600);
+  background: var(--olive-600);
+  color: var(--sand-25);
+}
+
+.ventana button:focus-visible {
+  outline: 2.5px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+main {
+  max-width: 68rem;
+  margin: 0 auto;
+}
+
+.estado {
+  padding: var(--space-8) 0;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.tarjetas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: var(--space-3);
+  margin: var(--space-6) 0;
+}
+
+.tarjeta {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  /* Una tarjeta de esta medida lleva la esquina de su escalón, no una inventada. */
+  border-radius: var(--radius-md);
+  background: var(--color-surface-solid);
+}
+
+.tarjeta dt {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-strong);
+}
+
+.tarjeta dd {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-xl);
+  font-weight: var(--weight-heavy);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+section {
+  margin: var(--space-6) 0;
+}
+
+h2 {
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-md);
+  font-weight: var(--weight-strong);
+  color: var(--ink-700);
+}
+
+/* El espacio real va en el HTML; este margen es el que separa a la vista. */
+h2 .nota {
+  margin-left: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: 400;
+}
+
+.grafica {
+  /* El color de las barras: `currentColor` dentro del SVG lo toma de aquí. */
+  color: var(--lime-500);
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-solid);
+}
+
+/* Las tablas largas se desplazan solas en vez de empujar la página de lado. */
+.tabla {
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-solid);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+  white-space: nowrap;
+}
+
+th {
+  position: sticky;
+  top: 0;
+  background: var(--color-surface-solid);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-strong);
+}
+
+tbody tr + tr td {
+  border-top: 1px solid var(--color-border);
+}
+
+td.cifra {
+  width: 1%;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* La barra ocupa lo que sobra: la fila se lee como tabla y como gráfico a la vez. */
+td.barra {
+  width: 45%;
+  padding-right: var(--space-4);
+}
+
+td.barra span {
+  display: block;
+  width: 0;
+  height: 0.5rem;
+  border-radius: var(--radius-pill);
+  background: var(--lime-500);
+}
+
+.vacio {
+  padding: var(--space-5);
+  color: var(--color-text-muted);
+}
+
+.pie {
+  max-width: 68rem;
+  margin: var(--space-8) auto 0;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.pie p {
+  margin: 0;
+  max-width: 48rem;
+}
+
+/* Las sugerencias: bloques y no tabla. Lo que importa es el mensaje, que es un párrafo. */
+.recados {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.recado {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-solid);
+}
+
+.recado p {
+  margin: 0;
+  white-space: pre-line;
+}
+
+.recado .meta {
+  margin-bottom: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}
+
+.recado .contacto {
+  margin-top: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}

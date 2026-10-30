@@ -315,7 +315,10 @@ function devRoutes(): Plugin {
       server.middlewares.use((req, _res, next) => {
         const path = (req.url ?? '/').split('?')[0] ?? '/'
         const relative = path.startsWith(base) ? path.slice(base.length) : path.replace(/^\//, '')
-        if (APP_ROUTE.test(relative.replace(/\/$/, ''))) req.url = base
+        const limpia = relative.replace(/\/$/, '')
+        // El panel es una entrada más del build, no una ruta de la guía: en desarrollo se abre igual.
+        if (limpia === 'panel') req.url = `${base}panel.html`
+        else if (APP_ROUTE.test(limpia)) req.url = base
         next()
       })
     },
@@ -349,6 +352,17 @@ export default defineConfig({
   ],
   build: {
     target: 'es2022',
+    /*
+     * Dos entradas: la guía y el panel. El panel es una página aparte a propósito (la lee una sola
+     * persona) y con su propia entrada se lleva sus estilos y su guion, sin tocar el paquete de la
+     * guía: el presupuesto mide lo que referencia `index.html`, y esto no entra ahí.
+     */
+    rollupOptions: {
+      input: {
+        index: 'index.html',
+        panel: 'panel.html',
+      },
+    },
     // MapLibre (~800 KB min) vive en su propio chunk diferido; el aviso por defecto no aporta.
     chunkSizeWarningLimit: 1100,
   },

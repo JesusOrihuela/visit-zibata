@@ -6,9 +6,9 @@
     <!--
       Página aparte de la guía, a propósito.
 
-      No entra en el paquete de la aplicación (que está a 120 de 122 KB de presupuesto), no se
-      prerenderiza, no está en el sitemap y no se traduce: la lee una persona y siempre la misma.
-      Por eso es HTML a mano con un archivo de estilo y otro de guion, sin framework y sin build.
+      Es una segunda entrada del build: comparte los tokens y la letra con la guía, pero no su
+      paquete, porque no importa React ni el mapa. No se prerenderiza, no está en el sitemap y no se
+      traduce: la lee una persona y siempre la misma.
 
       La protección no está aquí: la pone Cloudflare Access delante de /panel y de /api/panel (ver
       docs/DESPLIEGUE.md). El Worker además falla cerrado si no ve la cabecera que inyecta Access.
@@ -19,7 +19,6 @@
     />
     <meta name="robots" content="noindex, nofollow" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="stylesheet" href="/panel.css" />
     <title>Panel · Visit Zibatá</title>
   </head>
   <body>
@@ -45,6 +44,6 @@
       </p>
     </footer>
 
-    <script type="module" src="/panel.js"></script>
+    <script type="module" src="/src/panel/panel.ts"></script>
   </body>
 </html>

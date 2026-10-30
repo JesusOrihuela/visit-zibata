@@ -1,40 +1,101 @@
 /**
- * El panel privado. JavaScript a mano, sin framework y sin build.
+ * El panel privado: los números de la guía y lo que escribe la gente, para quien la mantiene.
  *
- * Es una página que lee una persona y siempre la misma. Montarla con React la metería en el paquete
- * de la guía (que está a 120 de 122 KB de presupuesto) y pasarla por el build obligaría a inventar
- * un segundo punto de entrada para algo que son cuatro tablas y una gráfica.
+ * Entra en el build como segunda entrada (`panel.html`), y por eso puede usar los mismos tokens y
+ * la misma letra que la guía. Lo que no hace es cargar la aplicación: este archivo no importa React
+ * ni el mapa, y su paquete se descarga solo al abrir el panel.
  *
  * Todo lo que se pinta viene de `/api/panel`, detrás de la misma puerta de Cloudflare Access que
  * esta página. Si la puerta no está puesta, el Worker responde 403 y aquí se dice con esas palabras.
  */
+import './panel.css'
 
-const contenido = document.getElementById('contenido')
-const botones = [...document.querySelectorAll('.ventana button')]
+interface Dia {
+  fecha: string
+  visitas: number
+}
+
+interface Pagina {
+  ruta: string
+  idioma: string
+  visitas: number
+}
+
+interface Idioma {
+  idioma: string
+  visitas: number
+}
+
+interface Compartida {
+  ruta: string
+  veces: number
+}
+
+interface Guardado {
+  lugar: string
+  corazones: number
+}
+
+interface Calificado {
+  lugar: string
+  notas: number
+}
+
+interface Sugerencia {
+  id: string
+  creada: string
+  quien: string
+  lugar: string
+  mensaje: string
+  contacto: string
+  atendida: number
+}
+
+interface Datos {
+  dias: number
+  desde: string
+  resumen: Record<string, number>
+  porDia: Dia[]
+  porPagina: Pagina[]
+  porIdioma: Idioma[]
+  compartidas: Compartida[]
+  guardados: Guardado[]
+  calificados: Calificado[]
+  sugerencias: Sugerencia[]
+  sinAtender: number
+}
+
+const contenido = document.getElementById('contenido') as HTMLElement | null
+const botones = [...document.querySelectorAll<HTMLButtonElement>('.ventana button')]
 
 /** Escapa lo que venga de la base antes de meterlo en HTML. Son rutas y slugs, pero igual. */
-const texto = (valor) =>
+const texto = (valor: unknown): string =>
   String(valor ?? '').replace(
     /[&<>"']/g,
     (caracter) =>
-      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[caracter],
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[caracter] ??
+      caracter,
   )
 
-const numero = (valor) => new Intl.NumberFormat('es-MX').format(Number(valor ?? 0))
+const numero = (valor: unknown): string => new Intl.NumberFormat('es-MX').format(Number(valor ?? 0))
 
 /** Una tabla con barra proporcional a la mayor de sus filas. */
-function tabla(columnas, filas, valorDe) {
+function tabla(
+  columnas: string[],
+  filas: { celdas: { valor: string; cifra?: boolean }[] }[],
+  valorDe: (fila: never) => number,
+): string {
   if (filas.length === 0) return '<p class="vacio">Todavía no hay datos.</p>'
-  const mayor = Math.max(...filas.map(valorDe), 1)
+  const mayor = Math.max(...filas.map((fila) => valorDe(fila as never)), 1)
   const encabezados = columnas.map((nombre) => `<th>${texto(nombre)}</th>`).join('')
   const cuerpo = filas
     .map((fila) => {
-      const ancho = Math.max(2, Math.round((valorDe(fila) / mayor) * 100))
+      const ancho = Math.max(2, Math.round((valorDe(fila as never) / mayor) * 100))
       const celdas = fila.celdas
         .map((celda) => `<td${celda.cifra ? ' class="cifra"' : ''}>${texto(celda.valor)}</td>`)
         .join('')
-      // El ancho va en un atributo de datos y se aplica despues con CSSOM: la politica de esta
-      // pagina es `style-src 'self'`, que bloquea los atributos `style` escritos en el HTML.
+      // El ancho va en un atributo de datos y se aplica después con CSSOM: la política de esta
+      // página es `style-src 'self'`, que bloquea los atributos `style` escritos en el HTML.
       return `<tr>${celdas}<td class="barra"><span data-ancho="${ancho}"></span></td></tr>`
     })
     .join('')
@@ -42,23 +103,19 @@ function tabla(columnas, filas, valorDe) {
 }
 
 /**
- * Las visitas por día, en barras.
- *
- * SVG dibujado a mano y no una librería: son rectángulos sobre una escala lineal, y traer una
- * dependencia entera para eso sería justo lo contrario de lo que hace el resto del proyecto.
+ * Las visitas por día, en barras. SVG dibujado a mano y no una librería: son rectángulos sobre una
+ * escala lineal.
  */
-function grafica(porDia, dias, desde) {
+function grafica(porDia: Dia[], dias: number, desde: string): string {
   if (porDia.length === 0) return '<p class="vacio">Todavía no hay visitas.</p>'
   /*
-   * La base devuelve solo los días con visitas, y pintarlos seguidos sería mentir: dos días
-   * separados por una semana quedarían pegados y la gráfica diría algo que no pasó. Se rellena el
+   * La base devuelve solo los días con visitas, y pintarlos seguidos sería mentir. Se rellena el
    * rango completo con ceros antes de dibujar.
    */
   const conteo = new Map(porDia.map((dia) => [dia.fecha, dia.visitas]))
   const inicio = new Date(`${desde}T12:00:00Z`)
   // `dias + 1` y no `dias`: la consulta filtra por `fecha >= desde`, así que la ventana incluye
-  // tanto el día de corte como el de hoy. Con `dias` faltaba siempre el último, que es el que mas
-  // se mira.
+  // tanto el día de corte como el de hoy.
   const serie = Array.from({ length: dias + 1 }, (_, indice) => {
     const fecha = new Date(inicio.getTime() + indice * 86400000).toISOString().slice(0, 10)
     return { fecha, visitas: conteo.get(fecha) ?? 0 }
@@ -69,8 +126,6 @@ function grafica(porDia, dias, desde) {
   const margen = 24
   const mayor = Math.max(...serie.map((dia) => dia.visitas), 1)
   const paso = (ancho - margen * 2) / serie.length
-  // Tope de grosor: con cuatro días de datos, una barra proporcional ocupa un cuarto del ancho y la
-  // gráfica se lee como un muro en vez de como una serie.
   const grosor = Math.min(28, Math.max(1, paso - 2))
   const barras = serie
     .map((dia, indice) => {
@@ -83,17 +138,14 @@ function grafica(porDia, dias, desde) {
   const ultimo = serie[serie.length - 1]?.fecha ?? ''
   return `<svg class="grafica" viewBox="0 0 ${ancho} ${alto}" role="img" aria-label="Visitas por día, máximo ${numero(mayor)}">
     <g>${barras}</g>
-    <text x="${margen}" y="${alto - 6}" font-size="13" fill="var(--tenue)">${texto(primero)}</text>
-    <text x="${ancho - margen}" y="${alto - 6}" font-size="13" fill="var(--tenue)" text-anchor="end">${texto(ultimo)}</text>
-    <text x="${margen}" y="16" font-size="13" fill="var(--tenue)">máximo ${numero(mayor)}</text>
+    <text x="${margen}" y="${alto - 6}" font-size="13" fill="currentColor" opacity="0.6">${texto(primero)}</text>
+    <text x="${ancho - margen}" y="${alto - 6}" font-size="13" fill="currentColor" opacity="0.6" text-anchor="end">${texto(ultimo)}</text>
+    <text x="${margen}" y="16" font-size="13" fill="currentColor" opacity="0.6">máximo ${numero(mayor)}</text>
   </svg>`
 }
 
-/**
- * Las sugerencias, en bloques y no en tabla: lo que importa es el mensaje, que es un párrafo, y
- * meterlo en una celda lo obligaría a competir por el ancho con la fecha y el lugar.
- */
-function sugerencias(filas) {
+/** Las sugerencias, en bloques y no en tabla: lo que importa es el mensaje, que es un párrafo. */
+function sugerencias(filas: Sugerencia[]): string {
   if (filas.length === 0) return '<p class="vacio">Todavía no ha escrito nadie.</p>'
   return `<div class="recados">${filas
     .map((fila) => {
@@ -108,9 +160,10 @@ function sugerencias(filas) {
     .join('')}</div>`
 }
 
-function pintar(datos) {
+function pintar(datos: Datos): void {
+  if (!contenido) return
   const r = datos.resumen ?? {}
-  const tarjetas = [
+  const tarjetas: [string, unknown][] = [
     ['Visitas', r.visitas],
     ['Páginas vistas', r.paginas],
     ['Enlaces compartidos', r.comparticiones],
@@ -120,6 +173,7 @@ function pintar(datos) {
     ['Visitas marcadas', r.visitasMarcadas],
     ['Sugerencias sin leer', datos.sinAtender],
   ]
+  const cifras = tarjetas
     .map(
       ([nombre, valor]) => `<div class="tarjeta"><dt>${nombre}</dt><dd>${numero(valor)}</dd></div>`,
     )
@@ -131,7 +185,7 @@ function pintar(datos) {
     .join(' · ')
 
   contenido.innerHTML = `
-    <dl class="tarjetas">${tarjetas}</dl>
+    <dl class="tarjetas">${cifras}</dl>
 
     <section>
       <h2>Visitas por día <span class="nota">${texto(reparto)}</span></h2>
@@ -150,7 +204,7 @@ function pintar(datos) {
           ],
           visitas: fila.visitas,
         })),
-        (fila) => fila.visitas,
+        (fila: { visitas: number }) => fila.visitas,
       )}
     </section>
 
@@ -162,7 +216,7 @@ function pintar(datos) {
           celdas: [{ valor: fila.ruta }, { valor: numero(fila.veces), cifra: true }],
           veces: fila.veces,
         })),
-        (fila) => fila.veces,
+        (fila: { veces: number }) => fila.veces,
       )}
     </section>
 
@@ -174,7 +228,7 @@ function pintar(datos) {
           celdas: [{ valor: fila.lugar }, { valor: numero(fila.corazones), cifra: true }],
           corazones: fila.corazones,
         })),
-        (fila) => fila.corazones,
+        (fila: { corazones: number }) => fila.corazones,
       )}
     </section>
 
@@ -191,23 +245,25 @@ function pintar(datos) {
           celdas: [{ valor: fila.lugar }, { valor: numero(fila.notas), cifra: true }],
           notas: fila.notas,
         })),
-        (fila) => fila.notas,
+        (fila: { notas: number }) => fila.notas,
       )}
     </section>
   `
   // Los anchos, ya en el documento. Ver el comentario de `tabla`: no pueden ir en el HTML.
-  for (const barra of contenido.querySelectorAll('.barra span[data-ancho]')) {
+  for (const barra of contenido.querySelectorAll<HTMLElement>('.barra span[data-ancho]')) {
     barra.style.width = `${barra.dataset.ancho}%`
   }
   contenido.setAttribute('aria-busy', 'false')
 }
 
-function fallar(mensaje) {
+function fallar(mensaje: string): void {
+  if (!contenido) return
   contenido.innerHTML = `<p class="estado">${texto(mensaje)}</p>`
   contenido.setAttribute('aria-busy', 'false')
 }
 
-async function cargar(dias) {
+async function cargar(dias: number): Promise<void> {
+  if (!contenido) return
   contenido.setAttribute('aria-busy', 'true')
   contenido.innerHTML = '<p class="estado">Cargando…</p>'
   for (const boton of botones) {
@@ -230,14 +286,14 @@ async function cargar(dias) {
       fallar(`El servidor respondió ${respuesta.status}.`)
       return
     }
-    pintar(await respuesta.json())
+    pintar((await respuesta.json()) as Datos)
   } catch {
     fallar('No se pudo hablar con el servidor.')
   }
 }
 
 for (const boton of botones) {
-  boton.addEventListener('click', () => cargar(Number(boton.dataset.dias)))
+  boton.addEventListener('click', () => void cargar(Number(boton.dataset.dias)))
 }
 
 void cargar(30)
