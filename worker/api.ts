@@ -11,6 +11,7 @@
 import { base64url, cumpleLaPrueba, digestDe } from '../src/lib/prueba-de-trabajo.ts'
 import { type EntornoAcceso, puedeVerElPanel } from './acceso.ts'
 import { fechaLocal } from './analitica.ts'
+import { contenido, guardarNegocio } from './contenido.ts'
 import { ALTA, type Base, huella, nuevaCuenta, RESOLVER, secretoDe } from './cuenta.ts'
 import { APUNTE_EVENTO, envioDe, MAXIMO_BYTES } from './eventos.ts'
 import {
@@ -22,6 +23,7 @@ import {
   MIOS,
   QUITAR,
 } from './favoritos.ts'
+import type { EntornoGitHub } from './github.ts'
 import {
   calificacionesDe,
   MARCAR_VISITA,
@@ -60,8 +62,18 @@ import {
   ULTIMAS,
 } from './sugerencias.ts'
 
-export interface EntornoApi extends EntornoAcceso {
+export interface EntornoApi extends EntornoAcceso, EntornoGitHub {
   ANALITICA?: Base
+}
+
+/** Un fallo que no es del usuario sino de la configuración o de GitHub. */
+function falloDeContenido(error: unknown): Response {
+  const mensaje = error instanceof Error ? error.message : String(error)
+  console.error('[contenido]', mensaje)
+  if (mensaje.includes('GITHUB_TOKEN') || mensaje.includes('GITHUB_REPO')) {
+    return json({ error: 'El panel no tiene configurado el acceso a GitHub.' }, 503)
+  }
+  return json({ error: 'No se pudo guardar el contenido. Revisa el registro.' }, 500)
 }
 
 /** El cuerpo como JSON, o `undefined` si no lo es. Quien llama ya rechaza lo que no reconoce. */
@@ -240,6 +252,31 @@ export async function atenderApi(peticion: Request, entorno: EntornoApi): Promis
     }
     const pendientes = await entorno.ANALITICA.prepare(SIN_ATENDER).first<{ total: number }>()
     return json({ ok: true, sinAtender: pendientes?.total ?? 0 })
+  }
+
+  /*
+   * El contenido comercial. La lectura llena el formulario; la escritura valida y manda el cambio a
+   * una rama con PR, nunca a producción. Las dos repiten las dos puertas del panel: Access y que la
+   * petición salga de esta misma página.
+   */
+  if (ruta === '/api/panel/contenido' && peticion.method === 'GET') {
+    if (!(await puedeVerElPanel(peticion, entorno))) return json({ error: 'sin permiso' }, 403)
+    try {
+      return json(await contenido(entorno))
+    } catch (error) {
+      return falloDeContenido(error)
+    }
+  }
+
+  if (ruta === '/api/panel/contenido/negocio' && peticion.method === 'POST') {
+    if (!(await puedeVerElPanel(peticion, entorno))) return json({ error: 'sin permiso' }, 403)
+    if (!origenPropio(peticion)) return json({ error: 'origen no permitido' }, 403)
+    try {
+      const resultado = await guardarNegocio(entorno, await cuerpoDe(peticion))
+      return json(resultado, resultado.ok ? 200 : 400)
+    } catch (error) {
+      return falloDeContenido(error)
+    }
   }
 
   /*
