@@ -1,17 +1,29 @@
-/** Etiquetas: nombres de vialidades (solo con zoom suficiente), áreas verdes, residenciales y Zibatá. */
+/**
+ * Etiquetas del mapa: nombre de la calle, del residencial y de lo que se ve desde arriba (parque, golf,
+ * agua, escuela).
+ *
+ * Las tres recetas son la misma letra y el mismo peso, y se distinguen por dos cosas y solo dos: el
+ * tamaño (10 para la calle, 12 para lo demás) y el color. La caja no se toca aquí: los nombres llegan
+ * del pipeline ya en capital inicial con las partículas en minúscula (`displayName`), así que el mapa
+ * no cambia mayúsculas según el zoom ni según cómo lo guardara quien lo subió a OSM.
+ *
+ * MapLibre registra cada archivo con su propio nombre y no aplica los ejes de uno variable: por eso el
+ * mapa usa un peso estático de Special Gothic (500) y no el archivo variable de la interfaz.
+ */
 import type { LayerSpecification } from 'maplibre-gl'
 import { SOURCE } from '../ids.ts'
 import { mapTheme as t } from '../theme.ts'
 
-/**
- * MapLibre registra cada archivo con su propio nombre y no aplica los ejes de uno variable: por eso el
- * mapa usa los tres pesos estáticos de Special Gothic y no el archivo variable de la interfaz. No hay
- * cursiva: parques, golf y agua se distinguen por el color de su etiqueta.
- */
+/** Un solo peso para todo el mapa. El 400 se retiró cuando la marca de agua dejó de existir. */
 export const FONT = {
   sans: 'Special Gothic Medium',
-  serif: 'Special Gothic Regular',
 } as const
+
+/** El aire entre letras de un rótulo, igual en las tres recetas. Un poco abierto lee mejor sobre el mapa. */
+const TRACKING = 0.02
+/** El tamaño se fija por rol: la calle no compite con lo que se ve desde arriba. */
+const TAMANO_CALLE = 10
+const TAMANO_LUGAR = 12
 
 export function labelLayers(): LayerSpecification[] {
   return [
@@ -34,15 +46,15 @@ export function labelLayers(): LayerSpecification[] {
         'symbol-placement': 'line',
         'text-field': ['get', 'name'],
         'text-font': [FONT.sans],
-        'text-size': ['interpolate', ['linear'], ['zoom'], 15.5, 10.5, 18, 13],
-        'text-letter-spacing': 0.02,
+        'text-size': TAMANO_CALLE,
+        'text-letter-spacing': TRACKING,
         'text-max-angle': 30,
         'symbol-spacing': 320,
         'text-pitch-alignment': 'viewport',
       },
       paint: {
         'text-color': t.label.road,
-        'text-halo-color': t.label.roadHalo,
+        'text-halo-color': t.label.halo,
         'text-halo-width': 1.6,
       },
     },
@@ -54,10 +66,10 @@ export function labelLayers(): LayerSpecification[] {
       minzoom: 15.2,
       filter: ['==', ['get', 'class'], 'district'],
       layout: {
-        'text-field': ['upcase', ['get', 'name']],
+        'text-field': ['get', 'name'],
         'text-font': [FONT.sans],
-        'text-size': 10,
-        'text-letter-spacing': 0.14,
+        'text-size': TAMANO_LUGAR,
+        'text-letter-spacing': TRACKING,
         'text-max-width': 8,
         'text-padding': 8,
       },
@@ -73,23 +85,12 @@ export function labelLayers(): LayerSpecification[] {
       source: SOURCE.base,
       'source-layer': 'labels',
       minzoom: 13.8,
-      filter: [
-        'in',
-        ['get', 'class'],
-        ['literal', ['park', 'golf', 'water', 'education', 'landmark']],
-      ],
+      filter: ['in', ['get', 'class'], ['literal', ['park', 'golf', 'water', 'education']]],
       layout: {
         'text-field': ['get', 'name'],
         'text-font': [FONT.sans],
-        'text-size': [
-          'interpolate',
-          ['linear'],
-          ['zoom'],
-          14,
-          ['match', ['get', 'class'], ['golf', 'education'], 13, 11.5],
-          17,
-          ['match', ['get', 'class'], ['golf', 'education'], 17, 15],
-        ],
+        'text-size': TAMANO_LUGAR,
+        'text-letter-spacing': TRACKING,
         'symbol-sort-key': ['get', 'rank'],
         'text-max-width': 9,
         'text-padding': 6,
@@ -102,32 +103,12 @@ export function labelLayers(): LayerSpecification[] {
           t.label.green,
           'water',
           t.label.water,
-          t.label.landmark,
+          // Escuela y hito comparten el gris apagado del residencial: informan, no llaman.
+          t.label.district,
         ],
         'text-halo-color': t.label.halo,
         'text-halo-width': 1.4,
         'text-opacity': ['interpolate', ['linear'], ['zoom'], 13.8, 0, 14.4, 1],
-      },
-    },
-    {
-      id: 'zibata-name',
-      type: 'symbol',
-      source: SOURCE.areaLabel,
-      maxzoom: 13.8,
-      layout: {
-        'text-field': 'ZIBATÁ',
-        'text-font': [FONT.serif],
-        'text-size': ['interpolate', ['linear'], ['zoom'], 11, 20, 13.8, 34],
-        'text-letter-spacing': 0.32,
-        'text-allow-overlap': true,
-        'text-ignore-placement': true,
-        'text-pitch-alignment': 'viewport',
-      },
-      paint: {
-        'text-color': t.label.zibata,
-        'text-opacity': ['interpolate', ['linear'], ['zoom'], 13, 0.8, 13.8, 0],
-        'text-halo-color': t.label.halo,
-        'text-halo-width': 1,
       },
     },
   ]

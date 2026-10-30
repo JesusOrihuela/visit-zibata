@@ -65,14 +65,16 @@ export const mapTheme = {
   },
 
   label: {
+    /*
+     * Gris para la calle, gris apagado para el área (residencial, escuela, hito), verde para el parque
+     * y el golf, y azul para el agua. Son los cuatro papeles del estándar de rótulos: uno dice cómo se
+     * llama la vía, otro cómo se llama el área, y los dos últimos, qué hay.
+     */
     road: '#7d7361',
-    roadHalo: '#f8f4ed',
-    green: '#5b6f3b',
-    water: '#4b7571',
     district: '#9c917d',
-    landmark: '#6d6555',
+    green: '#5b6f3b',
+    water: '#3f6c8a',
     halo: '#f7f2ea',
-    zibata: '#6b6150',
   },
 
   sky: {

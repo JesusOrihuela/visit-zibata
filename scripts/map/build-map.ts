@@ -357,8 +357,13 @@ for (const feature of osmFeatures) {
       ? (feature.geometry.coordinates as Position)
       : turf.pointOnFeature(feature).geometry.coordinates
   if (!turf.booleanPointInPolygon(point, labelRegion)) continue
-  // Un rótulo junto a una plaza activa queda bajo su marcador (P4-UX-019): la plaza ya se nombra ahí.
-  if (nearActivePlaza(point)) {
+  /*
+   * Un rótulo junto a una plaza activa queda bajo su marcador (P4-UX-019): la plaza ya se nombra ahí.
+   * El residencial es la excepción: su nombre es el del área entera, no el de un punto, y el punto que
+   * devuelve `pointOnFeature` puede caer cerca de una plaza sin que el área lo esté. Descartarlo por
+   * eso borraba residenciales que OSM sí tiene.
+   */
+  if (labelClass !== 'district' && nearActivePlaza(point)) {
     labelsNearPlazas.add(name)
     continue
   }
@@ -377,8 +382,14 @@ for (const feature of osmFeatures) {
   })
 }
 const labels = [...labelsByName.values()].map((entry) => entry.feature)
+const porClase = new Map<string, number>()
+for (const etiqueta of labels) {
+  const clase = String(etiqueta.properties?.class)
+  porClase.set(clase, (porClase.get(clase) ?? 0) + 1)
+}
+const desglose = [...porClase].sort(([a], [b]) => a.localeCompare(b)).map(([c, n]) => `${c}: ${n}`)
 log(
-  `${labels.length} etiquetas de lugares (omitidas junto a plazas: ${[...labelsNearPlazas].join(', ') || 'ninguna'})`,
+  `${labels.length} etiquetas de lugares (${desglose.join(', ')}). Omitidas junto a plazas: ${[...labelsNearPlazas].join(', ') || 'ninguna'}`,
 )
 
 // ── 6b. Árboles: solo donde la cobertura arbórea real (ESA WorldCover vía Overture) dice que hay ──────

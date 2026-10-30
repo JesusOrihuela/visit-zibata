@@ -52,4 +52,31 @@ describe('estilo del mapa', () => {
     expect(attribution).toContain('Copernicus DEM GLO-30')
     expect(attribution).toContain('Contains modified Copernicus Sentinel data')
   })
+
+  it('los rótulos son un solo estándar: una letra, un peso, dos tamaños', () => {
+    const style = buildMapStyle(base)
+    const rotulos = style.layers.filter((layer) => layer.type === 'symbol')
+    expect(rotulos.map((layer) => layer.id)).toEqual([
+      'road-label',
+      'place-label-district',
+      'place-label-landscape',
+    ])
+
+    const fuentes = new Set<string>()
+    const tamanos = new Set<number>()
+    for (const capa of rotulos) {
+      const layout = capa.layout ?? {}
+      for (const fuente of layout['text-font'] as string[]) fuentes.add(fuente)
+      tamanos.add(layout['text-size'] as number)
+    }
+    expect([...fuentes]).toEqual(['Special Gothic Medium'])
+    expect([...tamanos].sort((a, b) => a - b)).toEqual([10, 12])
+
+    // La marca de agua del desarrollo se retiró: no queda ningún rótulo fuera del estándar.
+    expect(ids(style)).not.toContain('zibata-name')
+    expect(style.sources).not.toHaveProperty('area-label')
+    expect(Object.keys(style['font-faces'] as Record<string, string>)).toEqual([
+      'Special Gothic Medium',
+    ])
+  })
 })
