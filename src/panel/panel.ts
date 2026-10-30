@@ -246,7 +246,7 @@ function pintar(datos: Datos): void {
       )}
     </section>
 
-    <section>
+    <section id="sugerencias">
       <h2>Sugerencias <span class="nota">lo último que ha escrito la gente</span></h2>
       ${sugerencias(datos.sugerencias ?? [])}
     </section>
