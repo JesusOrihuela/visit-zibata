@@ -40,6 +40,27 @@ export function desdeHace(dias: number, ahora = new Date()): string {
   return limite.toISOString().slice(0, 10)
 }
 
+/**
+ * Si la petición la escribió una página de este mismo sitio.
+ *
+ * La cookie de Access viaja sola en cuanto la persona inició sesión, así que sin esta comprobación
+ * cualquier página de fuera podría hacer que su navegador marcase sugerencias como atendidas. Lo que
+ * la frena es `Sec-Fetch-Site`, que pone el navegador y una página no puede falsificar; y para quien
+ * no lo mande, se compara el `Origin` con el host. Sin ninguno de los dos, se niega: adivinar aquí no
+ * aporta nada.
+ */
+export function origenPropio(peticion: Request): boolean {
+  const sitio = peticion.headers.get('sec-fetch-site')
+  if (sitio) return sitio === 'same-origin' || sitio === 'none'
+  const origen = peticion.headers.get('origin')
+  if (!origen) return false
+  try {
+    return new URL(origen).host === new URL(peticion.url).host
+  } catch {
+    return false
+  }
+}
+
 export const RESUMEN = `
 SELECT
   (SELECT COALESCE(SUM(cuenta), 0) FROM visitas WHERE fecha >= ?1)        AS visitas,

@@ -84,3 +84,12 @@ SELECT id, creada, quien, lugar, mensaje, contacto, atendida
 `.trim()
 
 export const SIN_ATENDER = 'SELECT COUNT(*) AS total FROM sugerencia WHERE atendida = 0'
+
+/**
+ * El identificador de una sugerencia: 16 bytes aleatorios en base64url. Se valida antes de tocar la
+ * base para que una ruta inventada no llegue siquiera a una consulta.
+ */
+export const ID_DE_SUGERENCIA = /^[A-Za-z0-9_-]{22}$/
+
+/** Marca una sugerencia como atendida. Atender dos veces la misma no cambia nada. */
+export const ATENDER = 'UPDATE sugerencia SET atendida = 1 WHERE id = ?'
