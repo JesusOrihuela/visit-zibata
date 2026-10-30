@@ -21,6 +21,9 @@ const data: Dataset = {
   places: leer<{ places: Place[] }>('places.json').places,
 }
 
+const plazasActivas = new Set(data.plazas.filter((plaza) => plaza.active).map((plaza) => plaza.id))
+const visibles = data.places.filter((place) => place.active && plazasActivas.has(place.plazaId))
+
 const absoluta = (href: string) => `https://visitzibata.com${href}`
 const paginas = {
   es: pagesFor('es', data, '/', absoluta),
@@ -41,18 +44,14 @@ const textoDelDato = (place: Place, idioma: Idioma): string =>
 
 describe.each(idiomas)('metadatos de las páginas (%s)', (idioma) => {
   const todas = paginas[idioma]
-  const fichas = data.places.map((place) => ficha(idioma, place.slug))
+  const fichas = visibles.map((place) => ficha(idioma, place.slug))
 
   it('genera la portada, las zonas, una página por cada categoría, las fichas y la información', () => {
     const categoriasConLocales = data.categories.filter((c) =>
-      data.places.some((p) => p.giros.some((giro) => c.giros.some((g) => g.id === giro))),
+      visibles.some((p) => p.giros.some((giro) => c.giros.some((g) => g.id === giro))),
     )
     expect(todas).toHaveLength(
-      1 +
-        data.plazas.filter((p) => p.active).length +
-        categoriasConLocales.length +
-        data.places.length +
-        4,
+      1 + plazasActivas.size + categoriasConLocales.length + visibles.length + 4,
     )
   })
 
@@ -435,9 +434,25 @@ describe.each(idiomas)('las páginas de categoría (%s)', (idioma) => {
   })
 })
 
+describe('los locales ocultos', () => {
+  it('no generan ficha ni entrada en el sitemap', () => {
+    const base = data.places[0]
+    if (!base) throw new Error('El dataset de prueba no tiene locales')
+    const oculto: Place = {
+      ...base,
+      id: 'oculto-de-prueba',
+      slug: 'oculto-de-prueba',
+      active: false,
+    }
+    const conOculto = { ...data, places: [...data.places, oculto] }
+    const generadas = pagesFor('es', conOculto, '/', absoluta)
+    expect(generadas.some((pagina) => pagina.href === '/es/lugar/oculto-de-prueba')).toBe(false)
+  })
+})
+
 describe('las páginas de categoría en los dos idiomas', () => {
   const conLocales = data.categories.filter((c) =>
-    data.places.some((p) =>
+    visibles.some((p) =>
       [...p.giros, ...(p.secundarios ?? [])].some((g) => c.giros.some((g2) => g2.id === g)),
     ),
   )

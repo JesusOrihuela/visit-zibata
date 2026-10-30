@@ -353,29 +353,35 @@ export function pagesFor(
    * Los metadatos de todas las fichas se deciden juntos y no de una en una: un título o una descripción
    * solo se puede distinguir de otro mirando la lista entera. Dos locales de una misma cadena
    * ("Starbucks", "Luka") salían con el mismo título y a veces con la misma descripción.
+   *
+   * Solo los locales activos de plazas activas: un local marcado como oculto en el panel no debe
+   * seguir con ficha ni con entrada en el sitemap. El catálogo ya los filtra; el prerender no lo
+   * hacía.
    */
-  const fichas = data.places.map((place) => {
-    const plaza = plazaById.get(place.plazaId)
-    const giros = place.giros.map((id) => giroLabel.get(id) ?? id)
-    const nombrePlaza = plaza ? text(plaza.name, locale) : undefined
-    return {
-      place,
-      plaza,
-      giros,
-      nombrePlaza,
-      descripcion: text(place.description, locale),
-      // El mismo aviso que abre el cuerpo de la ficha, sin la fecha ni la reapertura: cabe en un fragmento.
-      aviso: place.cierre
-        ? `${copy['closure.title']}. ${copy[`closure.${place.cierre.motivo}`]}`
-        : undefined,
-      contexto: {
-        giros: giros.slice(0, 2),
-        lugar: lugarDe(nombrePlaza),
-        conGiros: copy['seo.place.context'],
-        soloLugar: copy['seo.place.contextLugar'],
-      },
-    }
-  })
+  const fichas = data.places
+    .filter((place) => place.active && plazaById.get(place.plazaId)?.active === true)
+    .map((place) => {
+      const plaza = plazaById.get(place.plazaId)
+      const giros = place.giros.map((id) => giroLabel.get(id) ?? id)
+      const nombrePlaza = plaza ? text(plaza.name, locale) : undefined
+      return {
+        place,
+        plaza,
+        giros,
+        nombrePlaza,
+        descripcion: text(place.description, locale),
+        // El mismo aviso que abre el cuerpo de la ficha, sin la fecha ni la reapertura: cabe en un fragmento.
+        aviso: place.cierre
+          ? `${copy['closure.title']}. ${copy[`closure.${place.cierre.motivo}`]}`
+          : undefined,
+        contexto: {
+          giros: giros.slice(0, 2),
+          lugar: lugarDe(nombrePlaza),
+          conGiros: copy['seo.place.context'],
+          soloLugar: copy['seo.place.contextLugar'],
+        },
+      }
+    })
 
   // La zona va en el título solo de los locales cuyo nombre se repite: es lo que los distingue.
   const mismoNombre = repetidos(fichas.map((ficha) => ficha.place.name))

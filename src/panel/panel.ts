@@ -9,6 +9,7 @@
  * esta página. Si la puerta no está puesta, el Worker responde 403 y aquí se dice con esas palabras.
  */
 import controls from '../styles/controls.module.css'
+import { montarEditor } from './contenido.ts'
 import './panel.css'
 
 interface Dia {
@@ -245,7 +246,7 @@ function pintar(datos: Datos): void {
       )}
     </section>
 
-    <section>
+    <section id="sugerencias">
       <h2>Sugerencias <span class="nota">lo último que ha escrito la gente</span></h2>
       ${sugerencias(datos.sugerencias ?? [])}
     </section>
@@ -338,3 +339,7 @@ contenido?.addEventListener('click', (evento) => {
 })
 
 void cargar(30)
+
+// El editor vive fuera de `#contenido` para que cambiar la ventana de tiempo no lo repinte.
+const editor = document.getElementById('editor-contenido')
+if (editor) montarEditor(editor)

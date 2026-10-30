@@ -32,9 +32,22 @@
       </nav>
     </header>
 
+    <nav class="secciones" aria-label="Secciones del panel">
+      <a href="#contenido">Resumen</a>
+      <a href="#sugerencias">Sugerencias</a>
+      <a href="#editor">Contenido</a>
+    </nav>
+
     <main id="contenido" aria-busy="true">
       <p class="estado" id="estado">Cargando…</p>
     </main>
+
+    <section class="editor" aria-labelledby="editor-titulo">
+      <h2 id="editor-titulo">Contenido <span class="nota">negocios de la guía</span></h2>
+      <div id="editor-contenido" aria-busy="true">
+        <p class="estado">Cargando contenido…</p>
+      </div>
+    </section>
 
     <footer class="pie">
       <p>
