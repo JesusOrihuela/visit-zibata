@@ -112,10 +112,18 @@
  *
  * Esto les devuelve por los lados lo que les sobra por arriba. No es una cifra elegida a ojo: es la
  * mitad de la diferencia entre el alto de la fila y el de la pieza.
+ *
+ * Y solo por el lado que da al borde de la tarjeta. Con el margen por dentro también, el último
+ * control quedaba a 19,2 px del idioma y el idioma a 12 del buscador: se leía como si el idioma
+ * estuviera pegado a la izquierda. Con el margen solo fuera, los dos huecos miden 12 y el texto
+ * queda a la misma distancia de un lado que del otro.
  */
-.searchCard > :first-child,
+.searchCard > :first-child {
+  margin-left: 0.45rem;
+}
+
 .searchCard > :last-child {
-  margin-inline: 0.45rem;
+  margin-right: 0.45rem;
 }
 
 .listButton {
@@ -157,6 +165,18 @@
 .loadingText {
   color: var(--color-text-muted);
   font-size: var(--text-sm);
+}
+
+/* El panel de la ficha mientras llega su trozo: el mismo tono apagado que el aviso de arranque. */
+.panelLoading {
+  padding: var(--space-5) var(--space-4);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+/* Un fallo del panel no puede llevarse la pantalla entera: ocupa la hoja y el mapa sigue detrás. */
+.panelFailure {
+  padding: var(--space-6) var(--space-5);
 }
 
 .retry {

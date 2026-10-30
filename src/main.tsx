@@ -7,6 +7,7 @@ import './styles/global.css'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { App } from './app/App.tsx'
+import { AppErrorBoundary } from './app/AppErrorBoundary.tsx'
 import { cargarIdioma, locale } from './i18n/index.ts'
 import { iniciarMedicion } from './lib/eventos.ts'
 
@@ -24,14 +25,22 @@ iniciarMedicion()
  * en su propia petición; sin esta espera, quien abre `/en/place/x` vería un primer fotograma en
  * español. El español ya está en el paquete, así que para la mayoría esto no espera a nada.
  *
+ * Si el idioma no llega, se pinta igual en español: dejar la página en blanco por una traducción es
+ * peor que enseñarla en el idioma equivocado. Y el árbol va dentro de una red que convierte cualquier
+ * fallo de render en un mensaje con botón de recargar (ver AppErrorBoundary).
+ *
  * Encadenado y no con `await` de nivel superior: ese `await` vuelve asíncrono el módulo de entrada y
  * Rollup reparte el código de otra manera, con más fragmentos iniciales y más CSS por delante.
  * Medido: el paquete inicial no bajaba y el CSS pasaba de 9,8 a 10,7 KB.
  */
-void cargarIdioma(locale).then(() => {
-  createRoot(root).render(
-    <StrictMode>
-      <App />
-    </StrictMode>,
-  )
-})
+void cargarIdioma(locale)
+  .catch((error: unknown) => console.error('[idioma]', error))
+  .then(() => {
+    createRoot(root).render(
+      <StrictMode>
+        <AppErrorBoundary>
+          <App />
+        </AppErrorBoundary>
+      </StrictMode>,
+    )
+  })

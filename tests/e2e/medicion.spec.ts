@@ -89,8 +89,17 @@ test.describe('Medición de uso @mapa', () => {
     await buscador.fill('zzqxjvk')
     // El conteo espera a que la búsqueda se asiente.
     await page.waitForTimeout(1800)
-    await ocultarPestana(page)
-    await expect.poll(() => todos(envios).length).toBeGreaterThan(0)
+    /*
+     * La cola se vacía al ocultar la pestaña, y vaciarla dos veces no duplica nada: con un solo aviso,
+     * si el temporizador de 1,5 s aún no había corrido, no queda nada que enviar y el `poll` espera
+     * veinte segundos a un envío que ya no va a salir. En WebKit pasaba una de cada tres veces.
+     */
+    await expect
+      .poll(async () => {
+        await ocultarPestana(page)
+        return todos(envios).length
+      })
+      .toBeGreaterThan(0)
     expect(todos(envios)).toContainEqual({ tipo: 'busqueda', destino: 'sin-resultados' })
     // Ni rastro de lo escrito en nada de lo enviado.
     expect(JSON.stringify(envios)).not.toContain('zzqxjvk')

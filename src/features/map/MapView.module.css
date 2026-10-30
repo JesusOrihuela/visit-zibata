@@ -2,8 +2,8 @@
   position: absolute;
   inset: 0;
   background: #ebe4d7;
-  /* Contexto de apilamiento propio: los marcadores ordenan su z-index por cercanía (hasta ~11 000) y,
-     sin esto, competían con el panel, la barra superior y los controles, y los tapaban. */
+  /* Contexto de apilamiento propio: los marcadores ordenan su z-index por cercanÃ­a (hasta ~11 000) y,
+     sin esto, competÃ­an con el panel, la barra superior y los controles, y los tapaban. */
   isolation: isolate;
 }
 
@@ -16,21 +16,21 @@
  * Los marcadores son parte del mapa, no flotan sobre la interfaz.
  *
  * MapLibre cuelga cada marcador de este contenedor, y el solucionador de colisiones les pone un
- * z-index por cercanía que llega a ~11 000. Sin un contexto de apilamiento aquí, esos numeros
- * competían con los controles de zoom, brújula y mi ubicacion (--z-map-ui: 10) y los tapaban: una
- * gota caía encima del botón de más y se quedaba con el clic. Con el contexto, todo el orden por
- * cercanía se resuelve dentro de esta capa y la capa entera queda debajo de los controles, que es
- * lo que --z-map-ui ya prometía.
+ * z-index por cercanÃ­a que llega a ~11 000. Sin un contexto de apilamiento aquÃ­, esos numeros
+ * competÃ­an con los controles de zoom, brÃºjula y mi ubicacion (--z-map-ui: 10) y los tapaban: una
+ * gota caÃ­a encima del botÃ³n de mÃ¡s y se quedaba con el clic. Con el contexto, todo el orden por
+ * cercanÃ­a se resuelve dentro de esta capa y la capa entera queda debajo de los controles, que es
+ * lo que --z-map-ui ya prometÃ­a.
  *
- * Va en el contenedor del lienzo y no en `.canvas` a propósito: la atribución de MapLibre es otra
- * hermana, y bajarla con los marcadores la metia debajo de la viñeta, que le resta contraste a un
+ * Va en el contenedor del lienzo y no en `.canvas` a propÃ³sito: la atribuciÃ³n de MapLibre es otra
+ * hermana, y bajarla con los marcadores la metia debajo de la viÃ±eta, que le resta contraste a un
  * texto que la licencia obliga a mantener legible.
  */
 .root :global(.maplibregl-canvas-container) {
   isolation: isolate;
 }
 
-/* Viñeta muy suave: sensación de maqueta sobre una mesa, sin bloquear la interacción. */
+/* ViÃ±eta muy suave: sensaciÃ³n de maqueta sobre una mesa, sin bloquear la interacciÃ³n. */
 .root::after {
   content: "";
   position: absolute;
@@ -40,124 +40,15 @@
 }
 
 /*
- * La espera del mapa, sin caja.
- *
- * Era una pastilla flotando en el centro de una pantalla vacía: una superficie con forma de control
- * para algo que nadie pulsa, y una más en una interfaz que ya tenía demasiadas. Ahora el aviso no
- * tiene contenedor, y lo que ocupa el hueco es la trama de puntos de la marca, la misma de la
- * página 404, respirando muy despacio.
- *
- * Es el recurso que ya existía para "aquí todavía no hay nada", y resuelve de paso lo que de verdad
- * se sentía mal: no era el indicador, era el beige vacío detrás de él.
- */
-.loading {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  align-content: center;
-  gap: var(--space-4);
-  color: var(--color-text-muted);
-  font-size: var(--text-sm);
-  z-index: 1;
-  pointer-events: none;
-}
-
-.loading::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(var(--olive-600) 1px, transparent 1px);
-  background-size: 26px 26px;
-  /* Solo `opacity`: es lo único que puede animarse sobre un área entera sin costar un repintado. */
-  animation: respira 2.6s var(--ease-in-out) infinite;
-  opacity: 0.06;
-}
-
-@keyframes respira {
-  0%,
-  100% {
-    opacity: 0.045;
-  }
-  50% {
-    opacity: 0.1;
-  }
-}
-
-/* La trama se queda quieta y visible: una textura estática no molesta, una congelada a media luz sí. */
-@media (prefers-reduced-motion: reduce) {
-  .loading::before {
-    animation: none;
-    opacity: 0.07;
-  }
-}
-
-/*
- * Tres puntos que se encienden en orden, en la rampa de verdes de la marca.
- *
- * Antes era uno solo latiendo con `scale` y `opacity`, que es el indicador de carga por omisión de
- * cualquier interfaz. Tres en secuencia dicen lo mismo y además dicen algo de este producto: son los
- * mismos verdes con los que el mapa pinta la zona que está llegando.
- *
- * Hecho a mano con `animation-delay`, cero bytes de librería. Se encienden hacia la derecha, en el
- * sentido en que se lee el texto que tienen al lado.
- */
-.loadingDots {
-  display: inline-flex;
-  gap: 0.3rem;
-}
-
-.loadingDot {
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: var(--radius-round);
-  background: var(--lime-300);
-  animation: llega 1.4s var(--ease-in-out) infinite;
-}
-
-.loadingDot:nth-child(2) {
-  background: var(--lime-500);
-  animation-delay: 0.16s;
-}
-
-.loadingDot:nth-child(3) {
-  background: var(--olive-600);
-  animation-delay: 0.32s;
-}
-
-@keyframes llega {
-  0%,
-  70%,
-  100% {
-    opacity: 0.3;
-  }
-  35% {
-    opacity: 1;
-  }
-}
-
-/*
- * Sin movimiento, los tres se quedan encendidos. La regla global pone las duraciones a casi cero y
- * eso congelaría la animación en su primer fotograma, que es el apagado: tres puntos grises que no
- * dicen nada. Encendidos al menos se leen como un indicador presente.
- */
-@media (prefers-reduced-motion: reduce) {
-  .loadingDot {
-    animation: none;
-    opacity: 1;
-  }
-}
-
-/*
  * Los marcadores HTML (etiquetas de zona) viven dentro del contenedor de MapLibre, y su hoja le pone a
  * todo el mapa `font: 12px/20px "Helvetica Neue"`. Sin esto, el texto de las etiquetas heredaba esa
- * fuente y no la de la guía, aunque el resto de la interfaz ya usara Special Gothic.
+ * fuente y no la de la guÃ­a, aunque el resto de la interfaz ya usara Special Gothic.
  */
 .root :global(.maplibregl-marker) {
   font-family: var(--font-sans);
 }
 
-/* Atribución compacta y discreta, siempre visible. */
+/* AtribuciÃ³n compacta y discreta, siempre visible. */
 .root :global(.maplibregl-ctrl-attrib) {
   background: rgb(252 250 246 / 0.82);
   font-family: var(--font-sans);
@@ -166,8 +57,8 @@
 }
 
 /*
- * Plegada, MapLibre deja el contenedor 4 px más corto que su propio botón: la ⓘ se descolgaba y abría
- * un hueco raro entre la franja de la guía y el mapa. Con el alto del botón, plegada y desplegada
+ * Plegada, MapLibre deja el contenedor 4 px mÃ¡s corto que su propio botÃ³n: la â“˜ se descolgaba y abrÃ­a
+ * un hueco raro entre la franja de la guÃ­a y el mapa. Con el alto del botÃ³n, plegada y desplegada
  * ocupan exactamente la misma franja.
  */
 .root :global(.maplibregl-ctrl-attrib.maplibregl-compact) {
@@ -175,7 +66,7 @@
   min-height: 24px;
 }
 
-/* Nunca llega bajo los controles del mapa (a la derecha): en pantallas estrechas pasa a dos líneas. */
+/* Nunca llega bajo los controles del mapa (a la derecha): en pantallas estrechas pasa a dos lÃ­neas. */
 .root :global(.maplibregl-ctrl-bottom-left .maplibregl-ctrl-attrib) {
   box-sizing: border-box;
   max-width: calc(100vw - 5.75rem);
@@ -190,8 +81,8 @@
 }
 
 /*
- * En móvil la hoja inferior ocupa el borde: la atribución (obligatoria por la ODbL) se coloca encima.
- * A la izquierda arranca donde arranca la franja de la guía (--space-4 menos los 10 px de margen que
+ * En mÃ³vil la hoja inferior ocupa el borde: la atribuciÃ³n (obligatoria por la ODbL) se coloca encima.
+ * A la izquierda arranca donde arranca la franja de la guÃ­a (--space-4 menos los 10 px de margen que
  * pone MapLibre), para que las dos piezas del pie compartan el mismo borde.
  */
 .root :global(.maplibregl-ctrl-bottom-left) {

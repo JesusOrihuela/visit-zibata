@@ -41,6 +41,17 @@ test.describe('Estados de error @mapa', () => {
     await expect(alert.getByRole('button', { name: 'Reintentar' })).toBeVisible()
   })
 
+  test('si el trozo de la ficha no descarga, el panel avisa y el mapa sigue', async ({ page }) => {
+    // El caso que dejaba la tarjeta en blanco: publicación nueva que retiró el trozo, o red caída.
+    await page.route(/\/assets\/PlaceDetail-[\w-]+\.js$/, (route) => route.abort())
+    await openApp(page)
+    await page.goto('/es/lugar/grunen-lush-anahuac')
+    const aviso = panel(page).getByRole('alert')
+    await expect(aviso).toContainText('No pudimos cargar los lugares')
+    await expect(aviso.getByRole('button', { name: 'Reintentar' })).toBeVisible()
+    await expect(page.getByRole('searchbox', { name: 'Buscar lugares' })).toBeVisible()
+  })
+
   test('un registro inválido se omite con aviso y el resto de la guía funciona', async ({
     page,
   }) => {
