@@ -47,7 +47,7 @@ export const es = {
   'plaza.comingSoonList': 'En construcción',
 
   'place.backToPlaza': 'Volver a {plaza}',
-  'place.backToResults': 'Volver a resultados',
+  'place.backToResults': 'Volver a Resultados',
   'place.directionsToPlaza': 'Cómo llegar a {plaza}',
   'place.directionsToPlace': 'Cómo llegar a {name}',
   'place.directions': 'Cómo llegar',
@@ -222,6 +222,9 @@ export const es = {
   'map.locate': 'Mostrar mi ubicación',
   'map.locateError': 'No pudimos obtener tu ubicación.',
   'map.loading': 'Cargando Zibatá…',
+  'map.loading.preparing': 'Preparando Zibatá',
+  'map.loading.areas': 'Trazando las plazas',
+  'map.loading.streets': 'Dibujando las calles',
   'map.controls': 'Controles del mapa',
   'map.locateOutside': 'Parece que no estás en Zibatá, así que el mapa sigue mostrando sus zonas.',
   'map.locateUnsupported': 'Este navegador no permite obtener tu ubicación.',

@@ -28,6 +28,19 @@ describe('las direcciones del español sin prefijo', () => {
     // Una palabra que solo empieza como un segmento no lo es.
     expect(aDonde('https://visitzibata.com/zonas')).toBeNull()
   })
+
+  it('la barra final sobra: cada ruta es un archivo, no una carpeta', () => {
+    expect(aDonde('https://visitzibata.com/es/')).toBe('/es')
+    expect(aDonde('https://visitzibata.com/es/lugar/tomassa/')).toBe('/es/lugar/tomassa')
+    expect(aDonde('https://visitzibata.com/en/area/condesa/')).toBe('/en/area/condesa')
+    expect(aDonde('https://visitzibata.com/en/place/tomassa//')).toBe('/en/place/tomassa')
+    // Con consulta, la consulta viaja.
+    expect(aDonde('https://visitzibata.com/es/zona/condesa/?categoria=bebidas')).toBe(
+      '/es/zona/condesa?categoria=bebidas',
+    )
+    // Y en un solo salto: el filtro de la portada manda sobre la barra.
+    expect(aDonde('https://visitzibata.com/es/?categoria=italiana')).toBe('/es/categoria/italiana')
+  })
 })
 
 describe('los enlaces antiguos de categoría', () => {

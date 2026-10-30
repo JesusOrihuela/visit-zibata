@@ -48,7 +48,7 @@ export const en = {
   'plaza.comingSoonList': 'Under construction',
 
   'place.backToPlaza': 'Back to {plaza}',
-  'place.backToResults': 'Back to results',
+  'place.backToResults': 'Back to Results',
   'place.directionsToPlaza': 'Directions to {plaza}',
   'place.directionsToPlace': 'Directions to {name}',
   'place.directions': 'Directions',
@@ -195,6 +195,9 @@ export const en = {
   'map.locate': 'Show my location',
   'map.locateError': 'We couldn’t get your location.',
   'map.loading': 'Loading Zibatá…',
+  'map.loading.preparing': 'Preparing Zibatá',
+  'map.loading.areas': 'Laying out the areas',
+  'map.loading.streets': 'Drawing the streets',
   'map.controls': 'Map controls',
   'map.locateOutside': 'Looks like you’re not in Zibatá, so the map still shows its areas.',
   'map.locateUnsupported': 'This browser can’t share your location.',

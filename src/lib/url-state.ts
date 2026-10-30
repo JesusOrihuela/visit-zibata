@@ -42,13 +42,22 @@ export type InfoTopic = (typeof INFO_TOPICS)[number]
 export type InfoPagina = Exclude<InfoTopic, 'tutorial'>
 
 /**
+ * Las familias de ruta. Una página se identifica por su familia y su slug; el segmento que se escribe
+ * en la dirección depende del idioma. Añadir una familia es añadirla aquí y en nada más: de esta
+ * tabla salen la expresión que valida el servidor de desarrollo, el recorte que separa una vista de
+ * su filtro, las reglas de `robots.txt` y el patrón que comprueba el despliegue.
+ */
+export const ROUTE_FAMILIES = ['place', 'plaza', 'category', 'info'] as const
+export type RouteFamily = (typeof ROUTE_FAMILIES)[number]
+
+/**
  * Los segmentos de ruta por idioma. El tema de información se guarda siempre con su clave en
  * español (es el identificador interno) y se escribe traducido.
  */
-const SEGMENTS = {
-  es: { place: 'lugar', plaza: 'zona', info: 'info', category: 'categoria' },
-  en: { place: 'place', plaza: 'area', info: 'info', category: 'category' },
-} as const satisfies Record<Locale, Record<string, string>>
+export const SEGMENTS = {
+  es: { place: 'lugar', plaza: 'zona', category: 'categoria', info: 'info' },
+  en: { place: 'place', plaza: 'area', category: 'category', info: 'info' },
+} as const satisfies Record<Locale, Record<RouteFamily, string>>
 
 const INFO_SLUGS = {
   es: { acerca: 'acerca', privacidad: 'privacidad', sugerir: 'sugerir', tutorial: 'tutorial' },
@@ -56,18 +65,33 @@ const INFO_SLUGS = {
 } as const satisfies Record<Locale, Record<InfoTopic, string>>
 
 /** Prefijo de ruta de cada idioma. Todos llevan el suyo; el español sin prefijo es solo el formato anterior. */
-const PREFIX: Record<Locale, string> = { es: 'es', en: 'en' }
+export const PREFIX: Record<Locale, string> = { es: 'es', en: 'en' }
 
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+
+/** Todos los segmentos publicados, sin repetir, para las expresiones que se construyen debajo. */
+const TODOS_LOS_SEGMENTOS = [
+  ...new Set(Object.values(SEGMENTS).flatMap((words) => Object.values(words))),
+]
+const PREFIJOS = [...new Set(Object.values(PREFIX))]
+/** El grupo va aparte del `/` a propósito: `(?:es|en)/` agrupa los dos prefijos, `(?:es|en/)?` no. */
+const PREFIJO = `(?:${PREFIJOS.join('|')})`
+const SEGMENTO_DE_CATEGORIA = [...new Set(Object.values(SEGMENTS).map((words) => words.category))]
 
 /**
  * Las rutas que la aplicación sirve, sin la base. La usa el servidor de desarrollo para entregar
  * `index.html`: en producción existe un archivo por ruta, pero en desarrollo no hay prerenderizado
  * y Vite va en modo `mpa` a propósito, sin reserva, para que un camino inventado dé 404 de verdad.
  * Acotarla a estas rutas conserva esa propiedad también mientras se desarrolla.
+ *
+ * El grupo de fuera no es decoración. Sin él la alternancia parte la expresión entera y un `^`
+ * seguido de un grupo opcional casa con cualquier texto, de modo que el servidor entregaba
+ * `index.html` también para `/src/main.tsx` y la aplicación se quedaba en blanco. Lo fija
+ * `urls.test.ts`.
  */
-export const APP_ROUTE =
-  /^(?:(?:(?:es|en)\/)?(?:(?:lugar|zona|categoria|place|area|category|info)\/[a-z0-9-]+)?|es|en)$/
+export const APP_ROUTE = new RegExp(
+  `^(?:(?:${PREFIJO}/)?(?:${TODOS_LOS_SEGMENTOS.join('|')})/[a-z0-9-]+|${PREFIJO}|)$`,
+)
 
 export interface UrlState {
   locale: Locale
@@ -155,7 +179,10 @@ export function buildPath(state: UrlState, base: string): string {
  */
 export function vistaDe(path: string): string {
   const sinConsulta = path.split('?')[0] ?? path
-  const sinCategoria = sinConsulta.replace(/\/(?:categoria|category)\/[a-z0-9-]+$/, '')
+  const sinCategoria = sinConsulta.replace(
+    new RegExp(`/(?:${SEGMENTO_DE_CATEGORIA.join('|')})/[a-z0-9-]+$`),
+    '',
+  )
   // Sin barra final: `/es` y `/es/` son la misma vista (y `/` es la portada del formato anterior).
   return sinCategoria.replace(/\/+$/, '') || '/'
 }

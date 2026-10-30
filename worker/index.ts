@@ -91,8 +91,27 @@ export default {
     // Las direcciones de antes del prefijo `/es` y los enlaces `/?categoria=x` pasan a donde llevan ahora
     // (ver redireccion.ts).
     if (peticion.method === 'GET' || peticion.method === 'HEAD') {
-      const destino = redireccionDe(new URL(peticion.url))
+      const url = new URL(peticion.url)
+      const destino = redireccionDe(url)
       if (destino) return Response.redirect(new URL(destino, peticion.url).href, 301)
+
+      /*
+       * Las direcciones se escriben en minúsculas. El sistema de archivos distingue, así que
+       * `/es/lugar/Tomassa`, que es como la escribe alguien a mano o la pega desde un chat, daría 404
+       * con la página correcta al lado. Se corrige con un 301 antes de buscar el archivo, igual que
+       * hacen los sitios grandes, y de paso el enlace conserva lo que valía.
+       *
+       * Si además la dirección en minúsculas es del formato anterior, se resuelve en el mismo salto.
+       */
+      const minusculas = url.pathname.toLowerCase()
+      if (minusculas !== url.pathname) {
+        const limpia = new URL(url)
+        limpia.pathname = minusculas
+        return Response.redirect(
+          new URL(redireccionDe(limpia) ?? limpia.href, peticion.url).href,
+          301,
+        )
+      }
     }
 
     const respuesta = await entorno.ASSETS.fetch(peticion)

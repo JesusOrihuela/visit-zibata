@@ -8,12 +8,15 @@ import type { OsmTags } from './osm.ts'
 const MINOR_WORDS = new Set(['de', 'del', 'la', 'las', 'los', 'el', 'y', 'e', 'en', 'al', 'a'])
 
 /**
- * Nombre tal como se rotula en el mapa. OSM guarda algunos nombres en mayúsculas ("PARQUE NANDÚ")
- * y otros no ("El Jamadi"); el rótulo los unifica en capital inicial para que el mapa no grite. Un
- * nombre que ya trae minúsculas se respeta tal cual: sus mayúsculas son intencionadas (siglas, marcas).
+ * Nombre tal como se rotula en el mapa: capital inicial y cada palabra relevante también, con las
+ * partículas en minúscula ("Av. Paseo de las Pitahayas"). Se aplica siempre, venga el nombre de OSM
+ * en mayúsculas, en minúsculas o mezclado: dos rótulos del mismo rol no pueden escribirse distinto
+ * según cómo lo guardara quien lo subió.
+ *
+ * Lo que sí se pierde es la sigla que no es palabra ("CITEA" pasa a "Citea"). Es el precio de que la
+ * regla sea una; si algún día hace falta conservar una, se escribe en la lista de excepciones.
  */
 export function displayName(raw: string): string {
-  if (/\p{Ll}/u.test(raw)) return raw
   return raw
     .toLocaleLowerCase('es')
     .split(/(\s+|-)/)
@@ -124,7 +127,11 @@ export function isWaterway(tags: OsmTags): boolean {
   return ['river', 'stream', 'canal', 'drain', 'ditch'].includes(tags.waterway ?? '')
 }
 
-export type LabelClass = 'golf' | 'park' | 'water' | 'district' | 'education' | 'landmark'
+/**
+ * Las clases que se rotulan. Los edificios con nombre quedan fuera a propósito: un "Edificio B" en
+ * el mapa compite con el nombre de la zona sin orientar a nadie.
+ */
+export type LabelClass = 'golf' | 'park' | 'water' | 'district' | 'education'
 
 export function classifyLabel(tags: OsmTags): LabelClass | null {
   if (!tags.name) return null
@@ -133,8 +140,10 @@ export function classifyLabel(tags: OsmTags): LabelClass | null {
     return 'park'
   if (tags.natural === 'water') return 'water'
   if (tags.landuse === 'residential') return 'district'
+  // Los residenciales que OSM no dibuja como polígono suelen estar como lugar poblado: el nombre es
+  // el mismo y el rótulo también.
+  if (['neighbourhood', 'suburb', 'quarter'].includes(tags.place ?? '')) return 'district'
   if (['university', 'college', 'school'].includes(tags.amenity ?? '')) return 'education'
-  if (tags.building && tags.name) return 'landmark'
   return null
 }
 

@@ -28,6 +28,7 @@ import { GuideBar } from '../features/about/GuideBar.tsx'
 import { LocaleSwitch } from '../features/about/LocaleSwitch.tsx'
 import { FilterBar } from '../features/filters/FilterBar.tsx'
 import { MapErrorBoundary } from '../features/map/MapErrorBoundary.tsx'
+import { MapLoader } from '../features/map/MapLoader.tsx'
 import { realismoActivo } from '../features/map/realismo/modo.ts'
 import type { MapStatus } from '../features/map/types.ts'
 import { hasSeenOnboarding } from '../features/onboarding/seen.ts'
@@ -42,6 +43,7 @@ import { useOnlineStatus } from '../hooks/useOnlineStatus.ts'
 import { t, useLocale } from '../i18n/index.ts'
 import { type InfoTopic, parsePath, rutaDeCategoria } from '../lib/url-state.ts'
 import type { Catalog, Place } from '../types/domain.ts'
+import { AppErrorBoundary } from './AppErrorBoundary.tsx'
 import { useAppDispatch } from './AppStateContext.tsx'
 import styles from './Experience.module.css'
 import { encabezadoDe } from './encabezado.ts'
@@ -120,10 +122,8 @@ export function Experience() {
     return (
       <main className={styles.fullscreenState} aria-busy="true">
         <h1 className="visually-hidden">{appTitle}</h1>
-        <Brand />
-        <p className={styles.loadingText} role="status">
-          {t('data.loading')}
-        </p>
+        {/* La misma espera que la del mapa: es la misma carga vista un paso antes. */}
+        <MapLoader visible variant="pantalla" />
       </main>
     )
   }
@@ -386,19 +386,31 @@ function ReadyExperience({ catalog }: { catalog: Catalog }) {
     case 'place':
       contentKey = `place-${panel.place.id}`
       content = (
-        <Suspense fallback={null}>
-          <PlaceDetail
-            place={panel.place}
-            plaza={panel.plaza}
-            backLabel={
-              panel.fromResults
-                ? t('place.backToResults')
-                : t('place.backToPlaza', { plaza: panel.plaza.name })
+        // El trozo de la ficha es lo único del panel que viaja aparte: si no llega, el aviso se queda
+        // dentro de la hoja y el mapa sigue detrás.
+        <AppErrorBoundary variant="panel">
+          <Suspense
+            fallback={
+              // La ficha viaja en su propio trozo. Con el hueco vacío, el panel se veía roto mientras
+              // llegaba; con el aviso, se ve que está cargando.
+              <p className={styles.panelLoading} role="status">
+                {t('data.loading')}
+              </p>
             }
-            onBack={() => dispatch({ type: 'closePlace' })}
-            onClose={closePanel}
-          />
-        </Suspense>
+          >
+            <PlaceDetail
+              place={panel.place}
+              plaza={panel.plaza}
+              backLabel={
+                panel.fromResults
+                  ? t('place.backToResults')
+                  : t('place.backToPlaza', { plaza: panel.plaza.name })
+              }
+              onBack={() => dispatch({ type: 'closePlace' })}
+              onClose={closePanel}
+            />
+          </Suspense>
+        </AppErrorBoundary>
       )
       break
     case 'plaza':
@@ -467,13 +479,7 @@ function ReadyExperience({ catalog }: { catalog: Catalog }) {
       >
         <h1 className="visually-hidden">{encabezadoDe(state, catalog)}</h1>
         <MapErrorBoundary onError={onMapCrash}>
-          <Suspense
-            fallback={
-              <div className={styles.mapFallback} role="status">
-                {t('map.loading')}
-              </div>
-            }
-          >
+          <Suspense fallback={null}>
             <MapView
               plazas={catalog.plazas}
               placeCounts={experience.placeCounts}
@@ -488,6 +494,11 @@ function ReadyExperience({ catalog }: { catalog: Catalog }) {
             />
           </Suspense>
         </MapErrorBoundary>
+        {/*
+         * Una sola espera para todo el mapa: cubre la descarga del trozo y la del estilo y las
+         * teselas, así que el agua no se reinicia a mitad de camino.
+         */}
+        <MapLoader visible={state.mapStatus.state === 'loading'} />
 
         <header
           ref={topbarRef}

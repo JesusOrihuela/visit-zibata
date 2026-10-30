@@ -1,0 +1,106 @@
+/*
+ * La espera: el símbolo con el agua subiendo. Lo que queda por debajo del agua va a color; lo que
+ * falta, en escala de grises.
+ *
+ * El velo es de arena y no un desenfoque: detrás el lienzo está vacío o a medio pintar, así que no
+ * hay nada que desenfocar, y un `backdrop-filter` a pantalla completa le pediría a la GPU un trabajo
+ * por fotograma justo mientras el mapa carga.
+ */
+.loader {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: var(--space-4);
+  background: rgb(226 217 201 / 0.86);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 360ms var(--ease-out);
+}
+
+/* Sobre el mapa ocupa todo el hueco; antes de que haya mapa, ocupa la pantalla sin pintarla. */
+.loader[data-variant="mapa"] {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding-bottom: var(--safe-bottom);
+}
+
+.loader[data-variant="pantalla"] {
+  width: 100%;
+  min-height: 100%;
+  background: none;
+}
+
+.loader[data-visible="true"] {
+  opacity: 1;
+}
+
+/*
+ * El símbolo. Dos copias del mismo archivo: la gris, que es lo que falta, y la de color, recortada por
+ * la máscara del agua. Van a 96 px: por debajo de 40 el corte chico del símbolo es el que se lee, y a
+ * este tamaño manda el grande, que es el que tiene el detalle del aro.
+ */
+.marca {
+  position: relative;
+  display: block;
+  width: 6rem;
+  height: 6rem;
+}
+
+.gris,
+.color {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.gris {
+  filter: grayscale(1);
+  opacity: 0.45;
+}
+
+/*
+ * La línea del agua. La máscara es una gota de agua con el borde de arriba ondulado: se estira a lo
+ * alto del nivel y se ancla abajo, así que el borde sube y la onda se queda pegada a él. Cuando está
+ * al 100 % tapa el símbolo entero y no se nota el corte.
+ */
+.color {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 3 C 12.5 0, 25 6, 37.5 3 S 62.5 0, 75 3 S 87.5 6, 100 3 V 100 H 0 Z' fill='black'/%3E%3C/svg%3E");
+  -webkit-mask-size: 100% calc(var(--nivel) * 100%);
+  -webkit-mask-position: bottom center;
+  -webkit-mask-repeat: no-repeat;
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 3 C 12.5 0, 25 6, 37.5 3 S 62.5 0, 75 3 S 87.5 6, 100 3 V 100 H 0 Z' fill='black'/%3E%3C/svg%3E");
+  mask-size: 100% calc(var(--nivel) * 100%);
+  mask-position: bottom center;
+  mask-repeat: no-repeat;
+}
+
+.frase {
+  font-size: var(--text-base);
+  color: var(--color-text-muted);
+  /* El texto cambia cada 2,6 s: entra desde abajo, corto y sin rebote. */
+  animation: frase 320ms var(--ease-out);
+}
+
+@keyframes frase {
+  from {
+    opacity: 0;
+    translate: 0 4px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+/* Sin movimiento: el agua se queda quieta a media altura (lo fija el componente) y la frase no corre. */
+@media (prefers-reduced-motion: reduce) {
+  .loader {
+    transition: none;
+  }
+
+  .frase {
+    animation: none;
+  }
+}

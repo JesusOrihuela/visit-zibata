@@ -195,7 +195,7 @@
   border: 1.5px dashed var(--zone-accent, var(--olive-600));
   border-radius: var(--radius-pill);
   background: var(--zone-soft, white);
-  color: var(--zone-accent, var(--olive-700));
+  color: var(--zone-ink, var(--olive-700));
   font-size: var(--text-2xs);
   font-weight: var(--weight-strong);
 }
@@ -203,7 +203,7 @@
 .zone[data-visited="true"] {
   border-style: solid;
   background: var(--zone-accent, var(--olive-600));
-  color: white;
+  color: var(--zone-on-accent, white);
 }
 
 .zoneCheck {
@@ -266,7 +266,7 @@
   margin-bottom: 0.05rem;
   border-radius: var(--radius-round);
   background: var(--zone-soft, var(--lime-50));
-  color: var(--zone-accent, var(--olive-600));
+  color: var(--zone-ink, var(--olive-600));
 }
 
 /* El nombre cabe en dos líneas; el completo vive en el título y en el nombre accesible. */
@@ -386,7 +386,7 @@
 .link {
   composes: enlace from "../../styles/controls.module.css";
   padding: 0.35rem 0;
-  font: 600 var(--text-sm) / 1.4 var(--font-sans);
+  font: var(--weight-strong) var(--text-sm) / 1.4 var(--font-sans);
 }
 
 /*

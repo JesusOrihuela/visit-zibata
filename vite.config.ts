@@ -182,8 +182,12 @@ function cloudflareHeaders(): Plugin {
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
 
+# Los archivos del mapa no llevan hash en el nombre: zibata.pmtiles se llama igual en cada
+# publicación y su contenido cambia. Con un día de caché, quien ya había entrado seguía viendo la
+# cartografía anterior después de una publicación, sin forma de saberlo. Se revalida siempre: si el
+# archivo no cambió, la respuesta es un 304 y no baja nada; si cambió, llega en la siguiente visita.
 /map/*
-  Cache-Control: public, max-age=86400
+  Cache-Control: public, max-age=0, must-revalidate
 
 # Las teselas se escriben en crudo para que funcionen en cualquier hosting, y es este tipo el que
 # hace que el CDN las comprima: application/x-protobuf esta en la lista que Cloudflare comprime, y
@@ -191,7 +195,7 @@ function cloudflareHeaders(): Plugin {
 # archivo sigue sirviendo el mapa, solo que mas pesado: nunca roto.
 /map/tiles/*
   Content-Type: application/x-protobuf
-  Cache-Control: public, max-age=86400
+  Cache-Control: public, max-age=0, must-revalidate
 
 # Las calles de la region (realismo) son un GeoJSON de casi 1 MB: como application/json el CDN lo
 # comprime, y con el tipo propio de la extension no esta garantizado que lo haga.

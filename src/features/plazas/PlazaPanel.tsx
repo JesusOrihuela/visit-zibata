@@ -2,7 +2,7 @@
 import { ArrowUpRight, MapPin, SearchX, X } from 'lucide-react'
 import { type CSSProperties, useEffect, useRef } from 'react'
 import { EmptyState } from '../../components/ui/EmptyState.tsx'
-import { DEFAULT_PLAZA_TONE, plazaTones } from '../../config/palette.ts'
+import { DEFAULT_PLAZA_TONE, plazaTones, plazaVars } from '../../config/palette.ts'
 import { useCatalog } from '../../data/CatalogContext.tsx'
 import { localized, t } from '../../i18n/index.ts'
 import { registrar } from '../../lib/eventos.ts'
@@ -59,7 +59,7 @@ export function PlazaPanel({
   return (
     <section
       className={styles.panel}
-      style={{ '--plaza-accent': tone.accent } as CSSProperties}
+      style={plazaVars(tone) as CSSProperties}
       aria-labelledby="plaza-panel-title"
     >
       <header className={styles.header} data-sello="plaza">

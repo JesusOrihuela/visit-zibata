@@ -1,19 +1,23 @@
 /**
- * Colores de identidad, derivados de la paleta de marca (arena #D1C3B0, olivo #536C2A, lima #8CBA37).
+ * Colores de identidad: los de cada zona y los de cada categoría.
  *
  * Dos dimensiones, cada una en la superficie donde responde a la pregunta del usuario:
- *  - Plaza (mapa y cabeceras de plaza): "¿cuál es cuál?" al mirar Zibatá desde arriba.
+ *  - Zona (mapa y cabeceras): "¿cuál es cuál?" al mirar Zibatá desde arriba.
  *  - Categoría (listas y fichas): "¿qué tipo de comida es?" al elegir dónde comer.
  *
- * Para que nunca parezca que una plaza y una categoría "comparten" color (no significan lo mismo) las
- * dos familias viven en registros distintos y se generan desde HSL, no a mano:
- *  - Plaza: color pleno (saturación media-alta), siempre en una forma sólida (suelo y volumen del mapa,
- *    rombo, punto del marcador).
+ * Para que nunca parezca que una zona y una categoría "comparten" color (no significan lo mismo) las
+ * dos familias viven en registros distintos:
+ *  - Zona: color de identidad pleno y saturado, siempre en una forma sólida (la gota del marcador, el
+ *    suelo y el volumen de sus edificios en el mapa).
  *  - Categoría: tinte muy claro de fondo con el icono en tinta oscura; nunca un color pleno.
- * Así, aunque dos tonos caigan en la misma familia cromática, se leen como cosas distintas.
+ *
+ * El color de una zona se declara una sola vez, abajo, y de él salen los demás: su texto legible, su
+ * suelo y sus edificios. No se reparten por orden de llegada, así que una zona nueva no le mueve el
+ * color a nadie.
  */
+import { contraste, hslDe } from './color.ts'
 
-/** Convierte HSL a hexadecimal. Los tonos se definen en HSL porque la regla vive en la saturación. */
+/** Convierte HSL a hexadecimal. Los tonos derivados se definen en HSL porque la regla vive en la saturación. */
 function hsl(hue: number, saturation: number, lightness: number): string {
   const s = saturation / 100
   const l = lightness / 100
@@ -30,8 +34,8 @@ function hsl(hue: number, saturation: number, lightness: number): string {
 
 /**
  * Aclara (positivo) u oscurece (negativo) un color en su propio tono. Los estados del mapa ·cursor
- * encima y plaza seleccionada· se derivan así del color de cada plaza, en vez de volver todos al verde
- * de marca: la plaza sigue siendo reconocible mientras está seleccionada.
+ * encima y plaza seleccionada· se derivan así del color de cada zona, en vez de volver todos al verde
+ * de marca: la zona sigue siendo reconocible mientras está seleccionada.
  */
 export function shade(hex: string, amount: number): string {
   const value = Number.parseInt(hex.slice(1), 16)
@@ -46,49 +50,101 @@ export function shade(hex: string, amount: number): string {
 }
 
 export interface PlazaTone {
-  /** Suelo de la plaza en el mapa. */
+  /** Suelo de la zona en el mapa. */
   site: string
   siteOutline: string
-  /** Volumen de los edificios de la plaza. */
+  /** Volumen de los edificios de la zona. */
   building: string
-  /** Acento sólido para marcadores y cabeceras (contraste AA sobre superficies claras). */
+  /** El color de identidad en pantalla: la gota, su tallo y los alfileres en miniatura. */
   accent: string
+  /** Texto que va encima de `accent`: arena en todas, por decisión de la marca. */
+  onAccent: string
+  /** El mismo tono como texto sobre superficie clara (nombre de zona, cifra de la gota). */
+  ink: string
   /** Fondo suave para insignias y pastillas. */
   soft: string
 }
 
-/**
- * Tonos de plaza, repartidos por la rueda de color con saturación media-alta: sobre la maqueta color
- * arena cada plaza se distingue de sus vecinas aunque ninguna esté seleccionada. El primero es el
- * verde de marca. Son doce, más que las plazas activas de hoy.
- */
-const PLAZA_HUES = [95, 170, 25, 252, 340, 60, 205, 310, 40, 130, 8, 280]
+/** Las tres superficies claras donde se apoya un color de zona. */
+const PAPEL = '#f8f4ed' // sand-50, la superficie de una ficha
+const ARENA = '#fcfaf6' // sand-25
 
-function plazaTone(hue: number): PlazaTone {
+/** Oscurece el tono en su propia saturación hasta que se lea sobre el papel. */
+function tintaLegible(accent: string): string {
+  const { h, s, l } = hslDe(accent)
+  for (let luz = l; luz >= 12; luz -= 1) {
+    const candidato = hsl(h, s, luz)
+    if (contraste(candidato, PAPEL) >= 4.5) return candidato
+  }
+  return hsl(h, s, 12)
+}
+
+/**
+ * El color de cada zona activa, el que se ve en la gota y en el suelo del mapa. Es el único sitio
+ * donde vive: el suelo, los edificios y los textos se derivan de aquí.
+ *
+ * Cuatro van un paso más hondos que su color de marca, lo justo para que el texto de la etiqueta vaya
+ * en arena como en todas: se les baja la claridad y nada más, así que el tono sigue siendo el suyo.
+ * Anáhuac es la excepción que fijó el propietario: conserva `#ff5900` y su arena se queda en 3,02:1,
+ * el mínimo de un objeto gráfico.
+ *
+ * Lo que la prueba comprueba, no este comentario: que dos zonas no se confundan (ΔE00 ≥ 10 entre
+ * todas), que ninguna se lea como la paleta de marca ni como una categoría, que ninguna sea negra,
+ * blanca ni gris, y que el texto de la gota y el nombre sobre papel se lean.
+ */
+export const PLAZA_COLORS: Readonly<Record<string, string>> = {
+  'anahuac-queretaro': '#ff5900',
+  'xentric-anahuac': '#007e8e', // #0097aa
+  'xentric-zibata': '#6e3b14',
+  'centro-zibata': '#078450',
+  'paseo-zibata': '#cf403f', // #eb5b53
+  condesa: '#248411', // #2ca115
+  'plaza-loop': '#4b2fb5',
+  'plaza-luna': '#021f4f',
+  'mol-jamadi': '#3b1548',
+  'campo-de-golf': '#02467d',
+  'plaza-zielo': '#189ad2', // #53bdeb
+}
+
+function tonoDeZona(color: string): PlazaTone {
+  const { h } = hslDe(color)
   return {
-    site: hsl(hue, 42, 80),
-    siteOutline: hsl(hue, 45, 58),
-    building: hsl(hue, 45, 63),
-    // El acento lleva texto encima (la cifra del marcador) y texto blanco cuando la plaza está
-    // seleccionada: se mantiene oscuro para pasar AA en ambos sentidos, también en los tonos amarillos.
-    accent: hsl(hue, 55, 26),
-    soft: hsl(hue, 42, 93),
+    accent: color,
+    onAccent: ARENA,
+    ink: tintaLegible(color),
+    site: hsl(h, 42, 80),
+    siteOutline: hsl(h, 45, 58),
+    building: hsl(h, 45, 63),
+    soft: hsl(h, 42, 93),
   }
 }
 
-const PLAZA_TONES: PlazaTone[] = PLAZA_HUES.map(plazaTone)
+const PLAZA_TONES = new Map(
+  Object.entries(PLAZA_COLORS).map(([id, color]) => [id, tonoDeZona(color)]),
+)
 
-/** Plazas sin tono asignado (o inactivas): el verde de marca. */
-export const DEFAULT_PLAZA_TONE = PLAZA_TONES[0] as PlazaTone
+/** Zonas sin color propio (en obra o sin publicar): el verde de marca. */
+export const DEFAULT_PLAZA_TONE = tonoDeZona('#536c2a')
 
 /**
- * Asigna un tono a cada plaza activa, en el orden en que llegan. Se calcula una vez por catálogo:
- * el mapa y los paneles consultan el mismo mapa de tonos.
+ * El tono de cada zona que se le pida. Se calcula una vez por catálogo: el mapa y los paneles
+ * consultan el mismo mapa de tonos.
  */
 export function plazaTones(plazaIds: readonly string[]): Map<string, PlazaTone> {
-  return new Map(
-    plazaIds.map((id, index) => [id, PLAZA_TONES[index % PLAZA_TONES.length] as PlazaTone]),
-  )
+  return new Map(plazaIds.map((id) => [id, PLAZA_TONES.get(id) ?? DEFAULT_PLAZA_TONE]))
+}
+
+/**
+ * Las variables CSS de un tono, para un `style`. Son cuatro y van juntas a propósito: quien pinta el
+ * color tiene que poder pintar también el texto que va encima, o el texto lo elige otro.
+ */
+export function plazaVars(tone: PlazaTone, prefix = 'plaza'): Record<string, string> {
+  return {
+    [`--${prefix}-accent`]: tone.accent,
+    [`--${prefix}-on-accent`]: tone.onAccent,
+    [`--${prefix}-ink`]: tone.ink,
+    [`--${prefix}-soft`]: tone.soft,
+  }
 }
 
 export interface CategoryTone {
@@ -103,7 +159,7 @@ export const NEUTRAL_CATEGORY_TONE: CategoryTone = { soft: '#ece5da', ink: '#665
 /**
  * Tinte de fondo y tinta del icono a partir del tono que declara la categoría en los datos
  * (`hue` en research/taxonomy.json → categories.json). Mucho más claros y apagados que cualquier color
- * de plaza. Una categoría nueva sin tono usa el neutro: añadir categorías nunca rompe la interfaz.
+ * de zona. Una categoría nueva sin tono usa el neutro: añadir categorías nunca rompe la interfaz.
  */
 export function categoryTone(category: { hue?: number } | undefined): CategoryTone {
   const hue = category?.hue

@@ -19,6 +19,7 @@
  * el que se quiere indexar (ver `resolveLocale` en src/i18n/index.ts).
  */
 import categorias from '../data/commercial/categories.json' with { type: 'json' }
+import { PREFIX, SEGMENTS } from '../src/lib/url-state.ts'
 
 /** El slug de cada categoría, por idioma. */
 const SLUGS = {
@@ -27,25 +28,27 @@ const SLUGS = {
 }
 
 /** Los segmentos con los que empezaban las rutas del español sin prefijo. */
-const SEGMENTOS_ANTIGUOS = new Set(['lugar', 'zona', 'categoria', 'info'])
+const SEGMENTOS_ANTIGUOS: ReadonlySet<string> = new Set(Object.values(SEGMENTS.es))
 
 /** La dirección de la categoría que pide una portada con `?categoria=`, o `null`. */
 function redireccionDeCategoria(url: URL, idioma: 'es' | 'en'): string | null {
-  const parametro = idioma === 'en' ? 'category' : 'categoria'
+  const parametro = SEGMENTS[idioma].category
   const claves = [...url.searchParams.keys()]
   if (claves.length !== 1 || claves[0] !== parametro) return null
 
   const slug = url.searchParams.get(parametro) ?? ''
   if (!SLUGS[idioma].has(slug)) return null
-  return idioma === 'en' ? `/en/category/${slug}` : `/es/categoria/${slug}`
+  return `/${PREFIX[idioma]}/${SEGMENTS[idioma].category}/${slug}`
 }
 
 /** La dirección a la que mandar esta petición, o `null` si no hay que redirigirla. */
 export function redireccionDe(url: URL): string | null {
   const ruta = url.pathname.replace(/\/+$/, '') || '/'
+  // La barra final no añade nada: cada ruta es un archivo, no una carpeta.
+  const sinBarra = ruta !== url.pathname ? `${ruta}${url.search}` : null
 
-  if (ruta === '/en') return redireccionDeCategoria(url, 'en')
-  if (ruta === '/es') return redireccionDeCategoria(url, 'es')
+  if (ruta === '/en') return redireccionDeCategoria(url, 'en') ?? sinBarra
+  if (ruta === '/es') return redireccionDeCategoria(url, 'es') ?? sinBarra
 
   const [primero = ''] = ruta.split('/').filter(Boolean)
   if (ruta === '/' || SEGMENTOS_ANTIGUOS.has(primero)) {
@@ -56,5 +59,5 @@ export function redireccionDe(url: URL): string | null {
     }
     return `/es${ruta === '/' ? '' : ruta}${url.search}`
   }
-  return null
+  return sinBarra
 }

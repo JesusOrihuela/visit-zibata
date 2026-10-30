@@ -8,7 +8,7 @@
 import { type Map as MapLibreMap, Marker } from 'maplibre-gl'
 import { type CSSProperties, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { DEFAULT_PLAZA_TONE, plazaTones } from '../../config/palette.ts'
+import { DEFAULT_PLAZA_TONE, plazaTones, plazaVars } from '../../config/palette.ts'
 import { t } from '../../i18n/index.ts'
 import type { Plaza } from '../../types/domain.ts'
 import styles from './PlazaMarkers.module.css'
@@ -523,10 +523,7 @@ export function PlazaMarkers({
               : (layoutMode ?? 'compact')
         const lift = mode === 'hidden' ? 0 : (placement?.lift ?? 0)
         const tone = tones.get(plaza.id) ?? DEFAULT_PLAZA_TONE
-        const toneStyle = {
-          '--plaza-accent': tone.accent,
-          '--plaza-soft': tone.soft,
-        } as CSSProperties
+        const toneStyle = plazaVars(tone) as CSSProperties
         const etiqueta = createPortal(
           <>
             <button

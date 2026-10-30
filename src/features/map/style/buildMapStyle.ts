@@ -3,7 +3,6 @@
  * (teselas propias + GeoJSON locales). Sin servidores de mapas externos ni claves.
  */
 
-import gothic400 from '@fontsource/special-gothic/files/special-gothic-latin-400-normal.woff2?url'
 import gothic500 from '@fontsource/special-gothic/files/special-gothic-latin-500-normal.woff2?url'
 import type { Feature, FeatureCollection, Polygon } from 'geojson'
 import type { StyleSpecification } from 'maplibre-gl'
@@ -38,11 +37,11 @@ export interface MapStyleOptions {
   realismo?: RealismoStyleOptions
 }
 
-/** Atribución de la ODbL para lo que sale de OpenStreetMap, y de cada fuente de las demás capas. */
+/** AtribuciÃ³n de la ODbL para lo que sale de OpenStreetMap, y de cada fuente de las demÃ¡s capas. */
 export const MAP_ATTRIBUTION =
-  '<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap</a> · ' +
-  '<a href="https://overturemaps.org/" target="_blank" rel="noopener">Overture Maps</a> · ' +
-  '<a href="https://esa-worldcover.org/" target="_blank" rel="noopener">ESA WorldCover</a> · ' +
+  '<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">Â© OpenStreetMap</a> Â· ' +
+  '<a href="https://overturemaps.org/" target="_blank" rel="noopener">Overture Maps</a> Â· ' +
+  '<a href="https://esa-worldcover.org/" target="_blank" rel="noopener">ESA WorldCover</a> Â· ' +
   '<a href="https://maplibre.org/" target="_blank" rel="noopener">MapLibre</a>'
 
 const absolute = (url: string) => new URL(url, window.location.href).href
@@ -63,7 +62,7 @@ export function plazaSitesGeoJSON(plazas: readonly Plaza[]): FeatureCollection {
   }
 }
 
-/** Polígono "mundo con hueco": todo lo que queda fuera del contorno de Zibatá. */
+/** PolÃ­gono "mundo con hueco": todo lo que queda fuera del contorno de ZibatÃ¡. */
 export function outsideMask(boundary: Polygon, [west, south, east, north]: Bbox): Feature {
   const margin = 0.2
   const outer = [
@@ -86,10 +85,9 @@ export function buildMapStyle(options: MapStyleOptions): StyleSpecification {
   const { realismo } = options
   return {
     version: 8,
-    name: 'Zibatá: maqueta',
+    name: 'ZibatÃ¡: maqueta',
     'font-faces': {
       [FONT.sans]: absolute(gothic500),
-      [FONT.serif]: absolute(gothic400),
     },
     sources: {
       [SOURCE.base]: {
@@ -108,14 +106,6 @@ export function buildMapStyle(options: MapStyleOptions): StyleSpecification {
         promoteId: 'plazaId',
       },
       [SOURCE.mask]: { type: 'geojson', data: outsideMask(options.boundary, options.areaBbox) },
-      [SOURCE.areaLabel]: {
-        type: 'geojson',
-        data: {
-          type: 'Feature',
-          properties: {},
-          geometry: { type: 'Point', coordinates: options.center },
-        },
-      },
       ...(realismo ? realismoSources(realismo) : {}),
     },
     sky: realismo

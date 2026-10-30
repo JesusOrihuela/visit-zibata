@@ -3,7 +3,6 @@ export const SOURCE = {
   plazaSites: 'plaza-sites',
   plazaBuildings: 'plaza-buildings',
   mask: 'outside-mask',
-  areaLabel: 'area-label',
   /** Capas de realismo (ver layers/realismo.ts). */
   soil: 'realismo-suelo',
   relief: 'realismo-relieve',
@@ -11,7 +10,7 @@ export const SOURCE = {
   contextRoads: 'realismo-vias',
 } as const
 
-/** Capas con las que el usuario interactúa (hover / clic sobre plazas). */
+/** Capas con las que el usuario interactÃºa (hover / clic sobre plazas). */
 export const INTERACTIVE_PLAZA_LAYERS = ['plaza-buildings', 'plaza-sites-fill'] as const
 
 export const LAYER = {
