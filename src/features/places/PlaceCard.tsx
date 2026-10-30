@@ -1,7 +1,7 @@
 import { MapPin } from 'lucide-react'
 import { type CSSProperties, useRef } from 'react'
 import { CategoryIcon } from '../../components/icons/CategoryIcon.tsx'
-import { DEFAULT_PLAZA_TONE, plazaTones } from '../../config/palette.ts'
+import { DEFAULT_PLAZA_TONE, plazaTones, plazaVars } from '../../config/palette.ts'
 import { useCatalog } from '../../data/CatalogContext.tsx'
 import { useElementWidth } from '../../hooks/useElementWidth.ts'
 import { localized, t, useLocale } from '../../i18n/index.ts'
@@ -163,10 +163,7 @@ export function PlaceCard({ place, onOpen, showPlaza = false }: PlaceCardProps) 
            * se lean como el mismo sitio y no como dos inventarios distintos.
            */}
           {showPlaza && plaza && (
-            <span
-              className={styles.area}
-              style={{ '--plaza-accent': tone.accent } as CSSProperties}
-            >
+            <span className={styles.area} style={plazaVars(tone) as CSSProperties}>
               <MapPin aria-hidden="true" />
               {plaza.name}
             </span>

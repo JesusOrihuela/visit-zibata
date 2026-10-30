@@ -35,8 +35,11 @@
   padding: 0 0.7rem;
   border-radius: var(--radius-control);
   color: var(--ink-700);
-  font: 700 var(--text-xs) / 1 var(--font-sans);
-  letter-spacing: 0.04em;
+  /*
+   * El mismo peso y el mismo espaciado que una píldora de filtro. Estaba a 700 con tracking, que es
+   * el registro de los títulos: al lado de los demás controles se leía como otra letra.
+   */
+  font: var(--weight-strong) var(--text-xs) / 1 var(--font-sans);
 }
 
 /* Ancho fijo: el enlace mide lo mismo con "ES" que con "EN". */

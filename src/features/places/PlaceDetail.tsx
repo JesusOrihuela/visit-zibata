@@ -14,7 +14,7 @@ import {
 import { type CSSProperties, type ReactNode, useEffect, useRef, useState } from 'react'
 import { BrandIcon, type BrandName } from '../../components/icons/BrandIcons.tsx'
 import { CategoryIcon } from '../../components/icons/CategoryIcon.tsx'
-import { DEFAULT_PLAZA_TONE, plazaTones } from '../../config/palette.ts'
+import { DEFAULT_PLAZA_TONE, plazaTones, plazaVars } from '../../config/palette.ts'
 import { useCatalog } from '../../data/CatalogContext.tsx'
 import { locale, localized, t } from '../../i18n/index.ts'
 import { assetUrl } from '../../lib/assets.ts'
@@ -252,7 +252,7 @@ export function PlaceDetail({ place, plaza, backLabel, onBack, onClose }: PlaceD
   return (
     <article
       className={styles.detail}
-      style={{ '--plaza-accent': tono.accent } as CSSProperties}
+      style={plazaVars(tono) as CSSProperties}
       aria-labelledby="place-detail-title"
     >
       <div className={styles.toolbar}>

@@ -6,12 +6,12 @@ import { openApp, waitForMap } from './helpers.ts'
  *
  *  - **Subtítulos:** un subtítulo de sección mide lo mismo y pesa lo mismo en una zona, en una página
  *    de información y en el perfil (`docs/TIPOGRAFIA.md`, "subtítulo de grupo").
- *  - **Títulos:** Special Gothic 700 al 75 % de ancho y sin tracking, en los tres escalones (34, 28 y
+ *  - **Títulos:** Special Gothic 700 al 88 % de ancho y sin tracking, en los tres escalones (34, 28 y
  *    24 px), sea cual sea la pantalla, y con la fuente de verdad cargada: si no cargara, el título
  *    caería a una sans del sistema y la medida de la guía dejaría de valer.
- *  - **El ancho se aplica de verdad:** `getComputedStyle` dice 75 % aunque la regla `@font-face` no
+ *  - **El ancho se aplica de verdad:** `getComputedStyle` dice 88 % aunque la regla `@font-face` no
  *    declare el rango de ancho y el navegador pinte el título a ancho completo. Por eso se mide el
- *    mismo texto a 75 % y a 100 % y se exige una diferencia real.
+ *    mismo texto a 88 % y a 100 % y se exige una diferencia real.
  */
 test.describe('Subtítulos', () => {
   test('el mismo nivel en zonas, información y perfil', async ({ page }) => {
@@ -52,7 +52,7 @@ test.describe('Subtítulos', () => {
 
     const [primero] = estilos
     for (const estilo of estilos) expect(estilo).toEqual(primero)
-    expect(primero).toMatchObject({ size: '17px', weight: '520', transform: 'none' })
+    expect(primero).toMatchObject({ size: '17px', weight: '500', transform: 'none' })
   })
 })
 
@@ -97,7 +97,7 @@ test.describe('Rótulos de formulario', () => {
     const cuerpo = await medir(dialogo.locator('p').first())
     for (const nombre of ['¿Quién escribe?', 'Tu mensaje']) {
       const rotulo = await medir(dialogo.getByText(nombre, { exact: true }))
-      expect(rotulo, nombre).toMatchObject({ size: 17, weight: '520' })
+      expect(rotulo, nombre).toMatchObject({ size: 17, weight: '500' })
       expect(rotulo.size, nombre).toBeGreaterThan(cuerpo.size)
     }
   })
@@ -124,7 +124,7 @@ test.describe('Títulos', () => {
       expect(estilo.family).toContain('Special Gothic')
       expect(estilo.cargada, 'la fuente de los títulos debe estar cargada').toBe(true)
       expect(estilo.weight).toBe('700')
-      expect(estilo.stretch).toBe('80%')
+      expect(estilo.stretch).toBe('88%')
       expect(estilo.tracking).toBe(0)
       expect([34, 28, 24]).toContain(estilo.size)
       return estilo
@@ -154,7 +154,7 @@ test.describe('Títulos', () => {
     for (const estilo of [ficha, info, perfil]) expect(estilo.lineHeight).toBeCloseTo(1.05, 2)
   })
 
-  test('el eje de ancho se aplica de verdad: el mismo texto mide menos al 80 % que al 100 %', async ({
+  test('el eje de ancho se aplica de verdad: el mismo texto mide menos al 88 % que al 100 %', async ({
     page,
   }) => {
     await openApp(page, { path: 'zona/xentric-zibata' })
@@ -170,7 +170,7 @@ test.describe('Títulos', () => {
         span.remove()
         return width
       }
-      return { condensado: medir('80%'), normal: medir('100%') }
+      return { condensado: medir('88%'), normal: medir('100%') }
     })
     // El eje de ancho de Special Gothic recorta el texto mucho más de un 5 %.
     expect(anchos.condensado / anchos.normal).toBeLessThan(0.95)

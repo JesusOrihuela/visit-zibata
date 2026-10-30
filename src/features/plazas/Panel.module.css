@@ -60,7 +60,7 @@
     0 0 0 3px currentColor,
     0 0 0 7px transparent,
     0 0 0 10px currentColor;
-  color: var(--plaza-accent, var(--olive-600));
+  color: var(--plaza-ink, var(--olive-600));
   /*
    * Un matasellos tiene que leerse como tinta gastada, no como una marca de agua. A 0.1 y 15 px se
    * adivinaba el arco pero no el nombre, y entonces no es un sello de nada: es una textura. Sube a
@@ -92,7 +92,7 @@
   gap: var(--space-2);
   font-size: var(--text-xs);
   font-weight: var(--weight-strong);
-  color: var(--plaza-accent, var(--olive-600));
+  color: var(--plaza-ink, var(--olive-600));
 }
 
 /*
@@ -121,6 +121,16 @@
   font-stretch: var(--title-stretch);
   line-height: 1;
   color: var(--ink-900);
+}
+
+/*
+ * El antetítulo y el título no van a la misma distancia que el título y su descripción, aunque el
+ * hueco del flex sea el mismo: la fila del antetítulo mide lo que el botón de cerrar (40 px) y su
+ * texto solo 20, así que esos 20 px de más se leen como aire entre el antetítulo y el título. Se
+ * descuenta la mitad, que es lo que sobraba, y los dos huecos se ven iguales.
+ */
+.topline + .title {
+  margin-top: -0.5rem;
 }
 
 /* El título recibe foco programático (lectores de pantalla) pero no es un control: sin anillo. */
@@ -271,7 +281,7 @@
   height: 1.15rem;
   border-radius: var(--radius-round);
   background: var(--sand-25);
-  color: var(--plaza-accent, var(--olive-700));
+  color: var(--plaza-ink, var(--olive-700));
   font-size: var(--text-2xs);
   font-weight: var(--weight-heavy);
   line-height: 1;

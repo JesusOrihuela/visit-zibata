@@ -1,7 +1,7 @@
 /** Vista de exploración: resumen de Zibatá y plazas ordenadas por número de lugares. */
 import { ChevronRight, Construction, X } from 'lucide-react'
 import type { CSSProperties } from 'react'
-import { DEFAULT_PLAZA_TONE, plazaTones } from '../../config/palette.ts'
+import { DEFAULT_PLAZA_TONE, plazaTones, plazaVars } from '../../config/palette.ts'
 import { useCatalog } from '../../data/CatalogContext.tsx'
 import { localized, t, useLocale } from '../../i18n/index.ts'
 import { alPulsarEnlace } from '../../lib/navegacion.ts'
@@ -143,11 +143,7 @@ export function ExplorePanel({
                  */}
                 <span
                   className={styles.plazaGota}
-                  style={
-                    {
-                      '--plaza-accent': (tones.get(plaza.id) ?? DEFAULT_PLAZA_TONE).accent,
-                    } as CSSProperties
-                  }
+                  style={plazaVars(tones.get(plaza.id) ?? DEFAULT_PLAZA_TONE) as CSSProperties}
                   aria-hidden="true"
                 >
                   <span>{count}</span>

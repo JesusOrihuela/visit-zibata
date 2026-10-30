@@ -15,7 +15,7 @@ import { type CSSProperties, useEffect, useMemo, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { CategoryIcon } from '../../components/icons/CategoryIcon.tsx'
 import { ProfileIcon } from '../../components/icons/ProfileIcon.tsx'
-import { DEFAULT_PLAZA_TONE, plazaTones } from '../../config/palette.ts'
+import { DEFAULT_PLAZA_TONE, type PlazaTone, plazaTones, plazaVars } from '../../config/palette.ts'
 import { useCatalog } from '../../data/CatalogContext.tsx'
 import { localized, t, useLocale } from '../../i18n/index.ts'
 import { alPulsarEnlace } from '../../lib/navegacion.ts'
@@ -41,8 +41,7 @@ const TOP = 3
 interface Zone {
   plaza: Plaza
   visited: boolean
-  accent: string
-  soft: string
+  tone: PlazaTone
 }
 
 /** Un lugar de los tuyos, con todo lo que decide su puesto. Nada de esto se enseña. */
@@ -98,8 +97,7 @@ function useJourney(marks: Marks): Journey {
       return {
         plaza,
         visited: visitedZones.has(plaza.id),
-        accent: tone.accent,
-        soft: tone.soft,
+        tone,
       }
     })
 
@@ -207,11 +205,8 @@ function PodiumStep({
   const idioma = useLocale()
   const { place } = entry
   /*
-   * La lista completa de plazas activas, no solo la de este lugar.
-   *
-   * `plazaTones` reparte los tonos **por posición** en la lista que recibe, así que pedirle una sola
-   * devolvía siempre el índice 0: diez de las once zonas se pintaban con el verde de la primera. El
-   * mismo lugar salía verde aquí y de su color en el mapa.
+   * El color sale del identificador, no de la posición en la lista: pedir la lista entera es una
+   * costumbre del archivo, y una zona que no esté declarada cae al verde de marca.
    */
   const tone =
     plazaTones(catalog.plazas.filter((item) => item.active).map((item) => item.id)).get(
@@ -234,7 +229,7 @@ function PodiumStep({
       >
         <span
           className={styles.stepIcon}
-          style={{ '--zone-accent': tone.accent, '--zone-soft': tone.soft } as CSSProperties}
+          style={plazaVars(tone, 'zone') as CSSProperties}
           aria-hidden="true"
         >
           <CategoryIcon name={placeIconName(place, catalog)} size={18} />
@@ -335,12 +330,7 @@ export function ProfileSheet({ onClose, onOpenInfo, onOpenPlace }: SheetProps) {
                     key={zone.plaza.id}
                     className={styles.zone}
                     data-visited={zone.visited}
-                    style={
-                      {
-                        '--zone-accent': zone.accent,
-                        '--zone-soft': zone.soft,
-                      } as CSSProperties
-                    }
+                    style={plazaVars(zone.tone, 'zone') as CSSProperties}
                   >
                     {zone.visited && <Check aria-hidden="true" className={styles.zoneCheck} />}
                     {shortZoneName(zone.plaza.name)}

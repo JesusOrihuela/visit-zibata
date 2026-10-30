@@ -127,7 +127,7 @@
   width: 1rem;
   height: 1rem;
   margin-top: 0.1rem;
-  color: var(--plaza-accent, var(--olive-600));
+  color: var(--plaza-ink, var(--olive-600));
 }
 
 .address {
