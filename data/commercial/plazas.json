@@ -1,7 +1,7 @@
 {
   "$schema": "./schemas/plazas.schema.json",
   "version": 1,
-  "updatedAt": "2026-10-25",
+  "updatedAt": "2026-10-30",
   "plazas": [
     {
       "id": "xentric-anahuac",

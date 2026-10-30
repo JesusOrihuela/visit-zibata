@@ -1,7 +1,7 @@
 {
   "$schema": "./schemas/places.schema.json",
   "version": 1,
-  "updatedAt": "2026-10-25",
+  "updatedAt": "2026-10-30",
   "places": [
     {
       "id": "carls-jr",
@@ -1947,12 +1947,11 @@
       "name": "Tomassa Almacén de Pastas",
       "plazaId": "paseo-zibata",
       "giros": [
-        "pasta",
-        "cocina-italiana"
+        "cocina-italiana",
+        "pizza",
+        "pasta"
       ],
-      "secundarios": [
-        "pizza"
-      ],
+      "secundarios": [],
       "description": {
         "es": "En TOMASSA | Almacén de Pastas elaboramos pasta fresca artesanal todos los días, con ingredientes orgánicos.\n🍝 Pastas artesanales\n🧀 Salsas\n🍮 Tiramisu · 🍷 Aperitivos y kombucha",
         "en": "At TOMASSA | Almacén de Pastas we make fresh handmade pasta every day, with organic ingredients.\n🍝 Handmade pasta\n🧀 Sauces\n🍮 Tiramisu · 🍷 Aperitifs and kombucha"
@@ -1998,14 +1997,15 @@
       },
       "active": true,
       "verification": {
-        "status": "likely_active",
-        "confidence": "medium",
-        "lastVerifiedAt": "2026-09-14",
+        "status": "active",
+        "confidence": "high",
+        "lastVerifiedAt": "2026-10-30",
         "sources": [
           "https://www.instagram.com/tomassapasta/",
           "https://www.facebook.com/p/Tomassa-Almac%C3%A9n-de-Pastas-61581875640351/",
           "https://restaurantguru.com/Plaza-Paseo-Zibata-Mexico-ml",
-          "campo:2026-09-22"
+          "campo:2026-09-22",
+          "campo:2026-10-30"
         ]
       }
     },
@@ -6505,12 +6505,24 @@
       },
       "hours": {
         "mon": [],
-        "tue": ["13:00-22:00"],
-        "wed": ["13:00-22:00"],
-        "thu": ["13:00-22:00"],
-        "fri": ["13:00-22:00"],
-        "sat": ["13:00-22:00"],
-        "sun": ["13:00-22:00"]
+        "tue": [
+          "13:00-22:00"
+        ],
+        "wed": [
+          "13:00-22:00"
+        ],
+        "thu": [
+          "13:00-22:00"
+        ],
+        "fri": [
+          "13:00-22:00"
+        ],
+        "sat": [
+          "13:00-22:00"
+        ],
+        "sun": [
+          "13:00-22:00"
+        ]
       },
       "location": {
         "lat": 20.6853512,
@@ -6557,13 +6569,27 @@
         "en": "Pozole with the best seasoning, now a tradition: the favourite spot of people who eat with flavour in mind, where a special glaze of our own always goes with your tacos for a one-of-a-kind taste."
       },
       "hours": {
-        "mon": ["10:30-23:00"],
-        "tue": ["10:30-23:00"],
-        "wed": ["10:30-23:00"],
-        "thu": ["10:30-23:00"],
-        "fri": ["10:30-23:00"],
-        "sat": ["10:30-23:00"],
-        "sun": ["10:30-23:00"]
+        "mon": [
+          "10:30-23:00"
+        ],
+        "tue": [
+          "10:30-23:00"
+        ],
+        "wed": [
+          "10:30-23:00"
+        ],
+        "thu": [
+          "10:30-23:00"
+        ],
+        "fri": [
+          "10:30-23:00"
+        ],
+        "sat": [
+          "10:30-23:00"
+        ],
+        "sun": [
+          "10:30-23:00"
+        ]
       },
       "location": {
         "lat": 20.6851989,
