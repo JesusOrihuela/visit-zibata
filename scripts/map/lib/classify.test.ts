@@ -35,6 +35,14 @@ describe('classifyLabel', () => {
     expect(classifyLabel({ name: 'Discovery Center', building: 'commercial' })).toBeNull()
   })
 
+  it('tampoco si OSM lo etiqueta como universidad, que es lo que pasaba con Edifico B', () => {
+    expect(classifyLabel({ name: 'Edifico B', amenity: 'university' })).toBeNull()
+    expect(classifyLabel({ name: 'Edificio B', amenity: 'university' })).toBeNull()
+    expect(classifyLabel({ name: 'Universidad del Valle de México', amenity: 'university' })).toBe(
+      'education',
+    )
+  })
+
   it('sin nombre no hay rótulo', () => {
     expect(classifyLabel({ landuse: 'residential' })).toBeNull()
   })

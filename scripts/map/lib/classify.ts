@@ -133,8 +133,16 @@ export function isWaterway(tags: OsmTags): boolean {
  */
 export type LabelClass = 'golf' | 'park' | 'water' | 'district' | 'education'
 
+/**
+ * Un nombre de edificio no es un lugar, aunque OSM lo etiquete como uno. El "Edifico B" del mapa
+ * real es un nodo con `amenity=university`: sin esta comprobación se colaba como rótulo de
+ * educación. "Edifico", sin la i, es el error que hay en el dato.
+ */
+const NOMBRE_DE_EDIFICIO = /^(edificio|edifico|bloque|torre|building)\b/i
+
 export function classifyLabel(tags: OsmTags): LabelClass | null {
   if (!tags.name) return null
+  if (NOMBRE_DE_EDIFICIO.test(tags.name.trim())) return null
   if (tags.leisure === 'golf_course') return 'golf'
   if (tags.leisure === 'park' || tags.leisure === 'garden' || tags.leisure === 'nature_reserve')
     return 'park'
