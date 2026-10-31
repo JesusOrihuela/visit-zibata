@@ -34,9 +34,9 @@ export function diasDe(url: URL): number {
   return Math.min(365, Math.max(1, Math.trunc(pedidos)))
 }
 
-/** La fecha desde la que se mira, en el formato de la columna. */
+/** La fecha desde la que se mira, en el formato de la columna. `dias` incluye hoy. */
 export function desdeHace(dias: number, ahora = new Date()): string {
-  const limite = new Date(ahora.getTime() - dias * 24 * 60 * 60 * 1000)
+  const limite = new Date(ahora.getTime() - (dias - 1) * 24 * 60 * 60 * 1000)
   return limite.toISOString().slice(0, 10)
 }
 

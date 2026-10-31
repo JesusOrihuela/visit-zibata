@@ -15,7 +15,7 @@ import { ID_DE_SUGERENCIA } from './sugerencias.ts'
 describe('la ventana de tiempo', () => {
   const dias = (busqueda: string) => diasDe(new URL(`https://x/api/panel${busqueda}`))
 
-  it('por omisiÃ³n son treinta dÃ­as', () => {
+  it('por omisión son treinta días', () => {
     expect(dias('')).toBe(30)
     expect(dias('?dias=')).toBe(30)
     expect(dias('?dias=hola')).toBe(30)
@@ -27,8 +27,9 @@ describe('la ventana de tiempo', () => {
     expect(dias('?dias=-5')).toBe(1)
   })
 
-  it('la fecha de corte es la de hace tantos dÃ­as', () => {
-    expect(desdeHace(7, new Date('2026-10-11T12:00:00Z'))).toBe('2026-10-04')
+  it('la fecha de corte incluye hoy y no un día de más', () => {
+    expect(desdeHace(7, new Date('2026-10-11T12:00:00Z'))).toBe('2026-10-05')
+    expect(desdeHace(1, new Date('2026-10-11T12:00:00Z'))).toBe('2026-10-11')
   })
 })
 

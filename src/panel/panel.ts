@@ -128,41 +128,105 @@ function tabla(
   return `<div class="tabla"><table><thead><tr>${encabezados}</tr></thead><tbody>${cuerpo}</tbody></table></div>`
 }
 
-/** Las visitas por día, en barras. SVG dibujado a mano: son rectángulos sobre una escala lineal. */
-function grafica(porDia: Dia[], ventana: number, desde: string, ancho: number): string {
-  if (porDia.length === 0) {
-    return '<p class="vacio">No hay visitas en este periodo. Prueba con una ventana más larga.</p>'
-  }
+interface DiaVisitas {
+  fecha: string
+  visitas: number
+}
+
+const fechaLarga = (iso: string): string => {
+  const fecha = new Date(`${iso}T12:00:00Z`)
+  return Number.isNaN(fecha.getTime())
+    ? iso
+    : new Intl.DateTimeFormat('es-MX', { day: 'numeric', month: 'short' }).format(fecha)
+}
+
+/** La ventana completa, con los días sin visitas en cero. `desde` ya es el primer día. */
+function serieDeVisitas(porDia: Dia[], ventana: number, desde: string): DiaVisitas[] {
   const conteo = new Map(porDia.map((dia) => [dia.fecha, dia.visitas]))
   const inicio = new Date(`${desde}T12:00:00Z`)
-  // `ventana + 1` y no `ventana`: la consulta filtra por `fecha >= desde`, así que incluye el día
-  // de corte y el de hoy.
-  const serie = Array.from({ length: ventana + 1 }, (_, indice) => {
+  if (Number.isNaN(inicio.getTime())) return porDia
+  return Array.from({ length: Math.max(1, ventana) }, (_, indice) => {
     const fecha = new Date(inicio.getTime() + indice * 86400000).toISOString().slice(0, 10)
     return { fecha, visitas: conteo.get(fecha) ?? 0 }
   })
+}
 
-  const margen = 24
-  const alto = 180
+/**
+ * Barras sobre una escala lineal, con tres guías y las fechas de los extremos. El SVG se dibuja al
+ * ancho de la vista para que las letras no se encojan en el teléfono.
+ */
+function grafica(serie: DiaVisitas[], ancho: number): string {
+  const alto = 200
+  const izquierda = 38
+  const derecha = 10
+  const arriba = 14
+  const abajo = 28
+  const base = alto - abajo
   const mayor = Math.max(...serie.map((dia) => dia.visitas), 1)
-  const paso = (ancho - margen * 2) / serie.length
-  const grosor = Math.min(24, Math.max(1, paso - 2))
-  const barras = serie
-    .map((dia, indice) => {
-      const altura = ((alto - margen * 2) * dia.visitas) / mayor
-      const x = margen + indice * paso + (paso - grosor) / 2
-      return `<rect x="${x.toFixed(1)}" y="${(alto - margen - altura).toFixed(1)}" width="${grosor.toFixed(1)}" height="${altura.toFixed(1)}" rx="1" fill="currentColor"><title>${texto(dia.fecha)}: ${numero(dia.visitas)}</title></rect>`
+  const paso = (ancho - izquierda - derecha) / Math.max(1, serie.length)
+  const grosor = Math.max(1, Math.min(18, paso * 0.68))
+  const escala = (valor: number) => ((base - arriba) * valor) / mayor
+
+  const guias = [0, 0.5, 1]
+    .map((parte) => {
+      const valor = Math.round(mayor * parte)
+      const y = base - escala(valor)
+      return `<line x1="${izquierda}" y1="${y.toFixed(1)}" x2="${ancho - derecha}" y2="${y.toFixed(1)}" stroke="currentColor" stroke-opacity="0.12" />
+        <text x="${izquierda - 8}" y="${(y + 4).toFixed(1)}" text-anchor="end" font-size="11" fill="currentColor" opacity="0.65">${numero(valor)}</text>`
     })
     .join('')
-  const primero = serie[0]?.fecha ?? ''
-  const ultimo = serie[serie.length - 1]?.fecha ?? ''
+
+  const barras = serie
+    .map((dia, indice) => {
+      if (dia.visitas === 0) return ''
+      const altura = escala(dia.visitas)
+      const x = izquierda + indice * paso + (paso - grosor) / 2
+      return `<rect x="${x.toFixed(1)}" y="${(base - altura).toFixed(1)}" width="${grosor.toFixed(1)}" height="${altura.toFixed(1)}" rx="1" fill="currentColor"><title>${fechaLarga(dia.fecha)}: ${numero(dia.visitas)} visitas</title></rect>`
+    })
+    .join('')
+
+  const marcas = [0, Math.floor((serie.length - 1) / 2), serie.length - 1]
+    .filter((indice, posicion, todos) => todos.indexOf(indice) === posicion)
+    .map((indice) => {
+      const dia = serie[indice]
+      if (!dia) return ''
+      const x =
+        indice === 0
+          ? izquierda
+          : indice === serie.length - 1
+            ? ancho - derecha
+            : izquierda + indice * paso + paso / 2
+      const anclaje = indice === 0 ? 'start' : indice === serie.length - 1 ? 'end' : 'middle'
+      return `<text x="${x.toFixed(1)}" y="${alto - 8}" text-anchor="${anclaje}" font-size="11" fill="currentColor" opacity="0.65">${fechaLarga(dia.fecha)}</text>`
+    })
+    .join('')
+
   return `<svg class="grafica" viewBox="0 0 ${ancho} ${alto}" role="img" aria-label="Visitas por día, máximo ${numero(mayor)}">
-    <g>${barras}</g>
-    <line x1="${margen}" y1="${alto - margen}" x2="${ancho - margen}" y2="${alto - margen}" stroke="currentColor" stroke-opacity="0.2" />
-    <text x="${margen}" y="${alto - 6}" font-size="12" fill="currentColor" opacity="0.6">${texto(primero)}</text>
-    <text x="${ancho - margen}" y="${alto - 6}" font-size="12" fill="currentColor" opacity="0.6" text-anchor="end">${texto(ultimo)}</text>
-    <text x="${margen}" y="16" font-size="12" fill="currentColor" opacity="0.6">máximo ${numero(mayor)}</text>
+    ${guias}
+    <line x1="${izquierda}" y1="${base}" x2="${ancho - derecha}" y2="${base}" stroke="currentColor" stroke-opacity="0.25" />
+    ${barras}
+    ${marcas}
   </svg>`
+}
+
+/** La misma serie en tabla, para quien prefiera leer los números o usar un lector de pantalla. */
+function tablaDeVisitas(serie: DiaVisitas[]): string {
+  const conVisitas = serie.filter((dia) => dia.visitas > 0)
+  if (conVisitas.length === 0) return ''
+  const filas = conVisitas
+    .map(
+      (dia) =>
+        `<tr><td>${texto(fechaLarga(dia.fecha))}</td><td class="cifra">${numero(dia.visitas)}</td></tr>`,
+    )
+    .join('')
+  return `<details class="datos-diarios">
+    <summary>Ver los datos día por día</summary>
+    <div class="tabla"><table>
+      <thead><tr><th>Día</th><th class="cifra">Visitas</th></tr></thead>
+      <tbody>${filas}</tbody>
+    </table></div>
+    <p class="nota">Solo aparecen los días con visitas; el resto del periodo está en cero.</p>
+  </details>`
 }
 
 function repartoDeIdiomas(idiomas: Idioma[]): string {
@@ -256,7 +320,14 @@ function pintarResumen(): void {
   if (!vistaEl || !datos) return
   const r = datos.resumen ?? {}
   const idiomas = repartoDeIdiomas(datos.porIdioma ?? [])
-  const ancho = Math.max(320, vistaEl.clientWidth || 920)
+  const ancho = Math.max(320, Math.min(920, vistaEl.clientWidth || 920))
+  const serie = serieDeVisitas(datos.porDia ?? [], datos.dias ?? 30, datos.desde ?? '')
+  const total = serie.reduce((suma, dia) => suma + dia.visitas, 0)
+  const mayor = Math.max(...serie.map((dia) => dia.visitas), 0)
+  const diaMayor = serie.find((dia) => dia.visitas === mayor)
+  const media = new Intl.NumberFormat('es-MX', { maximumFractionDigits: 1 }).format(
+    total / Math.max(1, serie.length),
+  )
   vistaEl.innerHTML = `
     <section class="resumen">
       <div class="cifras">
@@ -282,9 +353,14 @@ function pintarResumen(): void {
       <figure class="figura-grafica">
         <figcaption>
           <h2>Visitas por día</h2>
-          <p>${texto(idiomas)}</p>
+          <p>${texto(idiomas)} · ${numero(total)} en ${numero(serie.length)} días · media ${media}${diaMayor && mayor > 0 ? ` · máximo ${numero(mayor)} el ${fechaLarga(diaMayor.fecha)}` : ''}</p>
         </figcaption>
-        ${grafica(datos.porDia ?? [], datos.dias ?? 30, datos.desde ?? '', ancho)}
+        ${
+          total === 0
+            ? '<p class="vacio">No hay visitas en este periodo. Prueba con una ventana más larga.</p>'
+            : grafica(serie, ancho)
+        }
+        ${tablaDeVisitas(serie)}
       </figure>
 
       <div class="rejilla-dos">

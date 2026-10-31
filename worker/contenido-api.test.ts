@@ -120,3 +120,46 @@ describe('la API de categorías', () => {
     expect(respuesta?.status).toBe(403)
   })
 })
+
+describe('la API de fotos', () => {
+  const CABECERA = Buffer.from([
+    0x52, 0x49, 0x46, 0x46, 0x24, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50,
+  ]).toString('base64')
+  const foto = {
+    id: 'tomassa',
+    archivo: 'Terraza Principal.webp',
+    alt: 'Terraza',
+    ancho: 1200,
+    alto: 800,
+    placeholder: '#aabbcc',
+    datos: CABECERA,
+  }
+  const subir = (cuerpo: Record<string, unknown>, sitio = 'same-origin') =>
+    pedir('/api/panel/contenido/foto', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'sec-fetch-site': sitio },
+      body: JSON.stringify(cuerpo),
+    })
+
+  it('valida una foto y la deja en seco en desarrollo', async () => {
+    const respuesta = await subir(foto)
+    expect(respuesta?.status).toBe(200)
+    const datos = (await respuesta?.json()) as { ok: boolean; seco: boolean; foto: unknown }
+    expect(datos.ok).toBe(true)
+    expect(datos.seco).toBe(true)
+    expect(datos.foto).toBeNull()
+  })
+
+  it('rechaza lo que no es una imagen', async () => {
+    const respuesta = await subir({
+      ...foto,
+      datos: Buffer.from('no soy una imagen').toString('base64'),
+    })
+    expect(respuesta?.status).toBe(400)
+  })
+
+  it('rechaza una foto que llega de otra página', async () => {
+    const respuesta = await subir(foto, 'cross-site')
+    expect(respuesta?.status).toBe(403)
+  })
+})

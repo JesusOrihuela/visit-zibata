@@ -5,7 +5,7 @@ import plazasJson from '../data/commercial/plazas.json' with { type: 'json' }
 import { type CommercialDataset, deriveCategoryIds } from '../src/data/relations.ts'
 import { CategoriesFileSchema, PlacesFileSchema, PlazasFileSchema } from '../src/data/schemas.ts'
 import type { Place, Plaza } from '../src/types/domain.ts'
-import { prepararNegocio } from './contenido.ts'
+import { bytesDeBase64, formatoDeImagen, prepararFoto, prepararNegocio } from './contenido.ts'
 
 const categorias = CategoriesFileSchema.parse(categoriasJson)
 const plazas = PlazasFileSchema.parse(plazasJson)
@@ -343,7 +343,7 @@ describe('editar un negocio existente', () => {
     expect(preparado.place.verification?.sources).toContain(`campo:${HOY}`)
   })
 
-  it('conserva el orden de los giros aunque el formulario los mande al revés', () => {
+  it('respeta el orden de los giros que manda el formulario', () => {
     const conVarios = dataset.places.find((fila) => fila.active && fila.giros.length > 1)
     if (!conVarios) return
     const preparado = prepararNegocio(
@@ -353,7 +353,7 @@ describe('editar un negocio existente', () => {
       HOY,
     )
     if (!preparado.ok) throw new Error('no preparó')
-    expect(preparado.place.giros).toEqual(conVarios.giros)
+    expect(preparado.place.giros).toEqual([...conVarios.giros].reverse())
   })
 
   it('un secundario marcado se añade al final y deja de ser secundario', () => {
@@ -365,12 +365,70 @@ describe('editar un negocio existente', () => {
     const preparado = prepararNegocio(
       dataset,
       crudo,
-      editar(conSecundario, { giros: [...conSecundario.giros, promovido] }),
+      editar(conSecundario, { giros: [...conSecundario.giros, promovido], secundarios: [] }),
       HOY,
     )
     if (!preparado.ok) throw new Error('no preparó')
     expect(preparado.place.giros).toEqual([...conSecundario.giros, promovido])
     expect(preparado.place.secundarios).not.toContain(promovido)
+  })
+
+  it('conserva los secundarios que manda el formulario, sin mezclarlos con los principales', () => {
+    const conSecundario = dataset.places.find(
+      (fila) => fila.active && fila.secundarios.length > 0 && fila.giros.length < 3,
+    )
+    if (!conSecundario) return
+    const preparado = prepararNegocio(
+      dataset,
+      crudo,
+      editar(conSecundario, {
+        giros: [...conSecundario.giros].reverse(),
+        secundarios: conSecundario.secundarios,
+      }),
+      HOY,
+    )
+    if (!preparado.ok) throw new Error('no preparó')
+    expect(preparado.place.giros).toEqual([...conSecundario.giros].reverse())
+    expect(preparado.place.secundarios).toEqual(conSecundario.secundarios)
+  })
+
+  it('rechaza un giro que va como principal y como secundario', () => {
+    const conSecundario = dataset.places.find(
+      (fila) => fila.active && fila.giros.length > 0 && fila.giros.length < 3,
+    )
+    if (!conSecundario) return
+    const preparado = prepararNegocio(
+      dataset,
+      crudo,
+      editar(conSecundario, {
+        giros: [conSecundario.giros[0]],
+        secundarios: [conSecundario.giros[0]],
+      }),
+      HOY,
+    )
+    expect(preparado.ok).toBe(false)
+    if (preparado.ok) return
+    expect(preparado.problemas.join(' ')).toContain('principal y secundario')
+  })
+
+  it('rechaza pasar de tres giros entre principales y secundarios', () => {
+    const disponibles = dataset.categories.flatMap((categoria) =>
+      categoria.giros.map((giro) => giro.id),
+    )
+    const cuatro = [...new Set(disponibles)].slice(0, 4)
+    if (cuatro.length < 4) return
+    const preparado = prepararNegocio(
+      dataset,
+      crudo,
+      editar(existente, {
+        giros: cuatro.slice(0, 3),
+        secundarios: [cuatro[3]],
+      }),
+      HOY,
+    )
+    expect(preparado.ok).toBe(false)
+    if (preparado.ok) return
+    expect(preparado.problemas.join(' ')).toContain('tope son tres')
   })
 
   it('ocultar no convierte el local en cerrado', () => {
@@ -415,7 +473,7 @@ describe('editar un negocio existente', () => {
     expect(tocada.categories).toEqual(deriveCategoryIds(visibles, dataset.categories))
   })
 
-  it('reactivar un local limpia el cierre temporal', () => {
+  it('quitar el cierre temporal lo borra al guardar', () => {
     const cerrado: Place = {
       ...existente,
       active: false,
@@ -433,11 +491,89 @@ describe('editar un negocio existente', () => {
       ...dataset,
       places: dataset.places.map((fila) => (fila.id === existente.id ? cerrado : fila)),
     }
-    const preparado = prepararNegocio(conCerrado, crudo, editar(cerrado), HOY)
+    const preparado = prepararNegocio(conCerrado, crudo, editar(cerrado, { cierre: null }), HOY)
     if (!preparado.ok) throw new Error('no preparó')
     expect(preparado.place.active).toBe(true)
     expect(preparado.place.cierre).toBeUndefined()
-    expect(preparado.place.verification?.status).toBe('active')
+  })
+
+  it('guarda el motivo y la fecha del cierre temporal', () => {
+    const preparado = prepararNegocio(
+      dataset,
+      crudo,
+      editar(existente, { cierre: { motivo: 'vacaciones', desde: '2026-10-20' } }),
+      HOY,
+    )
+    if (!preparado.ok) throw new Error('no preparó')
+    expect(preparado.place.cierre).toEqual({ motivo: 'vacaciones', desde: '2026-10-20' })
+  })
+
+  it('rechaza un cierre temporal que empieza en el futuro', () => {
+    const preparado = prepararNegocio(
+      dataset,
+      crudo,
+      editar(existente, { cierre: { motivo: 'traspaso', desde: '2026-12-01' } }),
+      HOY,
+    )
+    expect(preparado.ok).toBe(false)
+    if (preparado.ok) return
+    expect(preparado.problemas.join(' ')).toContain('futuro')
+  })
+
+  it('cambia el texto de una foto y respeta su orden sin tocar el archivo', () => {
+    const conFoto: Place = {
+      ...existente,
+      photos: [
+        {
+          src: 'images/places/prueba/portada.webp',
+          alt: 'Fachada',
+          width: 1200,
+          height: 900,
+          placeholder: '#aabbcc',
+        },
+        {
+          src: 'images/places/prueba/terraza.webp',
+          alt: 'Terraza',
+          width: 1200,
+          height: 900,
+          placeholder: '#ccbbaa',
+        },
+      ],
+    }
+    const conFotos = {
+      ...dataset,
+      places: dataset.places.map((fila) => (fila.id === existente.id ? conFoto : fila)),
+    }
+    const preparado = prepararNegocio(
+      conFotos,
+      crudo,
+      editar(conFoto, {
+        fotos: [
+          { src: 'images/places/prueba/terraza.webp', alt: 'Terraza al atardecer' },
+          { src: 'images/places/prueba/portada.webp', alt: 'Fachada' },
+        ],
+      }),
+      HOY,
+    )
+    if (!preparado.ok) throw new Error('no preparó')
+    expect(preparado.place.photos.map((foto) => foto.src)).toEqual([
+      'images/places/prueba/terraza.webp',
+      'images/places/prueba/portada.webp',
+    ])
+    expect(preparado.place.photos[0]?.alt).toBe('Terraza al atardecer')
+    expect(preparado.place.photos[0]?.width).toBe(1200)
+  })
+
+  it('rechaza una foto que ya no está en la galería', () => {
+    const preparado = prepararNegocio(
+      dataset,
+      crudo,
+      editar(existente, { fotos: [{ src: 'images/places/prueba/fantasma.webp', alt: 'Nada' }] }),
+      HOY,
+    )
+    expect(preparado.ok).toBe(false)
+    if (preparado.ok) return
+    expect(preparado.problemas.join(' ')).toContain('ya no existe')
   })
 
   it('al moverlo de plaza, sale de una y entra en la otra', () => {
@@ -502,5 +638,90 @@ describe('lo que se rechaza', () => {
     expect(resultado.ok).toBe(false)
     if (resultado.ok) return
     expect(resultado.problemas).toContain('Ese negocio ya no existe')
+  })
+})
+
+const CABECERA_WEBP = new Uint8Array([
+  0x52, 0x49, 0x46, 0x46, 0x24, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50,
+])
+const FOTO_BASE64 = Buffer.from(CABECERA_WEBP).toString('base64')
+
+const fotoEntrada = (extra: Record<string, unknown> = {}) => ({
+  id: existente.id,
+  archivo: 'Terraza Principal.webp',
+  alt: 'Terraza',
+  ancho: 1600,
+  alto: 1200,
+  placeholder: '#aabbcc',
+  datos: FOTO_BASE64,
+  ...extra,
+})
+
+describe('preparar una foto', () => {
+  it('la registra en el local con su ruta y su texto alternativo', () => {
+    const preparado = prepararFoto(dataset, crudo, fotoEntrada(), HOY)
+    expect(preparado.ok).toBe(true)
+    if (!preparado.ok) return
+    expect(preparado.foto.src).toBe(`images/places/${existente.id}/terraza-principal.webp`)
+    const lugares = preparado.lugares as { places: Place[] }
+    expect(lugares.places.find((fila) => fila.id === existente.id)?.photos.at(-1)?.alt).toBe(
+      'Terraza',
+    )
+  })
+
+  it('no pisa una foto que ya usa ese nombre', () => {
+    const conFoto: Place = {
+      ...existente,
+      photos: [
+        {
+          src: `images/places/${existente.id}/terraza-principal.webp`,
+          alt: 'Vieja',
+          width: 10,
+          height: 10,
+        },
+      ],
+    }
+    const conFotos = {
+      ...dataset,
+      places: dataset.places.map((fila) => (fila.id === existente.id ? conFoto : fila)),
+    }
+    const preparado = prepararFoto(conFotos, crudo, fotoEntrada(), HOY)
+    if (!preparado.ok) throw new Error('no preparó')
+    expect(preparado.foto.src.endsWith('terraza-principal-2.webp')).toBe(true)
+  })
+
+  it('rechaza lo que no es una imagen', () => {
+    const preparado = prepararFoto(
+      dataset,
+      crudo,
+      fotoEntrada({ datos: Buffer.from('no soy una imagen').toString('base64') }),
+      HOY,
+    )
+    expect(preparado.ok).toBe(false)
+    if (preparado.ok) return
+    expect(preparado.problemas.join(' ')).toContain('no es una imagen')
+  })
+
+  it('rechaza un negocio que ya no existe', () => {
+    const preparado = prepararFoto(dataset, crudo, fotoEntrada({ id: 'no-existe' }), HOY)
+    expect(preparado.ok).toBe(false)
+  })
+})
+
+describe('los formatos de imagen', () => {
+  it('se reconocen por los bytes, no por la extensión', () => {
+    expect(formatoDeImagen(CABECERA_WEBP)).toBe('webp')
+    expect(formatoDeImagen(new Uint8Array([0xff, 0xd8, 0xff, 0, 0, 0, 0, 0, 0, 0, 0, 0]))).toBe(
+      'jpg',
+    )
+    expect(formatoDeImagen(new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0, 0, 0, 0, 0, 0, 0, 0]))).toBe(
+      'png',
+    )
+    expect(formatoDeImagen(new Uint8Array([1, 2, 3]))).toBeNull()
+  })
+
+  it('el base64 inválido se rechaza en vez de decodificarse a medias', () => {
+    expect(bytesDeBase64('no-es-base64!')).toBeNull()
+    expect(bytesDeBase64('')).not.toBeNull()
   })
 })

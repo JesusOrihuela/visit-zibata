@@ -35,7 +35,7 @@ import {
   PlazasFileSchema,
 } from '../src/data/schemas.ts'
 import { TITULOS_RESERVADOS } from '../src/data/titulos-reservados.ts'
-import type { Category, Place } from '../src/types/domain.ts'
+import type { Category, Photo, Place } from '../src/types/domain.ts'
 import { fechaLocal } from './analitica.ts'
 import {
   type EntornoGitHub,
@@ -61,6 +61,8 @@ export const EntradaNegocioSchema = z.object({
     .transform((valor) => valor.replace(/\s+/g, ' ')),
   plazaId: z.string().trim().min(1, 'Elige una plaza'),
   giros: z.array(z.string().trim().min(1)).min(1, 'Elige al menos un giro').max(3),
+  /** Los secundarios van aparte y sin orden: la ficha solo los muestra como texto. */
+  secundarios: z.array(z.string().trim().min(1)).max(2).optional(),
   descripcionEs: z.string().trim().min(1, 'La descripción en español es obligatoria').max(2000),
   descripcionEn: z.string().trim().min(1, 'La descripción en inglés es obligatoria').max(2000),
   telefono: z.string().trim().max(40).optional().default(''),
@@ -72,8 +74,75 @@ export const EntradaNegocioSchema = z.object({
   lat: z.number().min(-90).max(90).nullable().optional(),
   lng: z.number().min(-180).max(180).nullable().optional(),
   horario: z.record(z.string(), z.array(z.string())).nullable().optional(),
+  /** `null` limpia el cierre; omitido conserva el que hubiera. */
+  cierre: z
+    .strictObject({
+      motivo: z.enum(['remodelacion', 'vacaciones', 'traspaso']),
+      desde: z.iso.date(),
+    })
+    .nullable()
+    .optional(),
+  /** El orden de esta lista es el orden de la galería; la primera es la portada. */
+  fotos: z
+    .array(
+      z.strictObject({
+        src: z.string().trim().min(1).max(300),
+        alt: z.string().trim().min(1, 'Cada foto necesita texto alternativo').max(300),
+      }),
+    )
+    .max(20)
+    .optional(),
   activo: z.boolean().optional().default(true),
 })
+
+/** Lo que manda el formulario de fotos: la imagen ya viene reducida desde el navegador. */
+export const EntradaFotoSchema = z.strictObject({
+  id: z.string().trim().min(1, 'Falta el negocio'),
+  archivo: z.string().trim().max(160).optional().default(''),
+  alt: z.string().trim().min(1, 'El texto alternativo es obligatorio').max(300),
+  ancho: z.number().int().positive().max(6000),
+  alto: z.number().int().positive().max(6000),
+  placeholder: z.string().regex(/^#[0-9a-f]{6}$/, 'El color de relleno no es válido'),
+  /** Base64 sin el prefijo `data:`. */
+  datos: z.string().min(1),
+})
+
+/**
+ * El tope de una foto ya reducida en el navegador. Cuatro megas dejan sitio a una foto de 1600 px
+ * con calidad alta y mantienen el cuerpo por debajo del límite del Worker y de la API de GitHub.
+ */
+export const TOPE_FOTO = 4 * 1024 * 1024
+
+/** El formato se decide por los bytes, no por la extensión que diga el archivo. */
+export function formatoDeImagen(bytes: Uint8Array): 'webp' | 'jpg' | 'png' | null {
+  if (bytes.length < 12) return null
+  const texto = (inicio: number, fin: number) => String.fromCharCode(...bytes.slice(inicio, fin))
+  if (texto(0, 4) === 'RIFF' && texto(8, 12) === 'WEBP') return 'webp'
+  if (bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return 'jpg'
+  if (bytes[0] === 0x89 && texto(1, 4) === 'PNG') return 'png'
+  return null
+}
+
+/** Bytes a base64 canónico, por trozos para no desbordar la pila con una foto grande. */
+export function base64DeBytes(bytes: Uint8Array): string {
+  let binario = ''
+  for (let i = 0; i < bytes.length; i += 0x8000) {
+    binario += String.fromCharCode(...bytes.subarray(i, i + 0x8000))
+  }
+  return btoa(binario)
+}
+export function bytesDeBase64(datos: string): Uint8Array | null {
+  const limpio = datos.replace(/\s/g, '')
+  if (!/^[A-Za-z0-9+/]*={0,2}$/.test(limpio) || limpio.length % 4 !== 0) return null
+  try {
+    const binario = atob(limpio)
+    const bytes = new Uint8Array(binario.length)
+    for (let i = 0; i < binario.length; i++) bytes[i] = binario.charCodeAt(i)
+    return bytes
+  } catch {
+    return null
+  }
+}
 
 export interface PlazaResumen {
   id: string
@@ -95,6 +164,153 @@ export interface NegocioGuardado {
   id: string
   nombre: string
   nuevo: boolean
+}
+
+export type PreparadoFoto =
+  | { ok: true; foto: Photo; lugares: Record<string, unknown> }
+  | { ok: false; problemas: string[] }
+
+/**
+ * Valida una foto ya reducida y la deja lista para el commit. El archivo se guarda dos veces a
+ * propósito: el original en `photos-src` para que `images:optimize` pueda generar variantes y AVIF
+ * más adelante, y la copia que sirve la guía en `public/images/places`.
+ */
+export function prepararFoto(
+  dataset: CommercialDataset,
+  crudo: Cargado['crudo'],
+  entrada: z.infer<typeof EntradaFotoSchema>,
+  hoy: string,
+): PreparadoFoto {
+  const place = dataset.places.find((fila) => fila.id === entrada.id)
+  if (!place) return { ok: false, problemas: ['Ese negocio ya no existe.'] }
+
+  const bytes = bytesDeBase64(entrada.datos)
+  if (!bytes) return { ok: false, problemas: ['La foto no llegó como base64 válido.'] }
+  if (bytes.length > TOPE_FOTO) {
+    return {
+      ok: false,
+      problemas: [`La foto pesa ${Math.round(bytes.length / 1024)} KB; el tope son 4096 KB.`],
+    }
+  }
+  const formato = formatoDeImagen(bytes)
+  if (!formato) {
+    return { ok: false, problemas: ['El archivo no es una imagen WebP, JPEG o PNG.'] }
+  }
+
+  const base = slugDe(entrada.archivo.replace(/\.[^.]+$/, '')) || 'foto'
+  const usados = new Set(place.photos.map((foto) => foto.src))
+  let nombre = `${base}.${formato}`
+  let numero = 2
+  while (usados.has(`images/places/${place.id}/${nombre}`)) {
+    nombre = `${base}-${numero++}.${formato}`
+  }
+  const src = `images/places/${place.id}/${nombre}`
+  const foto: Photo = {
+    src,
+    alt: entrada.alt,
+    width: entrada.ancho,
+    height: entrada.alto,
+    placeholder: entrada.placeholder,
+  }
+
+  const placesCrudos = (crudo.places.places as Record<string, unknown>[] | undefined) ?? []
+  const indice = placesCrudos.findIndex((fila) => String(fila.id) === place.id)
+  if (indice < 0) return { ok: false, problemas: ['El negocio no está en places.json.'] }
+  const placesNuevos = placesCrudos.map((fila, posicion) =>
+    posicion === indice
+      ? {
+          ...fila,
+          photos: [...((fila.photos as unknown[] | undefined) ?? []), foto],
+        }
+      : fila,
+  )
+  const lugares = { ...crudo.places, updatedAt: hoy, places: placesNuevos }
+  const revisado = PlacesFileSchema.safeParse(lugares)
+  if (!revisado.success) {
+    return {
+      ok: false,
+      problemas: revisado.error.issues.map(
+        (problema) => `${problema.path.join('.') || 'datos'}: ${problema.message}`,
+      ),
+    }
+  }
+  return { ok: true, foto, lugares }
+}
+
+export type ResultadoFoto =
+  | {
+      ok: true
+      seco: boolean
+      pr: Publicacion | null
+      mensaje: string
+      foto: Photo | null
+    }
+  | { ok: false; problemas: string[] }
+
+/** Sube una foto: la valida y la manda a la misma rama con PR que el resto del contenido. */
+export async function guardarFoto(
+  entorno: EntornoGitHub & { PANEL_ABIERTO?: string },
+  cuerpo: unknown,
+): Promise<ResultadoFoto> {
+  const entrada = EntradaFotoSchema.safeParse(cuerpo)
+  if (!entrada.success) {
+    return {
+      ok: false,
+      problemas: entrada.error.issues.map(
+        (problema) => `${problema.path.join('.') || 'datos'}: ${problema.message}`,
+      ),
+    }
+  }
+
+  const cargado = await cargar(entorno)
+  const hoy = fechaLocal(new Date())
+  const preparado = prepararFoto(cargado.dataset, cargado.crudo, entrada.data, hoy)
+  if (!preparado.ok) return preparado
+
+  const negocio = cargado.dataset.places.find((fila) => fila.id === entrada.data.id)
+  if (cargado.seco) {
+    return {
+      ok: true,
+      seco: true,
+      pr: null,
+      mensaje: 'Foto validada. En desarrollo no se guarda el archivo.',
+      foto: null,
+    }
+  }
+
+  const bytes = bytesDeBase64(entrada.data.datos)
+  if (!bytes) return { ok: false, problemas: ['La foto no llegó como base64 válido.'] }
+  const nombre = preparado.foto.src.split('/').pop() ?? 'foto'
+  const contenido = base64DeBytes(bytes)
+
+  const pr = await publicar(
+    entorno,
+    [
+      {
+        ruta: `data/commercial/photos-src/${entrada.data.id}/${nombre}`,
+        contenido,
+        codificacion: 'base64',
+      },
+      {
+        ruta: `public/${preparado.foto.src}`,
+        contenido,
+        codificacion: 'base64',
+      },
+      {
+        ruta: 'data/commercial/places.json',
+        contenido: `${JSON.stringify(preparado.lugares, null, 2)}\n`,
+      },
+    ],
+    `Panel: foto en "${negocio?.name ?? entrada.data.id}"`,
+  )
+
+  return {
+    ok: true,
+    seco: false,
+    pr,
+    mensaje: 'Foto enviada a la PR.',
+    foto: preparado.foto,
+  }
 }
 
 export type ResultadoGuardado =
@@ -232,23 +448,62 @@ function construir(
 ): { place?: Place; problemas?: string[] } {
   /*
    * El orden de `giros` no es decorativo: el primero decide el icono de la ficha y la prioridad en
-   * la búsqueda. El formulario los lee en el orden de la taxonomía, que no es el del local, así que
-   * un cambio de teléfono podía reordenar los giros y cambiar quién sale primero al buscar "pasta".
-   * Se conserva el orden de los que ya estaban y los nuevos se añaden al final.
+   * la búsqueda. Ahora el formulario manda la lista ya ordenada, con sus secundarios aparte, así que
+   * se respeta tal cual. Antes eran casillas sin orden y el servidor tenía que adivinarlo.
    */
+  const problemasDeGiros: string[] = []
   const pedidos = [...new Set(entrada.giros)]
-  const giros = existente
-    ? [
-        ...existente.giros.filter((giro) => pedidos.includes(giro)),
-        ...pedidos.filter((giro) => !existente.giros.includes(giro)),
-      ]
-    : pedidos
-  const secundarios = (existente?.secundarios ?? [])
+  if (pedidos.length !== entrada.giros.length) {
+    problemasDeGiros.push('Hay un giro repetido en la lista principal.')
+  }
+  const giros = pedidos
+  const secundariosPedidos = entrada.secundarios
+    ? [...new Set(entrada.secundarios)]
+    : (existente?.secundarios ?? [])
+  if (secundariosPedidos.some((giro) => giros.includes(giro))) {
+    problemasDeGiros.push('Un giro no puede ser principal y secundario a la vez.')
+  }
+  if (giros.length + secundariosPedidos.length > 3) {
+    problemasDeGiros.push('Entre giros principales y secundarios el tope son tres.')
+  }
+  const secundarios = secundariosPedidos
     .filter((giro) => !giros.includes(giro))
     .slice(0, Math.max(0, 3 - giros.length))
+  if (problemasDeGiros.length > 0) return { problemas: problemasDeGiros }
 
   if ((entrada.lat == null) !== (entrada.lng == null)) {
     return { problemas: ['Indica las dos coordenadas o ninguna'] }
+  }
+
+  if (entrada.cierre && entrada.cierre.desde > hoy) {
+    return { problemas: ['El cierre temporal no puede empezar en el futuro.'] }
+  }
+
+  /*
+   * Las fotos se suben antes que el negocio, así que aquí solo se reordena la galería y se corrige
+   * el texto alternativo. Un `src` que ya no exista se rechaza: adivinarlo sería pisar otra foto.
+   */
+  let photos = existente?.photos ?? []
+  if (entrada.fotos) {
+    const disponibles = new Map(photos.map((foto) => [foto.src, foto]))
+    const vistas = new Set<string>()
+    const problemasDeFotos: string[] = []
+    const elegidas = []
+    for (const foto of entrada.fotos) {
+      const previa = disponibles.get(foto.src)
+      if (!previa) {
+        problemasDeFotos.push(`La foto "${foto.src}" ya no existe; recarga el panel.`)
+        continue
+      }
+      if (vistas.has(foto.src)) {
+        problemasDeFotos.push('Hay una foto repetida en la galería.')
+        continue
+      }
+      vistas.add(foto.src)
+      elegidas.push({ ...previa, alt: foto.alt })
+    }
+    if (problemasDeFotos.length > 0) return { problemas: problemasDeFotos }
+    photos = elegidas
   }
 
   const id = existente?.id ?? unico(slugDe(entrada.nombre), ids)
@@ -291,7 +546,7 @@ function construir(
     googleMapsUri: urlDe(entrada.googleMapsUri),
     googlePlaceId: existente?.googlePlaceId ?? null,
     phone: telefonoDe(entrada.telefono),
-    photos: existente?.photos ?? [],
+    photos,
     links: {
       ...(existente?.links ?? ENLACES_VACIOS),
       website: urlDe(entrada.sitio),
@@ -300,10 +555,14 @@ function construir(
       whatsapp: telefonoDe(entrada.whatsapp),
     },
     active: entrada.activo,
-    // Un local que vuelve a estar visible ya no arrastra un cierre temporal viejo.
-    ...(existente?.cierre && !(existente.active === false && entrada.activo)
-      ? { cierre: existente.cierre }
-      : {}),
+    // `null` lo quita, `undefined` conserva el que hubiera: el formulario decide, no una heurística.
+    ...(entrada.cierre === null
+      ? {}
+      : entrada.cierre
+        ? { cierre: entrada.cierre }
+        : existente?.cierre
+          ? { cierre: existente.cierre }
+          : {}),
     verification,
   }
 
