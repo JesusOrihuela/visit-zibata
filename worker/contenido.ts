@@ -403,6 +403,24 @@ export function prepararNegocio(
         `La descripción coincide con la de "${mismaDescripcion.name}" en esta plaza; los metadatos de las dos fichas se repetirían.`,
       )
     }
+    // La ficha de una plaza usa el mismo patrón de título que la de un local. Un local llamado
+    // como una plaza, o con su descripción, deja dos páginas con el mismo metadato.
+    const plazaMismoNombre = dataset.plazas.find((fila) => normalizar(fila.name) === nombre)
+    if (plazaMismoNombre) {
+      problemas.push(
+        `El nombre coincide con el de la plaza "${plazaMismoNombre.name}"; los títulos de las dos páginas se repetirían.`,
+      )
+    }
+    const plazaMismaDescripcion = dataset.plazas.find(
+      (fila) =>
+        normalizar(fila.description?.es ?? '') === descripcionEs ||
+        normalizar(fila.description?.en ?? '') === descripcionEn,
+    )
+    if (plazaMismaDescripcion) {
+      problemas.push(
+        `La descripción coincide con la de la plaza "${plazaMismaDescripcion.name}"; los metadatos de las dos páginas se repetirían.`,
+      )
+    }
   }
 
   if (problemas.length > 0) return { ok: false, problemas }

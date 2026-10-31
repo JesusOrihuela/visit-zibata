@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import categoriasJson from '../data/commercial/categories.json' with { type: 'json' }
 import lugaresJson from '../data/commercial/places.json' with { type: 'json' }
 import plazasJson from '../data/commercial/plazas.json' with { type: 'json' }
-import type { CommercialDataset } from '../src/data/relations.ts'
+import { type CommercialDataset, deriveCategoryIds } from '../src/data/relations.ts'
 import { CategoriesFileSchema, PlacesFileSchema, PlazasFileSchema } from '../src/data/schemas.ts'
 import type { Place, Plaza } from '../src/types/domain.ts'
 import { prepararNegocio } from './contenido.ts'
@@ -125,6 +125,40 @@ describe('preparar un negocio nuevo', () => {
     expect(preparado.ok).toBe(false)
     if (preparado.ok) return
     expect(preparado.problemas.join(' ')).toContain('descripción')
+  })
+
+  it('rechaza un nombre que repite el de una plaza', () => {
+    const plazaObjetivo = dataset.plazas.find((fila) => fila.active)
+    const destino = dataset.plazas.find((fila) => fila.active && fila.id !== plazaObjetivo?.id)
+    if (!plazaObjetivo || !destino) return
+    const preparado = prepararNegocio(
+      dataset,
+      crudo,
+      nuevo({ nombre: plazaObjetivo.name, plazaId: destino.id }),
+      HOY,
+    )
+    expect(preparado.ok).toBe(false)
+    if (preparado.ok) return
+    expect(preparado.problemas.join(' ')).toContain('plaza')
+  })
+
+  it('rechaza una descripción que repite la de una plaza', () => {
+    const plazaConTexto = dataset.plazas.find(
+      (fila) => fila.active && fila.description?.es && fila.description.en,
+    )
+    if (!plazaConTexto?.description) return
+    const preparado = prepararNegocio(
+      dataset,
+      crudo,
+      nuevo({
+        descripcionEs: plazaConTexto.description.es,
+        descripcionEn: plazaConTexto.description.en ?? '',
+      }),
+      HOY,
+    )
+    expect(preparado.ok).toBe(false)
+    if (preparado.ok) return
+    expect(preparado.problemas.join(' ')).toContain('plaza')
   })
 
   it('permite el mismo nombre en otra plaza', () => {
@@ -305,6 +339,19 @@ describe('editar un negocio existente', () => {
       (fila) => fila.id === existente.plazaId,
     )
     expect(tocada?.categories).toContain(sinCategoria.id)
+  })
+
+  it('ocultar un local actualiza las categorías visibles de su plaza', () => {
+    const preparado = prepararNegocio(dataset, crudo, editar(existente, { activo: false }), HOY)
+    if (!preparado.ok) throw new Error('no preparó')
+    const tocada = (preparado.plazas.plazas as Plaza[]).find(
+      (fila) => fila.id === existente.plazaId,
+    )
+    if (!tocada) return
+    const visibles = dataset.places
+      .map((fila) => (fila.id === existente.id ? { ...fila, active: false } : fila))
+      .filter((fila) => fila.active && fila.plazaId === existente.plazaId)
+    expect(tocada.categories).toEqual(deriveCategoryIds(visibles, dataset.categories))
   })
 
   it('reactivar un local limpia el cierre temporal', () => {
