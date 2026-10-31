@@ -11,6 +11,10 @@
  * según la mezcla de la zona (nativa en la cobertura, urbana en las áreas verdes) y cambia el porte,
  * el ancho y el color. No se afirma que cada árbol del mapa sea de esa especie.
  *
+ * La densidad no es la misma en todas partes: el golf va ralo, los parques y las glorietas más
+ * tupidos, y los camellones de las avenidas de doble calzada se generan aparte con `medianAreas`.
+ * El despeje de vías y edificios se aplica a todas las pasadas.
+ *
  * Cada árbol son tres volúmenes (tronco, copa baja y copa alta); cada arbusto, uno bajo y ancho. El
  * arbusto solo entra en z16, que es cuando se distingue; así la densidad sube sin cargar la vista
  * inicial.
@@ -94,6 +98,13 @@ export const MEZCLA_ARBUSTO: Partial<Record<Especie, number>> = {
   garambullo: 0.2,
 }
 
+/** Camellones estrechos: portes pequeños, para que la copa no se salga del espacio entre calzadas. */
+export const MEZCLA_CAMELLON: Partial<Record<Especie, number>> = {
+  'palo-verde': 0.5,
+  cazahuate: 0.3,
+  nopal: 0.2,
+}
+
 export interface TreeOptions {
   /** Separación media entre plantas (m). */
   spacingM: number
@@ -103,6 +114,8 @@ export interface TreeOptions {
   forma?: 'arbol' | 'arbusto'
   /** Pesos de la mezcla; se normalizan. Por omisión, la nativa. */
   especies?: Partial<Record<Especie, number>>
+  /** Áreas donde no se planta nada, aunque estén dentro de la cobertura o del verde. */
+  excluir?: Feature<Polygon | MultiPolygon>[]
 }
 
 export interface TreePart {
@@ -223,6 +236,9 @@ export function placeTrees(
         const jitter = (axis: string) => (stableUnit(`${id}:${axis}`) - 0.5) * 0.7
         const point: Position = [(i + jitter('x')) * stepLng, (j + jitter('y')) * stepLat]
         if (!turf.booleanPointInPolygon(point, area)) continue
+        if (options.excluir?.some((excluida) => turf.booleanPointInPolygon(point, excluida))) {
+          continue
+        }
 
         const especie = elegirEspecie(id, mezcla)
         const arquetipo = ARQUETIPOS[especie]
@@ -285,4 +301,75 @@ export function placeTrees(
     }
   }
   return trees
+}
+
+/**
+ * Los camellones de las avenidas de doble calzada, a partir de las dos vías de un solo sentido.
+ *
+ * No se inventan ejes: se buscan dos tramos con el mismo nombre, ambos `oneway`, con extremos
+ * opuestos y una separación de entre 10 y 40 m; el punto medio de cada par es el camellón. El
+ * polígono se usa después como un área verde más, con el mismo despeje de vías y edificios.
+ */
+export function medianAreas(
+  roads: Feature<LineString>[],
+  anchoM = 3.5,
+): Feature<Polygon, { name?: string }>[] {
+  const porNombre = new Map<string, Feature<LineString>[]>()
+  for (const road of roads) {
+    const { name, oneway } = road.properties as { name?: string; oneway?: boolean }
+    if (!name || !oneway) continue
+    const lista = porNombre.get(name) ?? []
+    lista.push(road)
+    porNombre.set(name, lista)
+  }
+
+  const salida: Feature<Polygon, { name?: string }>[] = []
+  for (const lista of porNombre.values()) {
+    const usados = new Set<number>()
+    for (let i = 0; i < lista.length; i++) {
+      for (let j = i + 1; j < lista.length; j++) {
+        if (usados.has(i) || usados.has(j)) continue
+        const a = lista[i]
+        const b = lista[j]
+        if (!a || !b) continue
+        const largoA = turf.length(a, { units: 'meters' })
+        const largoB = turf.length(b, { units: 'meters' })
+        if (Math.min(largoA, largoB) / Math.max(largoA, largoB) < 0.6) continue
+
+        const ca = turf.coordAll(a)
+        const cb = turf.coordAll(b)
+        const iniA = turf.point(ca[0] ?? [0, 0])
+        const finA = turf.point(ca[ca.length - 1] ?? [0, 0])
+        const iniB = turf.point(cb[0] ?? [0, 0])
+        const finB = turf.point(cb[cb.length - 1] ?? [0, 0])
+        const opuesto =
+          turf.distance(iniA, finB, { units: 'meters' }) < 60 &&
+          turf.distance(finA, iniB, { units: 'meters' }) < 60
+        if (!opuesto) continue
+
+        const [largo, corto] = largoA >= largoB ? [a, b] : [b, a]
+        const puntos: Position[] = []
+        for (let d = 0; d <= Math.max(largoA, largoB); d += 12) {
+          const punto = turf.along(largo, d, { units: 'meters' })
+          const cercano = turf.nearestPointOnLine(corto, punto, { units: 'meters' })
+          const separacion = turf.distance(punto, cercano, { units: 'meters' })
+          if (separacion < 10 || separacion > 40) continue
+          puntos.push(turf.midpoint(punto, cercano).geometry.coordinates)
+        }
+        if (puntos.length < 4) continue
+        const eje = turf.lineString(puntos)
+        if (turf.length(eje, { units: 'meters' }) < 60) continue
+        const camellon = turf.buffer(eje, anchoM, { units: 'meters' })
+        if (camellon) {
+          salida.push({
+            ...(camellon as Feature<Polygon>),
+            properties: { name: (largo.properties as { name?: string }).name },
+          })
+        }
+        usados.add(i)
+        usados.add(j)
+      }
+    }
+  }
+  return salida
 }
