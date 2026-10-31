@@ -360,8 +360,14 @@ export function prepararCategorias(
       if (!categoria.giros.some((fila) => fila.id === giro.id)) girosAfectados.add(giro.id)
     }
   }
-  const locales = dataset.places.filter((place) =>
-    [...place.giros, ...place.secundarios].some((giro) => girosAfectados.has(giro)),
+  const plazasActivas = new Set(
+    dataset.plazas.filter((plaza) => plaza.active).map((plaza) => plaza.id),
+  )
+  const locales = dataset.places.filter(
+    (place) =>
+      place.active &&
+      plazasActivas.has(place.plazaId) &&
+      [...place.giros, ...place.secundarios].some((giro) => girosAfectados.has(giro)),
   )
   const plazasAfectadas = new Set(locales.map((place) => place.plazaId))
 

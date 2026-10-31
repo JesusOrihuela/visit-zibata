@@ -247,8 +247,12 @@ function localesDeGiros(giros: Iterable<string>): Negocio[] {
   )
 }
 
-const localesDeCategoria = (categoria: Categoria): Negocio[] =>
-  localesDeGiros(categoria.giros.map((giro) => giro.id))
+const esVisible = (negocio: Negocio): boolean =>
+  negocio.active && (datos?.plazas.find((plaza) => plaza.id === negocio.plazaId)?.active ?? false)
+
+/** Los locales que de verdad salen en la guía: activos y en una plaza activa. */
+const localesVisibles = (giros: Iterable<string>): Negocio[] =>
+  localesDeGiros(giros).filter(esVisible)
 
 /** Iconos que ya usa un giro no general, para no ofrecer el mismo dibujo dos veces. */
 function iconosUsados(excepto = ''): Set<string> {
@@ -314,7 +318,7 @@ function filasDeCategorias(): string {
   if (filas.length === 0) return '<p class="vacio">Ninguna categoría coincide.</p>'
   return filas
     .map((categoria) => {
-      const locales = localesDeCategoria(categoria).length
+      const locales = localesVisibles(categoria.giros.map((giro) => giro.id)).length
       return `<article class="categoria-fila">
         <span class="tono" data-tono="${categoria.hue ?? ''}" aria-hidden="true"></span>
         <div class="categoria-texto">
@@ -358,7 +362,7 @@ function pintarCategoria(categoria: Categoria | null): void {
       general: true,
     },
   ]
-  const locales = localesDeCategoria(base)
+  const locales = localesVisibles(giros.map((giro) => giro.id))
   const plazas = new Set(locales.map((negocio) => negocio.plazaId))
   const impacto =
     locales.length === 0
@@ -426,7 +430,7 @@ function filaDeGiroFormulario(
 ): string {
   const general = giro.general === true
   const usados = iconosUsados(giro.id)
-  const locales = giro.id ? localesDeGiros([giro.id]).length : 0
+  const locales = giro.id ? localesVisibles([giro.id]).length : 0
   const destino = esNueva ? '' : categoria.id
   return `<div class="giro-ficha" data-giro data-id="${texto(giro.id)}" data-general="${String(general)}">
     <div class="giro-cabecera">
