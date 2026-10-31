@@ -1947,11 +1947,12 @@
       "name": "Tomassa Almacén de Pastas",
       "plazaId": "paseo-zibata",
       "giros": [
-        "cocina-italiana",
-        "pizza",
-        "pasta"
+        "pasta",
+        "cocina-italiana"
       ],
-      "secundarios": [],
+      "secundarios": [
+        "pizza"
+      ],
       "description": {
         "es": "En TOMASSA | Almacén de Pastas elaboramos pasta fresca artesanal todos los días, con ingredientes orgánicos.\n🍝 Pastas artesanales\n🧀 Salsas\n🍮 Tiramisu · 🍷 Aperitivos y kombucha",
         "en": "At TOMASSA | Almacén de Pastas we make fresh handmade pasta every day, with organic ingredients.\n🍝 Handmade pasta\n🧀 Sauces\n🍮 Tiramisu · 🍷 Aperitifs and kombucha"
