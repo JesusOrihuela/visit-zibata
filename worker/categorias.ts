@@ -92,6 +92,9 @@ export type PreparadoCategorias =
 const limpiarSinonimos = (valores: string[]): string[] =>
   [...new Set(valores.map((valor) => valor.trim()).filter(Boolean))].slice(0, 60)
 
+const normalizar = (valor: string): string =>
+  valor.normalize('NFC').trim().replace(/\s+/g, ' ').toLowerCase()
+
 const iguales = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b)
 
 /**
@@ -212,6 +215,22 @@ export function prepararCategorias(
       synonyms: limpiarSinonimos(entradaCategoria.synonyms),
       giros,
     })
+  }
+
+  // La etiqueta de una categoría es el título de su página y el nombre del filtro. Dos iguales
+  // dejarían dos páginas con el mismo título, que es lo que la prueba de metadatos prohíbe.
+  const etiquetas = { es: new Map<string, string>(), en: new Map<string, string>() }
+  for (const categoria of nuevas) {
+    for (const locale of ['es', 'en'] as const) {
+      const etiqueta = normalizar(categoria.label[locale] ?? '')
+      if (!etiqueta) continue
+      const anterior = etiquetas[locale].get(etiqueta)
+      if (anterior) {
+        error(`La etiqueta "${categoria.label[locale]}" ya la usa "${anterior}".`)
+      } else {
+        etiquetas[locale].set(etiqueta, categoria.label.es)
+      }
+    }
   }
 
   // No se borra: un giro que desaparece deja locales apuntando a la nada y una categoría que

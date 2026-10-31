@@ -365,6 +365,46 @@ export function prepararNegocio(
   const problemas = asuntos
     .filter((asunto) => asunto.level === 'error')
     .map((asunto) => asunto.message)
+
+  /*
+   * El prerender exige títulos y descripciones distintos. El título de una ficha es el nombre, y
+   * cuando se repite en la misma plaza no hay zona que lo distinga; la descripción se desambigua
+   * por zona, así que solo choca dentro de la misma plaza. Dos cadenas en plazas distintas sí
+   * pueden compartir nombre y descripción: el contexto ya las separa.
+   */
+  const normalizar = (valor: string): string =>
+    valor.normalize('NFC').trim().replace(/\s+/g, ' ').toLowerCase()
+  const plazaActiva = (id: string): boolean =>
+    dataset.plazas.find((plaza) => plaza.id === id)?.active === true
+  if (place.active && plazaActiva(place.plazaId)) {
+    const visibles = dataset.places.filter(
+      (fila) =>
+        fila.id !== place.id &&
+        fila.active &&
+        fila.plazaId === place.plazaId &&
+        plazaActiva(fila.plazaId),
+    )
+    const nombre = normalizar(place.name)
+    const mismoNombre = visibles.find((fila) => normalizar(fila.name) === nombre)
+    if (mismoNombre) {
+      problemas.push(
+        `Ya hay un local activo con el nombre "${mismoNombre.name}" en esta plaza; la ficha y el título se repetirían.`,
+      )
+    }
+    const descripcionEs = normalizar(place.description?.es ?? '')
+    const descripcionEn = normalizar(place.description?.en ?? '')
+    const mismaDescripcion = visibles.find(
+      (fila) =>
+        normalizar(fila.description?.es ?? '') === descripcionEs ||
+        normalizar(fila.description?.en ?? '') === descripcionEn,
+    )
+    if (mismaDescripcion) {
+      problemas.push(
+        `La descripción coincide con la de "${mismaDescripcion.name}" en esta plaza; los metadatos de las dos fichas se repetirían.`,
+      )
+    }
+  }
+
   if (problemas.length > 0) return { ok: false, problemas }
 
   // Solo los avisos de este local. El dataset tiene avisos propios que no vienen a cuento al

@@ -221,6 +221,20 @@ describe('añadir y mover giros', () => {
 })
 
 describe('lo que no se puede hacer', () => {
+  it('dos categorías con la misma etiqueta', () => {
+    const cuerpo = clonar()
+    const objetivo = cuerpo.categories.find(
+      (categoria) => categoria.id === giroNoGeneral.categoria.id,
+    )
+    const otra = cuerpo.categories.find((categoria) => categoria.id !== objetivo?.id)
+    if (!objetivo || !otra) throw new Error('sin categorías')
+    objetivo.label = { ...otra.label }
+    const preparado = prepararCategorias(dataset, crudo, cuerpo, HOY)
+    expect(preparado.ok).toBe(false)
+    if (preparado.ok) return
+    expect(preparado.problemas.join(' ')).toContain('etiqueta')
+  })
+
   it('quitar un giro', () => {
     const cuerpo = clonar()
     const objetivo = cuerpo.categories.find(

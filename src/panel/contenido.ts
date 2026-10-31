@@ -319,7 +319,7 @@ function filasDeCategorias(): string {
         <span class="tono" data-tono="${categoria.hue ?? ''}" aria-hidden="true"></span>
         <div class="categoria-texto">
           <h3>${texto(categoria.label.es)}</h3>
-          <p class="meta">${numero(categoria.giros.length)} giros · ${numero(locales)} locales · orden ${categoria.order}</p>
+          <p class="meta">${numero(categoria.giros.length)} giros · ${numero(locales)} locales · orden ${categoria.order}${locales === 0 ? ' · sin página' : ''}</p>
         </div>
         <button type="button" class="${controls.base} ${controls.boton} ${controls.secundario}" data-editar-categoria="${texto(categoria.id)}" aria-label="Editar ${texto(categoria.label.es)}">Editar</button>
       </article>`
@@ -362,7 +362,7 @@ function pintarCategoria(categoria: Categoria | null): void {
   const plazas = new Set(locales.map((negocio) => negocio.plazaId))
   const impacto =
     locales.length === 0
-      ? 'Una categoría nueva no afecta a ningún local hasta que le asignes un giro que ya se use.'
+      ? 'Esta categoría no tiene locales; su página no se publica hasta que tenga alguno.'
       : `${numero(locales.length)} locales en ${numero(plazas.size)} plazas están en esta categoría. Al guardar se actualizan los filtros, el buscador y las páginas; si mueves un giro, cambian solo los locales de ese giro.`
 
   raiz.innerHTML = `
@@ -708,6 +708,7 @@ function pintarFormulario(negocio: Negocio | null): void {
           <option value="">Elige una plaza</option>
           ${plazas}
         </select>
+        <span class="ayuda">Al cambiar de plaza, el local se añade al final del orden.</span>
         <span class="ayuda" data-plaza-aviso></span>
       </label>
 
@@ -727,11 +728,11 @@ function pintarFormulario(negocio: Negocio | null): void {
       </label>
 
       <label class="campo-form">
-        <span>Teléfono</span>
+        <span>Teléfono <span class="ayuda">10 dígitos o con +52</span></span>
         <input class="${controls.campo}" type="tel" name="telefono" value="${texto(negocio?.phone ?? '')}" placeholder="4421234567" />
       </label>
       <label class="campo-form">
-        <span>WhatsApp</span>
+        <span>WhatsApp <span class="ayuda">10 dígitos o con +52</span></span>
         <input class="${controls.campo}" type="tel" name="whatsapp" value="${texto(negocio?.links?.whatsapp ?? '')}" placeholder="4421234567" />
       </label>
       <label class="campo-form">
@@ -764,7 +765,7 @@ function pintarFormulario(negocio: Negocio | null): void {
 
       <label class="campo-ancho casilla">
         <input type="checkbox" name="activo"${negocio?.active === false ? '' : ' checked'} />
-        <span>Visible en la guía. Oculto sale de listas, buscador y sitemap, y su ficha deja de publicarse. Se actualiza la fecha de verificación sin cambiar el estado.</span>
+        <span>Visible en la guía. Oculto sale de listas, buscador y sitemap; su ficha y su enlace directo dejan de existir. Se actualiza la fecha de verificación sin cambiar el estado.</span>
       </label>
 
       <div class="problemas" data-problemas role="alert"></div>

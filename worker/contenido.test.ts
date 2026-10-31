@@ -66,11 +66,83 @@ describe('preparar un negocio nuevo', () => {
     expect(tocada?.placeIds).toContain('panaderia-la-esquina')
   })
 
-  it('si el nombre choca, añade un número en vez de pisar el existente', () => {
-    const preparado = prepararNegocio(dataset, crudo, nuevo({ nombre: "Carl's Jr." }), HOY)
+  it('si el slug choca en otra plaza, añade un número en vez de pisar el existente', () => {
+    const carls = dataset.places.find((fila) => fila.id === 'carls-jr')
+    const otra = dataset.plazas.find(
+      (fila) =>
+        fila.active &&
+        fila.id !== carls?.plazaId &&
+        !dataset.places.some((place) => place.plazaId === fila.id && place.name === "Carl's Jr."),
+    )
+    if (!carls || !otra) return
+    const preparado = prepararNegocio(
+      dataset,
+      crudo,
+      nuevo({ nombre: "Carl's Jr.", plazaId: otra.id }),
+      HOY,
+    )
     expect(preparado.ok).toBe(true)
     if (!preparado.ok) return
     expect(preparado.place.id).toBe('carls-jr-2')
+  })
+
+  it('rechaza el mismo nombre en la misma plaza, donde la zona no lo distingue', () => {
+    const otro = dataset.places.find(
+      (fila) => fila.active && fila.id !== existente.id && fila.plazaId === existente.plazaId,
+    )
+    if (!otro) return
+    const preparado = prepararNegocio(
+      dataset,
+      crudo,
+      nuevo({ nombre: otro.name, plazaId: existente.plazaId }),
+      HOY,
+    )
+    expect(preparado.ok).toBe(false)
+    if (preparado.ok) return
+    expect(preparado.problemas.join(' ')).toContain('nombre')
+  })
+
+  it('rechaza la misma descripción en la misma plaza', () => {
+    const otro = dataset.places.find(
+      (fila) =>
+        fila.active &&
+        fila.id !== existente.id &&
+        fila.plazaId === existente.plazaId &&
+        fila.description?.es &&
+        fila.description.en,
+    )
+    if (!otro?.description) return
+    const preparado = prepararNegocio(
+      dataset,
+      crudo,
+      nuevo({
+        plazaId: existente.plazaId,
+        descripcionEs: otro.description.es,
+        descripcionEn: otro.description.en ?? '',
+      }),
+      HOY,
+    )
+    expect(preparado.ok).toBe(false)
+    if (preparado.ok) return
+    expect(preparado.problemas.join(' ')).toContain('descripción')
+  })
+
+  it('permite el mismo nombre en otra plaza', () => {
+    const otro = dataset.places.find((fila) => fila.active)
+    const destino = dataset.plazas.find(
+      (fila) =>
+        fila.active &&
+        fila.id !== otro?.plazaId &&
+        !dataset.places.some((place) => place.plazaId === fila.id && place.name === otro?.name),
+    )
+    if (!otro || !destino) return
+    const preparado = prepararNegocio(
+      dataset,
+      crudo,
+      nuevo({ nombre: otro.name, plazaId: destino.id }),
+      HOY,
+    )
+    expect(preparado.ok).toBe(true)
   })
 
   it('marca la verificación de hoy con la fuente del panel', () => {
