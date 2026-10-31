@@ -40,7 +40,7 @@ import { type OverpassResponse, overpassToFeatures } from './lib/osm.ts'
 import { loadConfig, paths, readJson, writeJson } from './lib/paths.ts'
 import { Compression, TileType, writePmtiles } from './lib/pmtiles-writer.ts'
 import { buildVectorTiles, type LayerInput } from './lib/tiles.ts'
-import { placeTrees } from './lib/trees.ts'
+import { MEZCLA_ARBUSTO, MEZCLA_NATIVA, MEZCLA_URBANA, placeTrees } from './lib/trees.ts'
 
 const started = Date.now()
 const log = (message: string) =>
@@ -413,16 +413,36 @@ const obstacles = {
 // Las áreas verdes de OSM (parques, jardines, pasto y golf) también están arboladas en Zibatá, con
 // menos densidad que una cañada: la clasificación satelital de 10 m no distingue un árbol suelto.
 const GREEN_CLASSES = new Set(['park', 'garden', 'grass', 'golf', 'wood'])
-const greenAreas = landuse
-  .filter((feature) => GREEN_CLASSES.has(feature.properties.class))
+const greenFeatures = landuse.filter((feature) => GREEN_CLASSES.has(feature.properties.class))
+const greenAreas = greenFeatures
+  .flatMap((feature) => polygonsOf(feature as Feature<Polygon | MultiPolygon>))
+  .map((polygon) => turf.feature(polygon) as Feature<Polygon>)
+// El matorral bajo va donde se pisa y se mira: parques, jardines y arbolado. El green del golf y
+// los prados abiertos se quedan con su árbol, sin un arbusto cada metro que además no se ve.
+const SHRUB_CLASSES = new Set(['park', 'garden', 'wood'])
+const shrubAreas = greenFeatures
+  .filter((feature) => SHRUB_CLASSES.has(feature.properties.class))
   .flatMap((feature) => polygonsOf(feature as Feature<Polygon | MultiPolygon>))
   .map((polygon) => turf.feature(polygon) as Feature<Polygon>)
 const trees = [
-  ...placeTrees(canopy, obstacles, config.trees),
-  ...placeTrees(greenAreas, obstacles, { ...config.trees, spacingM: config.trees.greenSpacingM }),
+  ...placeTrees(canopy, obstacles, { ...config.trees, especies: MEZCLA_NATIVA }),
+  ...placeTrees(greenAreas, obstacles, {
+    ...config.trees,
+    spacingM: config.trees.greenSpacingM,
+    especies: MEZCLA_URBANA,
+  }),
+  // El arbusto va aparte y más tupido: un volumen bajo por planta, y solo entra en z16.
+  ...placeTrees(shrubAreas, obstacles, {
+    ...config.trees,
+    spacingM: config.trees.shrubSpacingM,
+    forma: 'arbusto',
+    especies: MEZCLA_ARBUSTO,
+  }),
 ]
+const copas = trees.filter((tree) => tree.properties.part === 'crown').length
+const arbustos = trees.filter((tree) => tree.properties.part === 'shrub').length
 log(
-  `${trees.length / 3} árboles: ${(canopy.reduce((sum, area) => sum + turf.area(area), 0) / 1e6).toFixed(2)} km² de copa arbórea + ${greenAreas.length} áreas verdes`,
+  `${copas} árboles y ${arbustos} arbustos: ${(canopy.reduce((sum, area) => sum + turf.area(area), 0) / 1e6).toFixed(2)} km² de copa arbórea + ${greenAreas.length} áreas verdes (${shrubAreas.length} con matorral)`,
 )
 
 // ── 7. Teselas vectoriales → PMTiles ───────────────────────────────────────────────────────────
@@ -455,21 +475,38 @@ const layers: LayerInput[] = [
    * coordenada entera y el polígono se guarda entero para no pintar nada. Son bytes que viajan en
    * la tesela que más se pide (z13 es la vista inicial en móvil) sin llegar nunca a verse.
    *
-   * De lejos basta la copa baja; el segundo piso entra en z15 y el tronco en z16.
+   * De lejos basta la copa baja; el segundo piso entra en z15 y el tronco en z16. El arbusto solo
+   * entra en z16, que es cuando su altura se distingue del suelo.
    */
   {
     name: 'trees',
-    features: trees.filter((tree) => tree.properties.part === 'crown'),
+    features: trees.filter(
+      (tree) => tree.properties.part !== 'shrub' && tree.properties.part === 'crown',
+    ),
     minZoom: buildingsMinZoom + 1,
     maxZoom: 14,
   },
   {
     name: 'trees',
-    features: trees.filter((tree) => tree.properties.part !== 'trunk'),
+    features: trees.filter(
+      (tree) => tree.properties.part !== 'shrub' && tree.properties.part !== 'trunk',
+    ),
     minZoom: 15,
     maxZoom: 15,
   },
-  { name: 'trees', features: trees, minZoom: 16, maxZoom },
+  {
+    name: 'trees',
+    features: trees.filter((tree) => tree.properties.part !== 'shrub'),
+    minZoom: 16,
+    maxZoom,
+  },
+  {
+    // Capa propia: geojson-vt guarda una sola capa por nombre y zooms solapados se pisarían.
+    name: 'shrubs',
+    features: trees.filter((tree) => tree.properties.part === 'shrub'),
+    minZoom: 16,
+    maxZoom,
+  },
 ]
 const { tiles, bytesByZoom, largestTile } = buildVectorTiles(layers, {
   minZoom,
@@ -619,7 +656,7 @@ writeJson(paths.manifest, {
     `Edificios en z${buildingsMinZoom}: solo huellas ≥ ${buildingsLowZoomMinAreaM2} m² (peso de la vista inicial en móvil)`,
     `Etiquetas: se omiten las que quedan a menos de ${LABEL_CLEARANCE_M} m de una plaza activa (irían bajo su marcador)`,
     'Asociación edificio → plaza por centroide dentro de la geometría de la plaza; volumen generado si faltan huellas',
-    `Árboles: retícula de ~${config.trees.spacingM} m (cobertura arbórea ESA WorldCover 10 m, a ≤ ${TREE_MARGIN_M} m del contorno) y ~${config.trees.greenSpacingM} m (áreas verdes de OSM), con desplazamiento determinista, sin invadir vías (despeje por clase) ni edificios. Cada árbol es tronco + copa. La posición de cada árbol es aproximada; la del arbolado, real`,
+    `Árboles y arbustos: retícula de ~${config.trees.spacingM} m (cobertura arbórea ESA WorldCover 10 m, a ≤ ${TREE_MARGIN_M} m del contorno), ~${config.trees.greenSpacingM} m (árboles de áreas verdes de OSM) y ~${config.trees.shrubSpacingM} m (arbustos de esas mismas áreas), con desplazamiento determinista, sin invadir vías (despeje por clase) ni edificios. Cada árbol es tronco + dos pisos de copa; cada arbusto, un volumen bajo. La especie es una mezcla orientativa por zona; la posición de cada planta es aproximada y la del arbolado, real`,
     `Teselado MVT z${minZoom}–z${maxZoom} (geojson-vt, extent 4096, tolerancia 3) + gzip, empaquetado PMTiles v3`,
   ],
   outputs: {
@@ -637,6 +674,7 @@ writeJson(paths.manifest, {
         buildings: count('buildings'),
         labels: count('labels'),
         trees: count('trees'),
+        shrubs: count('shrubs'),
       },
     },
     'public/map/plaza-buildings.geojson': {

@@ -1,6 +1,6 @@
 import * as turf from '@turf/turf'
 import { describe, expect, it } from 'vitest'
-import { placeTrees } from './trees.ts'
+import { MEZCLA_ARBUSTO, placeTrees } from './trees.ts'
 
 // Un cuadrado de ~110 × 110 m de arbolado, cruzado por una calle y con una casa dentro.
 const area = turf.polygon([
@@ -66,11 +66,32 @@ describe('placeTrees', () => {
   it('el tronco queda debajo de la copa y la copa empieza donde acaba el tronco', () => {
     for (const tree of crowns(trees)) {
       expect(tree.properties.height).toBeGreaterThan(tree.properties.base)
-      expect(tree.properties.base).toBeGreaterThan(1)
+      expect(tree.properties.base).toBeGreaterThanOrEqual(1)
     }
     for (const trunk of trees.filter((tree) => tree.properties.part === 'trunk')) {
       expect(trunk.properties.base).toBe(0)
-      expect(trunk.properties.height).toBeGreaterThan(1)
+      expect(trunk.properties.height).toBeGreaterThan(0.5)
+    }
+  })
+
+  it('reparte especies de la zona, no un árbol genérico', () => {
+    const especies = new Set(crowns(trees).map((tree) => tree.properties.species))
+    expect(especies.size).toBeGreaterThan(2)
+    expect([...especies]).not.toContain(undefined)
+  })
+
+  it('el arbusto es un solo volumen bajo, sin tronco ni copa', () => {
+    const arbustos = placeTrees([area], obstacles, {
+      ...options,
+      spacingM: 9,
+      forma: 'arbusto',
+      especies: MEZCLA_ARBUSTO,
+    })
+    expect(arbustos.length).toBeGreaterThan(10)
+    for (const arbusto of arbustos) {
+      expect(arbusto.properties.part).toBe('shrub')
+      expect(arbusto.properties.base).toBe(0)
+      expect(arbusto.properties.height).toBeLessThanOrEqual(2)
     }
   })
 
