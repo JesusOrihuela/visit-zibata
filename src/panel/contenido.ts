@@ -1138,6 +1138,7 @@ async function comprimirFoto(archivo: File): Promise<{
   const contexto = lienzo.getContext('2d')
   if (!contexto) throw new Error('El navegador no pudo preparar la imagen.')
   contexto.drawImage(imagen, 0, 0, ancho, alto)
+  if ('close' in imagen) imagen.close()
 
   let blob = await new Promise<Blob | null>((resolver) =>
     lienzo.toBlob(resolver, 'image/webp', 0.82),
