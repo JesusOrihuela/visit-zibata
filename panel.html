@@ -19,43 +19,61 @@
     />
     <meta name="robots" content="noindex, nofollow" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>Panel · Visit Zibatá</title>
+    <title>Mesa de edición · Visit Zibatá</title>
   </head>
   <body>
-    <header class="cabecera">
-      <h1>Panel de Visit Zibatá</h1>
-      <nav class="ventana" aria-label="Ventana de tiempo">
-        <button type="button" data-dias="7">7 días</button>
-        <button type="button" data-dias="30" aria-current="true">30 días</button>
-        <button type="button" data-dias="90">90 días</button>
-        <button type="button" data-dias="365">1 año</button>
-      </nav>
-    </header>
+    <a class="salto" href="#principal">Saltar al contenido</a>
 
-    <nav class="secciones" aria-label="Secciones del panel">
-      <a href="#contenido">Resumen</a>
-      <a href="#sugerencias">Sugerencias</a>
-      <a href="#editor">Contenido</a>
-    </nav>
+    <div class="mesa">
+      <aside class="rail" aria-label="Mesa de edición">
+        <div class="marca-panel">
+          <span class="marca-panel-nombre">Visit Zibatá</span>
+          <span class="marca-panel-nota">Mesa de edición</span>
+        </div>
 
-    <main id="contenido" aria-busy="true">
-      <p class="estado" id="estado">Cargando…</p>
-    </main>
+        <nav class="menu" aria-label="Secciones">
+          <button type="button" data-vista="resumen" aria-current="page">Resumen</button>
+          <button type="button" data-vista="sugerencias">
+            Sugerencias
+            <span class="cuenta-menu" data-cuenta-sugerencias hidden></span>
+          </button>
+          <button type="button" data-vista="negocios">Negocios</button>
+          <button type="button" data-vista="categorias">Categorías</button>
+        </nav>
 
-    <section class="editor" aria-labelledby="editor-titulo">
-      <h2 id="editor-titulo">Contenido <span class="nota">negocios, categorías y giros</span></h2>
-      <div id="editor-contenido" aria-busy="true">
-        <p class="estado">Cargando contenido…</p>
+        <div class="rail-pie">
+          <p class="rail-estado" data-estado-rama>Contenido sin cargar</p>
+          <a class="rail-enlace" data-enlace-pr href="https://github.com/aurariola-studio/visit-zibata/pulls" target="_blank" rel="noreferrer" hidden>Ver la PR</a>
+        </div>
+      </aside>
+
+      <main id="principal" class="principal">
+        <header class="cabecera">
+          <div class="cabecera-texto">
+            <p class="antetitulo" data-antetitulo>La guía</p>
+            <h1 data-titulo>Resumen</h1>
+          </div>
+          <div class="cabecera-acciones" data-acciones></div>
+        </header>
+
+        <div id="vista" class="vista" aria-live="polite" aria-busy="true" tabindex="-1">
+          <p class="estado">Cargando…</p>
+        </div>
+      </main>
+    </div>
+
+    <dialog id="editor" class="editor" aria-labelledby="editor-titulo">
+      <div class="editor-caja">
+        <header class="editor-cabecera">
+          <div>
+            <p class="antetitulo" data-editor-antetitulo>Contenido</p>
+            <h2 id="editor-titulo" data-editor-titulo>Editar</h2>
+          </div>
+          <button type="button" class="editor-cerrar" data-editor-cerrar>Cerrar</button>
+        </header>
+        <div class="editor-cuerpo" data-editor-cuerpo></div>
       </div>
-    </section>
-
-    <footer class="pie">
-      <p>
-        Las comparticiones son vistas previas de apps de mensajería: un piso de cuántas veces se pegó
-        el enlace, no cuánta gente lo abrió. El promedio de estrellas no sale del servidor, ni
-        siquiera aquí: lo que se ve es cuántas notas tiene cada lugar.
-      </p>
-    </footer>
+    </dialog>
 
     <script type="module" src="/src/panel/panel.ts"></script>
   </body>
