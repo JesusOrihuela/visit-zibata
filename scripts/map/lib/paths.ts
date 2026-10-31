@@ -45,6 +45,7 @@ export interface GeoConfig {
   trees: {
     spacingM: number
     greenSpacingM: number
+    shrubSpacingM: number
     roadClearanceM: Record<string, number>
   }
   tiles: {

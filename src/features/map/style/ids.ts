@@ -23,4 +23,5 @@ export const LAYER = {
   buildingsOutside: 'buildings-outside',
   trees: 'trees',
   treeTrunks: 'tree-trunks',
+  treeShrubs: 'tree-shrubs',
 } as const

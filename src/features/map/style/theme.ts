@@ -45,12 +45,30 @@ export const mapTheme = {
 
   /**
    * Copas de árbol: verdes de la familia olivo/lima, apagados como el resto de la maqueta para no
-   * competir con las plazas. Los árboles bajos van más claros; los altos, más profundos.
+   * competir con las plazas.
+   *
+   * La especie cambia el tono: el mezquite y el tepehuaje van a verde gris, el huizache a amarillo
+   * seco, el palo verde a lima, la jacaranda al malva de su floración y las cactáceas a verde azulado.
+   * Son mezclas orientativas por zona, no un inventario: el mapa no dice que cada planta sea de esa
+   * especie, solo que el conjunto se parece a la flora que hay.
    */
   tree: {
     low: '#bccf9c',
     high: '#93ad6b',
     trunk: '#b9a88f',
+    especies: {
+      mezquite: '#a9bd8a',
+      huizache: '#c5c47c',
+      'palo-verde': '#9fbd6d',
+      tepehuaje: '#8fae73',
+      jaboncillo: '#a6b98a',
+      cazahuate: '#b8c79a',
+      jacaranda: '#b7a5c6',
+      pirul: '#7f9a63',
+      garambullo: '#8da083',
+      organo: '#8aa08a',
+      nopal: '#93a77b',
+    },
   },
 
   /**
