@@ -95,6 +95,20 @@ describe('editar una categoría', () => {
     expect(cambiada.slug).toEqual(giroNoGeneral.categoria.slug)
   })
 
+  it('normaliza los espacios de la etiqueta', () => {
+    const cuerpo = clonar()
+    const objetivo = cuerpo.categories.find(
+      (categoria) => categoria.id === giroNoGeneral.categoria.id,
+    )
+    if (!objetivo) throw new Error('sin categoría')
+    objetivo.label = { es: '  Nueva   Categoría  ', en: '  New   Category  ' }
+    const preparado = prepararCategorias(dataset, crudo, cuerpo, HOY)
+    if (!preparado.ok) throw new Error('no preparó')
+    const cambiada = categoriaPorId(preparado.categorias, objetivo.id ?? '')
+    expect(cambiada.label.es).toBe('Nueva Categoría')
+    expect(cambiada.label.en).toBe('New Category')
+  })
+
   it('cambia tono y orden', () => {
     const cuerpo = clonar()
     const objetivo = cuerpo.categories.find(
@@ -221,6 +235,19 @@ describe('añadir y mover giros', () => {
 })
 
 describe('lo que no se puede hacer', () => {
+  it('una etiqueta que no cabe en el título de la página', () => {
+    const cuerpo = clonar()
+    const objetivo = cuerpo.categories.find(
+      (categoria) => categoria.id === giroNoGeneral.categoria.id,
+    )
+    if (!objetivo) throw new Error('sin categoría')
+    objetivo.label = { es: 'A'.repeat(60), en: 'A'.repeat(60) }
+    const preparado = prepararCategorias(dataset, crudo, cuerpo, HOY)
+    expect(preparado.ok).toBe(false)
+    if (preparado.ok) return
+    expect(preparado.problemas.join(' ')).toContain('título')
+  })
+
   it('dos categorías con la misma etiqueta', () => {
     const cuerpo = clonar()
     const objetivo = cuerpo.categories.find(

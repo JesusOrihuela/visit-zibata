@@ -127,6 +127,43 @@ describe('preparar un negocio nuevo', () => {
     expect(preparado.problemas.join(' ')).toContain('descripción')
   })
 
+  it('rechaza un nombre que no cabe en el título de la página', () => {
+    const preparado = prepararNegocio(dataset, crudo, nuevo({ nombre: 'A'.repeat(50) }), HOY)
+    expect(preparado.ok).toBe(false)
+    if (preparado.ok) return
+    expect(preparado.problemas.join(' ')).toContain('título')
+  })
+
+  it('rechaza descripciones que solo difieren después del recorte del prerender', () => {
+    const conLarga = dataset.places.find(
+      (fila) => fila.active && fila.plazaId === existente.plazaId,
+    )
+    if (!conLarga) return
+    const recorte = 'A'.repeat(160)
+    const datasetLargo = {
+      ...dataset,
+      places: dataset.places.map((fila) =>
+        fila.id === conLarga.id
+          ? { ...fila, description: { es: `${recorte} original`, en: `${recorte} original` } }
+          : fila,
+      ),
+    }
+    const preparado = prepararNegocio(
+      datasetLargo,
+      crudo,
+      nuevo({
+        plazaId: conLarga.plazaId,
+        nombre: 'Local de descripción recortada',
+        descripcionEs: `${recorte} otra`,
+        descripcionEn: `${recorte} otra`,
+      }),
+      HOY,
+    )
+    expect(preparado.ok).toBe(false)
+    if (preparado.ok) return
+    expect(preparado.problemas.join(' ')).toContain('descripción')
+  })
+
   it('rechaza un nombre que repite el de una plaza', () => {
     const plazaObjetivo = dataset.plazas.find((fila) => fila.active)
     const destino = dataset.plazas.find((fila) => fila.active && fila.id !== plazaObjetivo?.id)
@@ -177,6 +214,18 @@ describe('preparar un negocio nuevo', () => {
       HOY,
     )
     expect(preparado.ok).toBe(true)
+  })
+
+  it('normaliza los espacios del nombre', () => {
+    const preparado = prepararNegocio(
+      dataset,
+      crudo,
+      nuevo({ nombre: '  Panadería   La   Esquina  ' }),
+      HOY,
+    )
+    if (!preparado.ok) throw new Error('no preparó')
+    expect(preparado.place.name).toBe('Panadería La Esquina')
+    expect(preparado.place.id).toBe('panaderia-la-esquina')
   })
 
   it('marca la verificación de hoy con la fuente del panel', () => {

@@ -45,12 +45,19 @@ import {
   ramaDe,
 } from './github.ts'
 import { slugDe, unico } from './slug.ts'
+import { SUFIJO_TITULO, TOPE_TITULO } from './titulos.ts'
 
 /** Lo que manda el formulario. Los nombres van en español porque son los de la interfaz. */
 export const EntradaNegocioSchema = z.object({
   /** Vacío al crear. Con valor, es el local que se edita. */
   id: z.string().trim().optional(),
-  nombre: z.string().trim().min(1, 'El nombre no puede ir vacío').max(160),
+  nombre: z
+    .string()
+    .trim()
+    .min(1, 'El nombre no puede ir vacío')
+    .max(160)
+    // El nombre va al título y al JSON-LD: sin saltos ni espacios dobles.
+    .transform((valor) => valor.replace(/\s+/g, ' ')),
   plazaId: z.string().trim().min(1, 'Elige una plaza'),
   giros: z.array(z.string().trim().min(1)).min(1, 'Elige al menos un giro').max(3),
   descripcionEs: z.string().trim().min(1, 'La descripción en español es obligatoria').max(2000),
@@ -391,17 +398,42 @@ export function prepararNegocio(
         `Ya hay un local activo con el nombre "${mismoNombre.name}" en esta plaza; la ficha y el título se repetirían.`,
       )
     }
-    const descripcionEs = normalizar(place.description?.es ?? '')
-    const descripcionEn = normalizar(place.description?.en ?? '')
+    // El prerender recorta la descripción; dos textos distintos a partir del carácter 161 dejan
+    // el mismo metadato. Se comparan ya recortados.
+    const recorte = (valor: string): string => normalizar(valor).slice(0, 160)
+    const descripcionEs = recorte(place.description?.es ?? '')
+    const descripcionEn = recorte(place.description?.en ?? '')
     const mismaDescripcion = visibles.find(
       (fila) =>
-        normalizar(fila.description?.es ?? '') === descripcionEs ||
-        normalizar(fila.description?.en ?? '') === descripcionEn,
+        recorte(fila.description?.es ?? '') === descripcionEs ||
+        recorte(fila.description?.en ?? '') === descripcionEn,
     )
     if (mismaDescripcion) {
       problemas.push(
         `La descripción coincide con la de "${mismaDescripcion.name}" en esta plaza; los metadatos de las dos fichas se repetirían.`,
       )
+    }
+
+    const plaza = dataset.plazas.find((fila) => fila.id === place.plazaId)
+    // El prerender pone la zona en el título cuando el nombre se repite en cualquier plaza, no
+    // solo en la misma. El título con zona es más largo y también tiene que caber.
+    const visiblesGlobal = dataset.places.filter(
+      (fila) => fila.id !== place.id && fila.active && plazaActiva(fila.plazaId),
+    )
+    const nombreRepetido = visiblesGlobal.some((fila) => normalizar(fila.name) === nombre)
+    const titulos =
+      nombreRepetido && plaza
+        ? [
+            `${place.name} en ${plaza.name}${SUFIJO_TITULO}`,
+            `${place.name} in ${plaza.name}${SUFIJO_TITULO}`,
+          ]
+        : [`${place.name}${SUFIJO_TITULO}`]
+    for (const titulo of titulos) {
+      if (titulo.length > TOPE_TITULO) {
+        problemas.push(
+          `El nombre no cabe en el título de la página: ${titulo.length} de ${TOPE_TITULO} caracteres.`,
+        )
+      }
     }
     // La ficha de una plaza usa el mismo patrón de título que la de un local. Un local llamado
     // como una plaza, o con su descripción, deja dos páginas con el mismo metadato.
@@ -413,8 +445,8 @@ export function prepararNegocio(
     }
     const plazaMismaDescripcion = dataset.plazas.find(
       (fila) =>
-        normalizar(fila.description?.es ?? '') === descripcionEs ||
-        normalizar(fila.description?.en ?? '') === descripcionEn,
+        recorte(fila.description?.es ?? '') === descripcionEs ||
+        recorte(fila.description?.en ?? '') === descripcionEn,
     )
     if (plazaMismaDescripcion) {
       problemas.push(

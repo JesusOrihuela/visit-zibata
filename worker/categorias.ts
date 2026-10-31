@@ -33,10 +33,19 @@ import { fechaLocal } from './analitica.ts'
 import { type Cargado, cargar, LIMITES } from './contenido.ts'
 import { type EntornoGitHub, type Publicacion, publicar } from './github.ts'
 import { slugDe, unico } from './slug.ts'
+import { SUFIJO_TITULO, TOPE_TITULO_CATEGORIA } from './titulos.ts'
+
+const Etiqueta = z
+  .string()
+  .trim()
+  .min(1, 'La etiqueta no puede ir vacía')
+  .max(80)
+  // La etiqueta va al título de la página y a los filtros: sin saltos ni espacios dobles.
+  .transform((valor) => valor.replace(/\s+/g, ' '))
 
 const Texto = z.object({
-  es: z.string().trim().min(1, 'La etiqueta en español es obligatoria').max(80),
-  en: z.string().trim().min(1, 'La etiqueta en inglés es obligatoria').max(80),
+  es: Etiqueta,
+  en: Etiqueta,
 })
 
 const GiroEntradaSchema = z.object({
@@ -229,6 +238,13 @@ export function prepararCategorias(
         error(`La etiqueta "${categoria.label[locale]}" ya la usa "${anterior}".`)
       } else {
         etiquetas[locale].set(etiqueta, categoria.label.es)
+      }
+      // La página de categoría usa el mismo título base que una ficha cuando no lleva giros.
+      const titulo = `${categoria.label[locale]}${SUFIJO_TITULO}`
+      if (titulo.length > TOPE_TITULO_CATEGORIA) {
+        error(
+          `La etiqueta no cabe en el título de la página: ${titulo.length} de ${TOPE_TITULO_CATEGORIA} caracteres.`,
+        )
       }
     }
   }
