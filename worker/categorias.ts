@@ -28,6 +28,7 @@ import {
   validateTranslations,
 } from '../src/data/relations.ts'
 import { CategoriesFileSchema } from '../src/data/schemas.ts'
+import { TITULOS_RESERVADOS } from '../src/data/titulos-reservados.ts'
 import type { Category } from '../src/types/domain.ts'
 import { fechaLocal } from './analitica.ts'
 import { type Cargado, cargar, LIMITES } from './contenido.ts'
@@ -244,6 +245,12 @@ export function prepararCategorias(
       if (titulo.length > TOPE_TITULO_CATEGORIA) {
         error(
           `La etiqueta no cabe en el título de la página: ${titulo.length} de ${TOPE_TITULO_CATEGORIA} caracteres.`,
+        )
+      }
+      const reservado = TITULOS_RESERVADOS.find((valor) => normalizar(valor) === etiqueta)
+      if (reservado) {
+        error(
+          `La etiqueta coincide con el título de la página de información "${reservado}"; los títulos se repetirían.`,
         )
       }
     }

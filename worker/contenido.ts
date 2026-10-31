@@ -34,6 +34,7 @@ import {
   PlacesFileSchema,
   PlazasFileSchema,
 } from '../src/data/schemas.ts'
+import { TITULOS_RESERVADOS } from '../src/data/titulos-reservados.ts'
 import type { Category, Place } from '../src/types/domain.ts'
 import { fechaLocal } from './analitica.ts'
 import {
@@ -437,6 +438,12 @@ export function prepararNegocio(
     }
     // La ficha de una plaza usa el mismo patrón de título que la de un local. Un local llamado
     // como una plaza, o con su descripción, deja dos páginas con el mismo metadato.
+    const tituloReservado = TITULOS_RESERVADOS.find((titulo) => normalizar(titulo) === nombre)
+    if (tituloReservado) {
+      problemas.push(
+        `El nombre coincide con el de la página de información "${tituloReservado}"; los títulos se repetirían.`,
+      )
+    }
     const plazaMismoNombre = dataset.plazas.find((fila) => normalizar(fila.name) === nombre)
     if (plazaMismoNombre) {
       problemas.push(

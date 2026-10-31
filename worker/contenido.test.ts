@@ -164,6 +164,18 @@ describe('preparar un negocio nuevo', () => {
     expect(preparado.problemas.join(' ')).toContain('descripción')
   })
 
+  it('rechaza un nombre que repite el título de una página de información', () => {
+    const preparado = prepararNegocio(
+      dataset,
+      crudo,
+      nuevo({ nombre: 'Privacidad y términos' }),
+      HOY,
+    )
+    expect(preparado.ok).toBe(false)
+    if (preparado.ok) return
+    expect(preparado.problemas.join(' ')).toContain('página de información')
+  })
+
   it('rechaza un nombre que repite el de una plaza', () => {
     const plazaObjetivo = dataset.plazas.find((fila) => fila.active)
     const destino = dataset.plazas.find((fila) => fila.active && fila.id !== plazaObjetivo?.id)

@@ -235,6 +235,19 @@ describe('añadir y mover giros', () => {
 })
 
 describe('lo que no se puede hacer', () => {
+  it('una etiqueta que repite el título de una página de información', () => {
+    const cuerpo = clonar()
+    const objetivo = cuerpo.categories.find(
+      (categoria) => categoria.id === giroNoGeneral.categoria.id,
+    )
+    if (!objetivo) throw new Error('sin categoría')
+    objetivo.label = { es: 'Privacidad y términos', en: 'Privacy and terms' }
+    const preparado = prepararCategorias(dataset, crudo, cuerpo, HOY)
+    expect(preparado.ok).toBe(false)
+    if (preparado.ok) return
+    expect(preparado.problemas.join(' ')).toContain('página de información')
+  })
+
   it('una etiqueta que no cabe en el título de la página', () => {
     const cuerpo = clonar()
     const objetivo = cuerpo.categories.find(
