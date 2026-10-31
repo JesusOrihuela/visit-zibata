@@ -176,6 +176,36 @@ describe('editar un negocio existente', () => {
     expect(preparado.place.verification?.sources).toContain(`campo:${HOY}`)
   })
 
+  it('conserva el orden de los giros aunque el formulario los mande al revés', () => {
+    const conVarios = dataset.places.find((fila) => fila.active && fila.giros.length > 1)
+    if (!conVarios) return
+    const preparado = prepararNegocio(
+      dataset,
+      crudo,
+      editar(conVarios, { giros: [...conVarios.giros].reverse() }),
+      HOY,
+    )
+    if (!preparado.ok) throw new Error('no preparó')
+    expect(preparado.place.giros).toEqual(conVarios.giros)
+  })
+
+  it('un secundario marcado se añade al final y deja de ser secundario', () => {
+    const conSecundario = dataset.places.find(
+      (fila) => fila.active && fila.giros.length < 3 && fila.secundarios.length > 0,
+    )
+    const promovido = conSecundario?.secundarios[0]
+    if (!conSecundario || !promovido) return
+    const preparado = prepararNegocio(
+      dataset,
+      crudo,
+      editar(conSecundario, { giros: [...conSecundario.giros, promovido] }),
+      HOY,
+    )
+    if (!preparado.ok) throw new Error('no preparó')
+    expect(preparado.place.giros).toEqual([...conSecundario.giros, promovido])
+    expect(preparado.place.secundarios).not.toContain(promovido)
+  })
+
   it('ocultar no convierte el local en cerrado', () => {
     const conEstado = dataset.places.find((fila) => fila.active && fila.verification)
     if (!conEstado?.verification) return

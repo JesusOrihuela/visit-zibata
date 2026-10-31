@@ -222,7 +222,19 @@ function construir(
   ids: Set<string>,
   hoy: string,
 ): { place?: Place; problemas?: string[] } {
-  const giros = [...new Set(entrada.giros)]
+  /*
+   * El orden de `giros` no es decorativo: el primero decide el icono de la ficha y la prioridad en
+   * la búsqueda. El formulario los lee en el orden de la taxonomía, que no es el del local, así que
+   * un cambio de teléfono podía reordenar los giros y cambiar quién sale primero al buscar "pasta".
+   * Se conserva el orden de los que ya estaban y los nuevos se añaden al final.
+   */
+  const pedidos = [...new Set(entrada.giros)]
+  const giros = existente
+    ? [
+        ...existente.giros.filter((giro) => pedidos.includes(giro)),
+        ...pedidos.filter((giro) => !existente.giros.includes(giro)),
+      ]
+    : pedidos
   const secundarios = (existente?.secundarios ?? [])
     .filter((giro) => !giros.includes(giro))
     .slice(0, Math.max(0, 3 - giros.length))

@@ -98,6 +98,8 @@ let datos: Datos | null = null
 let consulta = ''
 let aviso: string | null = null
 let vista: 'negocios' | 'categorias' = 'negocios'
+/** Orden en que se marcaron los giros. El primero es el que manda en la ficha y la búsqueda. */
+let ordenGiros: string[] = []
 
 /** Monta el editor dentro del contenedor que ya está en `panel.html`. */
 export function montarEditor(contenedor: HTMLElement): void {
@@ -669,6 +671,8 @@ function pintarFormulario(negocio: Negocio | null): void {
   if (!raiz || !datos) return
   aviso = null
   const seleccionados = new Set(negocio?.giros ?? [])
+  const secundarios = new Set(negocio?.secundarios ?? [])
+  ordenGiros = [...(negocio?.giros ?? [])]
   const plazas = datos.plazas
     .map(
       (plaza) =>
@@ -683,7 +687,7 @@ function pintarFormulario(negocio: Negocio | null): void {
         <div class="giros-opciones">${categoria.giros
           .map(
             (giro) =>
-              `<label class="opcion-giro"><input type="checkbox" name="giros" value="${texto(giro.id)}"${seleccionados.has(giro.id) ? ' checked' : ''} /><span>${texto(giro.label.es)}</span></label>`,
+              `<label class="opcion-giro"><input type="checkbox" name="giros" value="${texto(giro.id)}"${seleccionados.has(giro.id) ? ' checked' : ''} /><span>${texto(giro.label.es)}${secundarios.has(giro.id) ? ' <span class="marca-secundario">secundario</span>' : ''}</span></label>`,
           )
           .join('')}</div>
       </div>`,
@@ -708,7 +712,7 @@ function pintarFormulario(negocio: Negocio | null): void {
       </label>
 
       <fieldset class="campo-ancho giros">
-        <legend>Giros <span class="ayuda">de uno a tres; la categoría del local y las de su plaza se recalculan al guardar</span></legend>
+        <legend>Giros <span class="ayuda">de uno a tres; el primero marca el icono y la prioridad. Marcar un secundario lo asciende; los demás se conservan.</span></legend>
         <div class="giros-caja">${giros}</div>
         <p class="ayuda" data-giros-aviso></p>
       </fieldset>
@@ -895,6 +899,12 @@ function alCambiar(evento: Event): void {
     return
   }
   if (objetivo.matches('input[name="giros"]')) {
+    const caja = objetivo as HTMLInputElement
+    if (caja.checked) {
+      if (!ordenGiros.includes(caja.value)) ordenGiros.push(caja.value)
+    } else {
+      ordenGiros = ordenGiros.filter((giro) => giro !== caja.value)
+    }
     limitarGiros()
     return
   }
@@ -926,9 +936,14 @@ function leerFormulario(formulario: HTMLFormElement): {
   const problemas: string[] = []
   const nombre = valorDe(formulario, 'nombre')
   const plazaId = valorDe(formulario, 'plazaId')
-  const giros = [
+  const marcados = [
     ...formulario.querySelectorAll<HTMLInputElement>('input[name="giros"]:checked'),
   ].map((caja) => caja.value)
+  // El orden de marcado manda: el primero es el icono y la prioridad de búsqueda.
+  const giros = [
+    ...ordenGiros.filter((giro) => marcados.includes(giro)),
+    ...marcados.filter((giro) => !ordenGiros.includes(giro)),
+  ]
   const descripcionEs = valorDe(formulario, 'descripcionEs')
   const descripcionEn = valorDe(formulario, 'descripcionEn')
   const latTexto = valorDe(formulario, 'lat')
