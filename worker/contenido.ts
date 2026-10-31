@@ -27,6 +27,7 @@ import {
   validateRelations,
   validateTranslations,
 } from '../src/data/relations.ts'
+import { PUBLISHABLE_STATUS } from '../src/data/rules.ts'
 import {
   CategoriesFileSchema,
   PlaceSchema,
@@ -95,6 +96,7 @@ export type ResultadoGuardado =
       pr: Publicacion | null
       mensaje: string
       negocio: NegocioGuardado
+      avisos: string[]
     }
   | { ok: false; problemas: string[] }
 
@@ -231,10 +233,26 @@ function construir(
 
   const id = existente?.id ?? unico(slugDe(entrada.nombre), ids)
   const fuentes = [...(existente?.verification?.sources ?? []), `campo:${hoy}`]
+  /*
+   * Guardar actualiza la fecha, pero no inventa un estado. Si el local ya era publicable, conserva
+   * su estado y su confianza; si se hace visible uno que no lo era, se promueve a activo. Ocultarlo
+   * no lo convierte en cerrado: oculto es una decisión de la guía, cerrado es un hecho del negocio.
+   */
+  const estadoPrevio = existente?.verification?.status
+  const publicable =
+    estadoPrevio !== undefined && (PUBLISHABLE_STATUS as readonly string[]).includes(estadoPrevio)
+  const status = entrada.activo
+    ? publicable
+      ? (estadoPrevio as string)
+      : 'active'
+    : (estadoPrevio ?? 'uncertain')
+  const confidence =
+    entrada.activo && !publicable
+      ? 'high'
+      : (existente?.verification?.confidence ?? (entrada.activo ? 'high' : 'low'))
   const verification = {
-    // Quien guarda está afirmando que el local es de hoy. Visible es activo; oculto es cerrado.
-    status: entrada.activo ? 'active' : 'closed',
-    confidence: 'high',
+    status,
+    confidence,
     lastVerifiedAt: hoy,
     sources: [...new Set(fuentes)].slice(-8),
   }
@@ -262,7 +280,10 @@ function construir(
       whatsapp: telefonoDe(entrada.whatsapp),
     },
     active: entrada.activo,
-    ...(existente?.cierre ? { cierre: existente.cierre } : {}),
+    // Un local que vuelve a estar visible ya no arrastra un cierre temporal viejo.
+    ...(existente?.cierre && !(existente.active === false && entrada.activo)
+      ? { cierre: existente.cierre }
+      : {}),
     verification,
   }
 
@@ -284,6 +305,7 @@ export type Preparado =
       nuevo: boolean
       lugares: Record<string, unknown>
       plazas: Record<string, unknown>
+      avisos: string[]
     }
   | { ok: false; problemas: string[] }
 
@@ -327,10 +349,17 @@ export function prepararNegocio(
     : [...dataset.places, place]
   const plazas = syncPlazaDerivedFields({ ...dataset, places })
   const conPlazas: CommercialDataset = { ...dataset, places, plazas }
-  const problemas = [...validateRelations(conPlazas, LIMITES), ...validateTranslations(conPlazas)]
+  const asuntos = [...validateRelations(conPlazas, LIMITES), ...validateTranslations(conPlazas)]
+  const problemas = asuntos
     .filter((asunto) => asunto.level === 'error')
     .map((asunto) => asunto.message)
   if (problemas.length > 0) return { ok: false, problemas }
+
+  // Solo los avisos de este local. El dataset tiene avisos propios que no vienen a cuento al
+  // editar un negocio, y devolverlos todos convertiría el formulario en un muro.
+  const avisos = asuntos
+    .filter((asunto) => asunto.level === 'warning' && asunto.id === place.id)
+    .map((asunto) => asunto.message)
 
   /*
    * El archivo se escribe desde el JSON crudo y se reemplaza solo la entrada tocada. Serializar los
@@ -358,6 +387,7 @@ export function prepararNegocio(
     nuevo: !existente,
     lugares: { ...crudo.places, updatedAt: hoy, places: placesNuevos },
     plazas: { ...crudo.plazas, updatedAt: hoy, plazas: plazasNuevas },
+    avisos,
   }
 }
 
@@ -387,6 +417,7 @@ export async function guardarNegocio(
       pr: null,
       mensaje: 'Cambio validado. En desarrollo no se commitea.',
       negocio,
+      avisos: preparado.avisos,
     }
   }
 
@@ -411,5 +442,6 @@ export async function guardarNegocio(
     pr,
     mensaje: negocio.nuevo ? 'Negocio enviado a la PR.' : 'Cambio enviado a la PR.',
     negocio,
+    avisos: preparado.avisos,
   }
 }

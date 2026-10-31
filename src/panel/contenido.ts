@@ -704,10 +704,11 @@ function pintarFormulario(negocio: Negocio | null): void {
           <option value="">Elige una plaza</option>
           ${plazas}
         </select>
+        <span class="ayuda" data-plaza-aviso></span>
       </label>
 
       <fieldset class="campo-ancho giros">
-        <legend>Giros <span class="ayuda">de uno a tres</span></legend>
+        <legend>Giros <span class="ayuda">de uno a tres; la categoría del local y las de su plaza se recalculan al guardar</span></legend>
         <div class="giros-caja">${giros}</div>
         <p class="ayuda" data-giros-aviso></p>
       </fieldset>
@@ -742,7 +743,7 @@ function pintarFormulario(negocio: Negocio | null): void {
         <input class="${controls.campo}" type="url" name="facebook" value="${texto(negocio?.links?.facebook ?? '')}" placeholder="https://facebook.com/…" />
       </label>
       <label class="campo-form">
-        <span>Enlace de Google Maps</span>
+        <span>Enlace de Google Maps <span class="ayuda">si falta, Cómo llegar usa la plaza</span></span>
         <input class="${controls.campo}" type="url" name="googleMapsUri" value="${texto(negocio?.googleMapsUri ?? '')}" placeholder="https://maps.app.goo.gl/…" />
       </label>
 
@@ -759,7 +760,7 @@ function pintarFormulario(negocio: Negocio | null): void {
 
       <label class="campo-ancho casilla">
         <input type="checkbox" name="activo"${negocio?.active === false ? '' : ' checked'} />
-        <span>Visible en la guía. Al guardar se marca la verificación de hoy.</span>
+        <span>Visible en la guía. Oculto sale de listas, buscador y sitemap, y su ficha deja de publicarse. Se actualiza la fecha de verificación sin cambiar el estado.</span>
       </label>
 
       <div class="problemas" data-problemas role="alert"></div>
@@ -770,6 +771,7 @@ function pintarFormulario(negocio: Negocio | null): void {
     </form>
   `
   limitarGiros()
+  actualizarAvisoPlaza()
   raiz.querySelector<HTMLInputElement>('input[name="nombre"]')?.focus()
 }
 
@@ -797,6 +799,16 @@ function limitarGiros(): void {
   for (const caja of cajas) caja.disabled = lleno && !caja.checked
   const nota = formulario.querySelector<HTMLElement>('[data-giros-aviso]')
   if (nota) nota.textContent = lleno ? 'Máximo tres giros.' : ''
+}
+
+/** Un local visible en una plaza inactiva no se verá: conviene decirlo antes de guardar. */
+function actualizarAvisoPlaza(): void {
+  const plazaId = raiz?.querySelector<HTMLSelectElement>('select[name="plazaId"]')?.value
+  const nota = raiz?.querySelector<HTMLElement>('[data-plaza-aviso]')
+  if (!nota) return
+  const plaza = datos?.plazas.find((fila) => fila.id === plazaId)
+  nota.textContent =
+    plaza && !plaza.active ? 'La plaza está inactiva: el local no se verá aunque esté visible.' : ''
 }
 
 function alPulsar(evento: Event): void {
@@ -876,6 +888,10 @@ function alCambiar(evento: Event): void {
       '[data-giro][data-general="true"] [data-campo="giroIcon"]',
     )
     if (general) general.value = icono.value
+    return
+  }
+  if (objetivo.matches('select[name="plazaId"]')) {
+    actualizarAvisoPlaza()
     return
   }
   if (objetivo.matches('input[name="giros"]')) {
@@ -1011,6 +1027,7 @@ async function enviarNegocio(formulario: HTMLFormElement): Promise<void> {
       pr?: { url: string; numero: number; creada: boolean } | null
       mensaje?: string
       problemas?: string[]
+      avisos?: string[]
     } | null
 
     if (respuesta.status === 403) {
@@ -1029,9 +1046,11 @@ async function enviarNegocio(formulario: HTMLFormElement): Promise<void> {
       return
     }
 
-    aviso = resultado.pr
-      ? `${resultado.mensaje ?? 'Guardado.'} ${resultado.pr.creada ? 'PR abierta' : 'Añadido a la PR'} #${resultado.pr.numero}.`
-      : (resultado.mensaje ?? 'Validado en desarrollo. No se commitea.')
+    const avisos = resultado.avisos?.length ? ` Avisos: ${resultado.avisos.join(' · ')}` : ''
+    aviso =
+      (resultado.pr
+        ? `${resultado.mensaje ?? 'Guardado.'} ${resultado.pr.creada ? 'PR abierta' : 'Añadido a la PR'} #${resultado.pr.numero}.`
+        : (resultado.mensaje ?? 'Validado en desarrollo. No se commitea.')) + avisos
     await cargar()
   } catch {
     mostrarProblemas(formulario, ['No se pudo hablar con el servidor.'])

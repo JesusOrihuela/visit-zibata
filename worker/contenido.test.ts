@@ -36,6 +36,17 @@ const nuevo = (extra: Record<string, unknown> = {}) => ({
   ...extra,
 })
 
+const editar = (base: Place, extra: Record<string, unknown> = {}) => ({
+  id: base.id,
+  nombre: base.name,
+  plazaId: base.plazaId,
+  giros: base.giros,
+  descripcionEs: base.description?.es ?? 'Texto',
+  descripcionEn: base.description?.en ?? 'Text',
+  activo: true,
+  ...extra,
+})
+
 describe('preparar un negocio nuevo', () => {
   it('lo acepta, deriva el id del nombre y lo añade a su plaza', () => {
     const preparado = prepararNegocio(
@@ -84,6 +95,19 @@ describe('preparar un negocio nuevo', () => {
     if (!preparado.ok) throw new Error('no preparó')
     const tocada = (preparado.plazas.plazas as Plaza[]).find((fila) => fila.id === plaza.id)
     expect(tocada?.categories).toContain(sinCategoria.id)
+  })
+
+  it('avisa si se guarda un local visible en una plaza inactiva', () => {
+    const inactiva = dataset.plazas.find((fila) => !fila.active)
+    if (!inactiva) return
+    const preparado = prepararNegocio(
+      dataset,
+      crudo,
+      nuevo({ plazaId: inactiva.id, nombre: 'Local en plaza inactiva' }),
+      HOY,
+    )
+    if (!preparado.ok) throw new Error('no preparó')
+    expect(preparado.avisos.join(' ')).toContain('plaza inactiva')
   })
 
   it('el archivo conserva los demás locales y solo cambia el que se tocó', () => {
@@ -139,6 +163,73 @@ describe('editar un negocio existente', () => {
     expect(preparado.place.links.rappi).toBe(existente.links.rappi)
   })
 
+  it('conserva el estado de verificación y solo actualiza fecha y fuentes', () => {
+    const conEstado =
+      dataset.places.find((fila) => fila.active && fila.verification?.status === 'likely_active') ??
+      dataset.places.find((fila) => fila.active && fila.verification)
+    if (!conEstado?.verification) return
+    const preparado = prepararNegocio(dataset, crudo, editar(conEstado), HOY)
+    if (!preparado.ok) throw new Error('no preparó')
+    expect(preparado.place.verification?.status).toBe(conEstado.verification.status)
+    expect(preparado.place.verification?.confidence).toBe(conEstado.verification.confidence)
+    expect(preparado.place.verification?.lastVerifiedAt).toBe(HOY)
+    expect(preparado.place.verification?.sources).toContain(`campo:${HOY}`)
+  })
+
+  it('ocultar no convierte el local en cerrado', () => {
+    const conEstado = dataset.places.find((fila) => fila.active && fila.verification)
+    if (!conEstado?.verification) return
+    const preparado = prepararNegocio(dataset, crudo, editar(conEstado, { activo: false }), HOY)
+    if (!preparado.ok) throw new Error('no preparó')
+    expect(preparado.place.active).toBe(false)
+    expect(preparado.place.verification?.status).toBe(conEstado.verification.status)
+  })
+
+  it('cambiar los giros actualiza las categorías de la plaza', () => {
+    const plazaActual = dataset.plazas.find((fila) => fila.id === existente.plazaId)
+    if (!plazaActual) return
+    const sinCategoria = dataset.categories.find(
+      (categoria) => categoria.giros.length > 0 && !plazaActual.categories.includes(categoria.id),
+    )
+    if (!sinCategoria) return
+    const preparado = prepararNegocio(
+      dataset,
+      crudo,
+      editar(existente, { giros: [sinCategoria.giros[0]?.id] }),
+      HOY,
+    )
+    if (!preparado.ok) throw new Error('no preparó')
+    const tocada = (preparado.plazas.plazas as Plaza[]).find(
+      (fila) => fila.id === existente.plazaId,
+    )
+    expect(tocada?.categories).toContain(sinCategoria.id)
+  })
+
+  it('reactivar un local limpia el cierre temporal', () => {
+    const cerrado: Place = {
+      ...existente,
+      active: false,
+      cierre: { motivo: 'remodelacion', desde: '2026-10-01' },
+      verification: existente.verification
+        ? { ...existente.verification, status: 'closed' }
+        : {
+            status: 'closed',
+            confidence: 'high',
+            lastVerifiedAt: '2026-10-01',
+            sources: ['https://ejemplo.com'],
+          },
+    }
+    const conCerrado = {
+      ...dataset,
+      places: dataset.places.map((fila) => (fila.id === existente.id ? cerrado : fila)),
+    }
+    const preparado = prepararNegocio(conCerrado, crudo, editar(cerrado), HOY)
+    if (!preparado.ok) throw new Error('no preparó')
+    expect(preparado.place.active).toBe(true)
+    expect(preparado.place.cierre).toBeUndefined()
+    expect(preparado.place.verification?.status).toBe('active')
+  })
+
   it('al moverlo de plaza, sale de una y entra en la otra', () => {
     const otra = dataset.plazas.find((fila) => fila.active && fila.id !== existente.plazaId)
     if (!otra) return
@@ -162,6 +253,12 @@ describe('editar un negocio existente', () => {
       existente.id,
     )
     expect(plazasNuevas.find((fila) => fila.id === otra.id)?.placeIds).toContain(existente.id)
+    const categoria = dataset.categories.find((fila) =>
+      fila.giros.some((giro) => giro.id === existente.giros[0]),
+    )
+    if (categoria) {
+      expect(plazasNuevas.find((fila) => fila.id === otra.id)?.categories).toContain(categoria.id)
+    }
   })
 })
 
