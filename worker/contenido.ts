@@ -43,6 +43,7 @@ import {
   publicar,
   ramaDe,
 } from './github.ts'
+import { slugDe, unico } from './slug.ts'
 
 /** Lo que manda el formulario. Los nombres van en español porque son los de la interfaz. */
 export const EntradaNegocioSchema = z.object({
@@ -97,9 +98,9 @@ export type ResultadoGuardado =
     }
   | { ok: false; problemas: string[] }
 
-type Crudo = Record<string, unknown> & { [clave: string]: unknown }
+export type Crudo = Record<string, unknown> & { [clave: string]: unknown }
 
-interface Cargado {
+export interface Cargado {
   ref: string
   seco: boolean
   pr: Publicacion | null
@@ -119,7 +120,7 @@ const ENLACES_VACIOS = {
 }
 
 const [oeste, sur, este, norte] = extent.areaBbox as [number, number, number, number]
-const LIMITES = { west: oeste, south: sur, east: este, north: norte }
+export const LIMITES = { west: oeste, south: sur, east: este, north: norte }
 
 const local = (): Cargado['crudo'] => ({
   categories: categoriasJson as unknown as Crudo,
@@ -139,7 +140,9 @@ function datasetDe(crudo: Cargado['crudo']): CommercialDataset {
  * Los datos de trabajo: los del bundle en desarrollo, o los de GitHub cuando hay testigo. Si hay
  * una PR abierta se lee su rama, para no pisar un cambio anterior que aún no se ha fusionado.
  */
-async function cargar(entorno: EntornoGitHub & { PANEL_ABIERTO?: string }): Promise<Cargado> {
+export async function cargar(
+  entorno: EntornoGitHub & { PANEL_ABIERTO?: string },
+): Promise<Cargado> {
   if (!entorno.GITHUB_TOKEN) {
     if (entorno.PANEL_ABIERTO !== 'si') throw new Error('falta GITHUB_TOKEN')
     const crudo = local()
@@ -182,28 +185,6 @@ export async function contenido(
     })),
     places: cargado.dataset.places,
   }
-}
-
-/** Un id legible a partir del nombre. Si queda vacío, se usa la fecha. */
-function slugDe(nombre: string): string {
-  const base = nombre
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    // El apóstrofo se quita y no se convierte en guion: "Carl's Jr." es "carls-jr", como ya está
-    // en el dataset, no "carl-s-jr".
-    .replace(/['’]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 60)
-  return base || `lugar-${Date.now()}`
-}
-
-function unico(base: string, existentes: Set<string>): string {
-  if (!existentes.has(base)) return base
-  let numero = 2
-  while (existentes.has(`${base}-${numero}`)) numero += 1
-  return `${base}-${numero}`
 }
 
 /** Un teléfono en E.164. Si son diez dígitos se asume México; si no, se deja que el esquema decida. */

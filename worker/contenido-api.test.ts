@@ -72,3 +72,51 @@ describe('la API de contenido', () => {
     expect(respuesta?.status).toBe(403)
   })
 })
+
+describe('la API de categorías', () => {
+  const categorias = async () => {
+    const respuesta = await pedir('/api/panel/contenido')
+    const datos = (await respuesta?.json()) as { categories: Record<string, unknown>[] }
+    return datos.categories
+  }
+
+  it('acepta una taxonomía válida y contesta con su impacto', async () => {
+    const lista = await categorias()
+    const respuesta = await pedir('/api/panel/contenido/categorias', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'sec-fetch-site': 'same-origin' },
+      body: JSON.stringify({ categories: lista }),
+    })
+    expect(respuesta?.status).toBe(200)
+    const datos = (await respuesta?.json()) as {
+      ok: boolean
+      seco: boolean
+      afectados: { locales: number; plazas: number }
+    }
+    expect(datos.ok).toBe(true)
+    expect(datos.seco).toBe(true)
+    expect(datos.afectados).toEqual({ locales: 0, plazas: 0 })
+  })
+
+  it('rechaza una categoría sin tono', async () => {
+    const lista = await categorias()
+    const primera = lista.find((categoria) => categoria.id !== 'otros')
+    if (!primera) throw new Error('sin categoría')
+    primera.hue = null
+    const respuesta = await pedir('/api/panel/contenido/categorias', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'sec-fetch-site': 'same-origin' },
+      body: JSON.stringify({ categories: lista }),
+    })
+    expect(respuesta?.status).toBe(400)
+  })
+
+  it('la escritura exige que la petición salga del propio sitio', async () => {
+    const respuesta = await pedir('/api/panel/contenido/categorias', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'sec-fetch-site': 'cross-site' },
+      body: JSON.stringify({ categories: [] }),
+    })
+    expect(respuesta?.status).toBe(403)
+  })
+})

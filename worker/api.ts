@@ -11,6 +11,7 @@
 import { base64url, cumpleLaPrueba, digestDe } from '../src/lib/prueba-de-trabajo.ts'
 import { type EntornoAcceso, puedeVerElPanel } from './acceso.ts'
 import { fechaLocal } from './analitica.ts'
+import { guardarCategorias } from './categorias.ts'
 import { contenido, guardarNegocio } from './contenido.ts'
 import { ALTA, type Base, huella, nuevaCuenta, RESOLVER, secretoDe } from './cuenta.ts'
 import { APUNTE_EVENTO, envioDe, MAXIMO_BYTES } from './eventos.ts'
@@ -273,6 +274,17 @@ export async function atenderApi(peticion: Request, entorno: EntornoApi): Promis
     if (!origenPropio(peticion)) return json({ error: 'origen no permitido' }, 403)
     try {
       const resultado = await guardarNegocio(entorno, await cuerpoDe(peticion))
+      return json(resultado, resultado.ok ? 200 : 400)
+    } catch (error) {
+      return falloDeContenido(error)
+    }
+  }
+
+  if (ruta === '/api/panel/contenido/categorias' && peticion.method === 'POST') {
+    if (!(await puedeVerElPanel(peticion, entorno))) return json({ error: 'sin permiso' }, 403)
+    if (!origenPropio(peticion)) return json({ error: 'origen no permitido' }, 403)
+    try {
+      const resultado = await guardarCategorias(entorno, await cuerpoDe(peticion))
       return json(resultado, resultado.ok ? 200 : 400)
     } catch (error) {
       return falloDeContenido(error)
