@@ -166,6 +166,7 @@ let visible = false
 let cargando = false
 let formularioActual: FormularioAbierto | null = null
 let subiendoFoto = false
+let guardando = false
 
 /** Monta el editor entre el contenedor de la vista y el diálogo que ya están en `panel.html`. */
 export function montarContenido(
@@ -1199,7 +1200,7 @@ async function base64DeBlob(blob: Blob): Promise<string> {
 }
 
 async function subirFotos(archivos: FileList): Promise<void> {
-  if (!formularioActual?.id || subiendoFoto) return
+  if (!formularioActual?.id || subiendoFoto || guardando) return
   subiendoFoto = true
   pintarFotosFormulario()
   let mensajeFinal = ''
@@ -1683,6 +1684,14 @@ async function alEnviar(evento: Event): Promise<void> {
 }
 
 async function enviarNegocio(formulario: HTMLFormElement): Promise<void> {
+  if (subiendoFoto || guardando) {
+    mostrarProblemas(formulario, [
+      subiendoFoto
+        ? 'Espera a que termine la foto antes de guardar.'
+        : 'El cambio anterior todavía se está guardando.',
+    ])
+    return
+  }
   mostrarProblemas(formulario, [])
   const { cuerpo, problemas } = leerFormulario(formulario)
   if (problemas.length > 0) {
@@ -1692,6 +1701,7 @@ async function enviarNegocio(formulario: HTMLFormElement): Promise<void> {
 
   const boton = formulario.querySelector<HTMLButtonElement>('button[type="submit"]')
   if (boton) boton.disabled = true
+  guardando = true
   try {
     const respuesta = await fetch('/api/panel/contenido/negocio', {
       method: 'POST',
@@ -1755,6 +1765,7 @@ async function enviarNegocio(formulario: HTMLFormElement): Promise<void> {
   } catch {
     mostrarProblemas(formulario, ['No se pudo hablar con el servidor.'])
   } finally {
+    guardando = false
     if (boton) boton.disabled = false
   }
 }
