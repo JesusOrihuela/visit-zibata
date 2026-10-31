@@ -115,6 +115,26 @@ describe('publicar', () => {
     expect(llamadas[0]?.autorizacion).toBe('Bearer testigo-falso')
   })
 
+  it('manda las fotos como base64 y los JSON como texto', async () => {
+    const { llamadas } = montar()
+    await publicar(
+      entorno,
+      [
+        { ruta: 'data/commercial/places.json', contenido: '{}' },
+        {
+          ruta: 'public/images/places/x/foto.webp',
+          contenido: 'UklGRg==',
+          codificacion: 'base64',
+        },
+      ],
+      'Panel: foto',
+    )
+
+    const blobs = llamadas.filter((llamada) => llamada.ruta === '/git/blobs')
+    expect(blobs.map((llamada) => llamada.cuerpo?.encoding)).toEqual(['utf-8', 'base64'])
+    expect(blobs[1]?.cuerpo?.content).toBe('UklGRg==')
+  })
+
   it('si ya hay PR abierta, añade el commit y no abre otra', async () => {
     const { llamadas } = montar({ rama: true, pr: true })
     const resultado = await publicar(

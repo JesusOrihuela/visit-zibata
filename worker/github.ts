@@ -26,6 +26,8 @@ export interface EntornoGitHub {
 export interface Archivo {
   ruta: string
   contenido: string
+  /** Los JSON viajan como texto; las fotos, en base64. */
+  codificacion?: 'utf-8' | 'base64'
 }
 
 export interface Publicacion {
@@ -170,7 +172,10 @@ export async function publicar(
     archivos.map(async (archivo) => {
       const blob = await pedir<{ sha: string }>(entorno, '/git/blobs', {
         method: 'POST',
-        body: JSON.stringify({ content: archivo.contenido, encoding: 'utf-8' }),
+        body: JSON.stringify({
+          content: archivo.contenido,
+          encoding: archivo.codificacion ?? 'utf-8',
+        }),
       })
       return { path: archivo.ruta, mode: '100644', type: 'blob', sha: blob.sha }
     }),

@@ -11,7 +11,8 @@
 import { base64url, cumpleLaPrueba, digestDe } from '../src/lib/prueba-de-trabajo.ts'
 import { type EntornoAcceso, puedeVerElPanel } from './acceso.ts'
 import { fechaLocal } from './analitica.ts'
-import { contenido, guardarNegocio } from './contenido.ts'
+import { guardarCategorias } from './categorias.ts'
+import { contenido, guardarFoto, guardarNegocio, TOPE_FOTO } from './contenido.ts'
 import { ALTA, type Base, huella, nuevaCuenta, RESOLVER, secretoDe } from './cuenta.ts'
 import { APUNTE_EVENTO, envioDe, MAXIMO_BYTES } from './eventos.ts'
 import {
@@ -273,6 +274,45 @@ export async function atenderApi(peticion: Request, entorno: EntornoApi): Promis
     if (!origenPropio(peticion)) return json({ error: 'origen no permitido' }, 403)
     try {
       const resultado = await guardarNegocio(entorno, await cuerpoDe(peticion))
+      return json(resultado, resultado.ok ? 200 : 400)
+    } catch (error) {
+      return falloDeContenido(error)
+    }
+  }
+
+  if (ruta === '/api/panel/contenido/categorias' && peticion.method === 'POST') {
+    if (!(await puedeVerElPanel(peticion, entorno))) return json({ error: 'sin permiso' }, 403)
+    if (!origenPropio(peticion)) return json({ error: 'origen no permitido' }, 403)
+    try {
+      const resultado = await guardarCategorias(entorno, await cuerpoDe(peticion))
+      return json(resultado, resultado.ok ? 200 : 400)
+    } catch (error) {
+      return falloDeContenido(error)
+    }
+  }
+
+  /*
+   * Una foto viaja en base64 y se queda por debajo de los seis megas. Se comprueba antes de leer el
+   * cuerpo entero: una imagen de un móvil sin reducir no debería llegar hasta aquí.
+   */
+  if (ruta === '/api/panel/contenido/foto' && peticion.method === 'POST') {
+    if (!(await puedeVerElPanel(peticion, entorno))) return json({ error: 'sin permiso' }, 403)
+    if (!origenPropio(peticion)) return json({ error: 'origen no permitido' }, 403)
+    const tope = Math.ceil(TOPE_FOTO * 1.5)
+    const declarado = Number(peticion.headers.get('content-length') ?? 0)
+    if (declarado > tope) {
+      return json({ error: 'La foto es demasiado grande; el navegador debe reducirla.' }, 413)
+    }
+    try {
+      const texto = await peticion.text()
+      if (texto.length > tope) return json({ error: 'La foto es demasiado grande.' }, 413)
+      let cuerpo: unknown
+      try {
+        cuerpo = JSON.parse(texto)
+      } catch {
+        return json({ error: 'El cuerpo de la foto no es JSON.' }, 400)
+      }
+      const resultado = await guardarFoto(entorno, cuerpo)
       return json(resultado, resultado.ok ? 200 : 400)
     } catch (error) {
       return falloDeContenido(error)
