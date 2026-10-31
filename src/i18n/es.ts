@@ -156,12 +156,11 @@ export const es = {
    * Textos que solo salen en los metadatos de cada página prerenderizada: título de pestaña,
    * resultado de búsqueda y vista previa al compartir. Nunca se ven dentro de la aplicación.
    */
-  'seo.home.title': 'Visit Zibatá · La guía local para descubrir Zibatá',
-  'seo.imageAlt':
-    'Visit Zibatá: mapa de Zibatá con sus plazas, la guía local para descubrir todo lo que hay en la localidad.',
+  'seo.home.title': 'La guía local de Zibatá',
+  'seo.imageAlt': 'Mapa de Zibatá con sus plazas y comercios.',
   'seo.home.description':
-    'Descubre Zibatá: negocios y lugares de cada plaza, con horarios y contacto. ' +
-    'Explora la localidad y decide adónde ir.',
+    'Negocios, lugares y planes de la zona, con horarios y contacto. ' +
+    'Todo lo que necesitas para decidir adónde ir.',
   'seo.title': '{name} · Visit Zibatá',
   // Solo para los locales cuyo nombre se repite (dos sucursales de una misma cadena).
   'seo.title.zone': '{name} en {plaza} · Visit Zibatá',

@@ -75,15 +75,15 @@ test.describe('Metadatos del HTML publicado', () => {
     }
   })
 
-  test('la portada se presenta como una guía local para descubrir Zibatá, sin reducirla a restaurantes', async ({
+  test('la portada se presenta como una guía local de Zibatá, sin reducirla a restaurantes', async ({
     request,
   }) => {
     const es = await cabecera(request, '')
-    expect(es.title[0]).toBe('Visit Zibatá · La guía local para descubrir Zibatá')
-    expect(es.description[0]).toContain('negocios y lugares de cada plaza')
+    expect(es.title[0]).toBe('La guía local de Zibatá')
+    expect(es.description[0]).toContain('Negocios, lugares y planes')
     const en = await cabecera(request, 'en')
-    expect(en.title[0]).toBe('Visit Zibatá · The local guide to discovering Zibatá')
-    expect(en.description[0]).toContain('businesses and places')
+    expect(en.title[0]).toBe('The local guide to Zibatá')
+    expect(en.description[0]).toContain('Shops, places and plans')
     for (const texto of [es.title[0], es.description[0], en.title[0], en.description[0]]) {
       expect(texto).not.toMatch(/restaurant/i)
     }
