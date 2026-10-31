@@ -44,8 +44,15 @@ export interface GeoConfig {
   /** Árboles generados dentro de la cobertura arbórea real (scripts/map/lib/trees.ts). */
   trees: {
     spacingM: number
-    greenSpacingM: number
-    shrubSpacingM: number
+    golfSpacingM: number
+    parkSpacingM: number
+    reserveSpacingM: number
+    glorietaSpacingM: number
+    grassSpacingM: number
+    medianSpacingM: number
+    parkShrubSpacingM: number
+    glorietaShrubSpacingM: number
+    medianShrubSpacingM: number
     roadClearanceM: Record<string, number>
   }
   tiles: {

@@ -1,6 +1,6 @@
 import * as turf from '@turf/turf'
 import { describe, expect, it } from 'vitest'
-import { MEZCLA_ARBUSTO, placeTrees } from './trees.ts'
+import { MEZCLA_ARBUSTO, medianAreas, placeTrees } from './trees.ts'
 
 // Un cuadrado de ~110 × 110 m de arbolado, cruzado por una calle y con una casa dentro.
 const area = turf.polygon([
@@ -97,5 +97,58 @@ describe('placeTrees', () => {
 
   it('es determinista: el mismo dato da el mismo mapa en cada build', () => {
     expect(placeTrees([area], obstacles, options)).toEqual(trees)
+  })
+})
+
+describe('medianAreas', () => {
+  const ida = turf.lineString(
+    [
+      [-100.331, 20.68],
+      [-100.328, 20.68],
+    ],
+    { name: 'Avenida Paseo de las Pitahayas', oneway: true },
+  )
+  const vuelta = turf.lineString(
+    [
+      [-100.328, 20.68018],
+      [-100.331, 20.68018],
+    ],
+    { name: 'Avenida Paseo de las Pitahayas', oneway: true },
+  )
+
+  it('encuentra el camellón entre dos calzadas opuestas', () => {
+    const areas = medianAreas([ida, vuelta], 3.5)
+    expect(areas).toHaveLength(1)
+    expect(turf.area(areas[0] as never)).toBeGreaterThan(100)
+  })
+
+  it('no inventa camellón con una sola calzada ni con dos en el mismo sentido', () => {
+    expect(medianAreas([ida], 3.5)).toEqual([])
+    const mismo = turf.lineString(
+      [
+        [-100.331, 20.68018],
+        [-100.328, 20.68018],
+      ],
+      { name: 'Avenida Paseo de las Pitahayas', oneway: true },
+    )
+    expect(medianAreas([ida, mismo], 3.5)).toEqual([])
+  })
+})
+
+describe('excluir', () => {
+  it('no planta dentro de un área excluida', () => {
+    const excluida = turf.polygon([
+      [
+        [-100.3297, 20.6803],
+        [-100.3293, 20.6803],
+        [-100.3293, 20.6807],
+        [-100.3297, 20.6807],
+        [-100.3297, 20.6803],
+      ],
+    ])
+    const sin = placeTrees([area], obstacles, { ...options, excluir: [excluida] })
+    for (const crown of sin.filter((tree) => tree.properties.part === 'crown')) {
+      expect(turf.booleanPointInPolygon(turf.centroid(crown), excluida)).toBe(false)
+    }
   })
 })

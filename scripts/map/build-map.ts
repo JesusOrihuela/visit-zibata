@@ -40,7 +40,14 @@ import { type OverpassResponse, overpassToFeatures } from './lib/osm.ts'
 import { loadConfig, paths, readJson, writeJson } from './lib/paths.ts'
 import { Compression, TileType, writePmtiles } from './lib/pmtiles-writer.ts'
 import { buildVectorTiles, type LayerInput } from './lib/tiles.ts'
-import { MEZCLA_ARBUSTO, MEZCLA_NATIVA, MEZCLA_URBANA, placeTrees } from './lib/trees.ts'
+import {
+  MEZCLA_ARBUSTO,
+  MEZCLA_CAMELLON,
+  MEZCLA_NATIVA,
+  MEZCLA_URBANA,
+  medianAreas,
+  placeTrees,
+} from './lib/trees.ts'
 
 const started = Date.now()
 const log = (message: string) =>
@@ -410,39 +417,121 @@ const obstacles = {
   roads,
   buildings: [...baseBuildings, ...[...plazaBuildings.values()].flat()],
 }
-// Las áreas verdes de OSM (parques, jardines, pasto y golf) también están arboladas en Zibatá, con
-// menos densidad que una cañada: la clasificación satelital de 10 m no distingue un árbol suelto.
+// Las áreas verdes de OSM se separan por lo que son: el golf va más ralo, los parques y las islas
+// de las glorietas más tupidos, los prados abiertos en medio, y los camellones de las avenidas de
+// doble calzada se generan aparte con `medianAreas`.
 const GREEN_CLASSES = new Set(['park', 'garden', 'grass', 'golf', 'wood'])
 const greenFeatures = landuse.filter((feature) => GREEN_CLASSES.has(feature.properties.class))
-const greenAreas = greenFeatures
+const areasDe = (clases: Set<string>) =>
+  greenFeatures
+    .filter((feature) => clases.has(feature.properties.class))
+    .flatMap((feature) => polygonsOf(feature as Feature<Polygon | MultiPolygon>))
+    .map((polygon) => turf.feature(polygon) as Feature<Polygon>)
+
+const golfAreas = areasDe(new Set(['golf']))
+const verdesSinGolf = greenFeatures
+  .filter((feature) => feature.properties.class !== 'golf')
   .flatMap((feature) => polygonsOf(feature as Feature<Polygon | MultiPolygon>))
   .map((polygon) => turf.feature(polygon) as Feature<Polygon>)
-// El matorral bajo va donde se pisa y se mira: parques, jardines y arbolado. El green del golf y
-// los prados abiertos se quedan con su árbol, sin un arbusto cada metro que además no se ve.
-const SHRUB_CLASSES = new Set(['park', 'garden', 'wood'])
-const shrubAreas = greenFeatures
-  .filter((feature) => SHRUB_CLASSES.has(feature.properties.class))
-  .flatMap((feature) => polygonsOf(feature as Feature<Polygon | MultiPolygon>))
-  .map((polygon) => turf.feature(polygon) as Feature<Polygon>)
+const centrosDeGlorietas = roads
+  .filter((road) => (road.properties as { roundabout?: boolean }).roundabout)
+  .map((road) => turf.center(road))
+const esGlorieta = (area: Feature<Polygon>) => {
+  if (turf.area(area) > 10_000) return false
+  const centro = turf.centroid(area)
+  return centrosDeGlorietas.some(
+    (glorieta) => turf.distance(centro, glorieta, { units: 'meters' }) < 45,
+  )
+}
+const parques = areasDe(new Set(['park', 'garden']))
+  .filter((area) => turf.area(area) < 100_000)
+  .filter((area) => !esGlorieta(area))
+const reservas = areasDe(new Set(['park', 'garden'])).filter((area) => turf.area(area) >= 100_000)
+const glorietas = verdesSinGolf.filter(esGlorieta)
+const prados = areasDe(new Set(['grass'])).filter((area) => !esGlorieta(area))
+const viasDeCamellon = roads.filter(
+  (road): road is Feature<LineString> =>
+    road.geometry.type === 'LineString' &&
+    ['tertiary', 'primary', 'highway'].includes(
+      (road.properties as { class?: string }).class ?? '',
+    ),
+)
+const camellones = medianAreas(viasDeCamellon)
+log(
+  `camellones: ${camellones.length}, ${(camellones.reduce((suma, area) => suma + turf.area(area), 0) / 1e4).toFixed(1)} ha`,
+)
+
 const trees = [
-  ...placeTrees(canopy, obstacles, { ...config.trees, especies: MEZCLA_NATIVA }),
-  ...placeTrees(greenAreas, obstacles, {
+  // La cobertura arbórea no pinta el golf: allí manda la densidad baja de su propia pasada.
+  ...placeTrees(canopy, obstacles, {
     ...config.trees,
-    spacingM: config.trees.greenSpacingM,
+    especies: MEZCLA_NATIVA,
+    excluir: golfAreas,
+  }),
+  ...placeTrees(golfAreas, obstacles, {
+    ...config.trees,
+    spacingM: config.trees.golfSpacingM,
     especies: MEZCLA_URBANA,
   }),
-  // El arbusto va aparte y más tupido: un volumen bajo por planta, y solo entra en z16.
-  ...placeTrees(shrubAreas, obstacles, {
+  ...placeTrees(parques, obstacles, {
     ...config.trees,
-    spacingM: config.trees.shrubSpacingM,
+    spacingM: config.trees.parkSpacingM,
+    especies: MEZCLA_URBANA,
+  }),
+  // El área natural grande no se planta como un parque: la cobertura ya dice dónde hay copa y aquí
+  // solo se añade un árbol suelto donde el satélite no llega.
+  ...placeTrees(reservas, obstacles, {
+    ...config.trees,
+    spacingM: config.trees.reserveSpacingM,
+    especies: MEZCLA_NATIVA,
+  }),
+  ...placeTrees(glorietas, obstacles, {
+    ...config.trees,
+    spacingM: config.trees.glorietaSpacingM,
+    especies: MEZCLA_URBANA,
+  }),
+  ...placeTrees(prados, obstacles, {
+    ...config.trees,
+    spacingM: config.trees.grassSpacingM,
+    especies: MEZCLA_NATIVA,
+  }),
+  ...placeTrees(camellones, obstacles, {
+    ...config.trees,
+    spacingM: config.trees.medianSpacingM,
+    especies: MEZCLA_CAMELLON,
+    roadClearanceM: {
+      ...config.trees.roadClearanceM,
+      tertiary: 5.5,
+    },
+  }),
+  // El arbusto va aparte y más tupido: un volumen bajo por planta, y solo entra en z16.
+  ...placeTrees(parques, obstacles, {
+    ...config.trees,
+    spacingM: config.trees.parkShrubSpacingM,
     forma: 'arbusto',
     especies: MEZCLA_ARBUSTO,
+  }),
+  ...placeTrees(glorietas, obstacles, {
+    ...config.trees,
+    spacingM: config.trees.glorietaShrubSpacingM,
+    forma: 'arbusto',
+    especies: MEZCLA_ARBUSTO,
+  }),
+  ...placeTrees(camellones, obstacles, {
+    ...config.trees,
+    spacingM: config.trees.medianShrubSpacingM,
+    forma: 'arbusto',
+    especies: MEZCLA_ARBUSTO,
+    roadClearanceM: {
+      ...config.trees.roadClearanceM,
+      tertiary: 5.5,
+    },
   }),
 ]
 const copas = trees.filter((tree) => tree.properties.part === 'crown').length
 const arbustos = trees.filter((tree) => tree.properties.part === 'shrub').length
 log(
-  `${copas} árboles y ${arbustos} arbustos: ${(canopy.reduce((sum, area) => sum + turf.area(area), 0) / 1e6).toFixed(2)} km² de copa arbórea + ${greenAreas.length} áreas verdes (${shrubAreas.length} con matorral)`,
+  `${copas} árboles y ${arbustos} arbustos: ${(canopy.reduce((sum, area) => sum + turf.area(area), 0) / 1e6).toFixed(2)} km² de copa arbórea + ${parques.length + glorietas.length + prados.length + golfAreas.length} áreas verdes y ${camellones.length} camellones`,
 )
 
 // ── 7. Teselas vectoriales → PMTiles ───────────────────────────────────────────────────────────
@@ -656,7 +745,7 @@ writeJson(paths.manifest, {
     `Edificios en z${buildingsMinZoom}: solo huellas ≥ ${buildingsLowZoomMinAreaM2} m² (peso de la vista inicial en móvil)`,
     `Etiquetas: se omiten las que quedan a menos de ${LABEL_CLEARANCE_M} m de una plaza activa (irían bajo su marcador)`,
     'Asociación edificio → plaza por centroide dentro de la geometría de la plaza; volumen generado si faltan huellas',
-    `Árboles y arbustos: retícula de ~${config.trees.spacingM} m (cobertura arbórea ESA WorldCover 10 m, a ≤ ${TREE_MARGIN_M} m del contorno), ~${config.trees.greenSpacingM} m (árboles de áreas verdes de OSM) y ~${config.trees.shrubSpacingM} m (arbustos de esas mismas áreas), con desplazamiento determinista, sin invadir vías (despeje por clase) ni edificios. Cada árbol es tronco + dos pisos de copa; cada arbusto, un volumen bajo. La especie es una mezcla orientativa por zona; la posición de cada planta es aproximada y la del arbolado, real`,
+    `Árboles y arbustos: cobertura arbórea a ~${config.trees.spacingM} m (ESA WorldCover 10 m, a ≤ ${TREE_MARGIN_M} m del contorno), parques a ~${config.trees.parkSpacingM} m, reserva natural a ~${config.trees.reserveSpacingM} m, glorietas a ~${config.trees.glorietaSpacingM} m, prados a ~${config.trees.grassSpacingM} m, golf a ~${config.trees.golfSpacingM} m y camellones a ~${config.trees.medianSpacingM} m; arbustos a ~${config.trees.parkShrubSpacingM} m en parques, ~${config.trees.glorietaShrubSpacingM} m en glorietas y ~${config.trees.medianShrubSpacingM} m en camellones, con desplazamiento determinista, sin invadir vías (despeje por clase) ni edificios. Cada árbol es tronco + dos pisos de copa; cada arbusto, un volumen bajo. La especie es una mezcla orientativa por zona; la posición de cada planta es aproximada y la del arbolado, real`,
     `Teselado MVT z${minZoom}–z${maxZoom} (geojson-vt, extent 4096, tolerancia 3) + gzip, empaquetado PMTiles v3`,
   ],
   outputs: {
