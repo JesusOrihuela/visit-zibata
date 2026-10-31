@@ -41,16 +41,16 @@ const IMAGENES = [
   },
 ]
 
-/** Encuadre del mapa: las plazas del centro de Zibatá a la derecha, con el margen izquierdo libre para la marca. */
+/** Encuadre del mapa: el centro de Zibatá, con la marca en el centro sobre un velo de papel. */
 const CAMARA = {
   center: [-100.3225, 20.6805] as [number, number],
   zoom: 15.1,
   pitch: 42,
   bearing: -10,
-  padding: { left: 440, top: 0, right: 0, bottom: 0 },
+  padding: { left: 0, top: 0, right: 0, bottom: 0 },
 }
-/** Zona libre de la imagen: un pin que no cabe entero aquí (bajo el texto o cortado por el borde) se oculta. */
-const ZONA_LIBRE = { x0: 500, x1: 1176, y0: 24, y1: 606 }
+/** Zona que ocupa la marca: un pin que la pise se oculta, y también el que se salga de la imagen. */
+const TEXTO = { x0: 280, x1: 920, y0: 70, y1: 560 }
 /** Se captura al doble y se reduce: el texto y los trazos finos del mapa salen más nítidos. */
 const ESCALA = 2
 
@@ -98,12 +98,12 @@ try {
     content: `
       header, aside, footer, fieldset, .maplibregl-ctrl-bottom-left { display: none !important; }
       #og-card { position: fixed; inset: 0; z-index: 100; pointer-events: none;
-        background: linear-gradient(90deg, rgb(248 244 237 / 0.98) 0%, rgb(248 244 237 / 0.95) 33%, rgb(248 244 237 / 0) 52%); }
-      #og-card .inner { position: absolute; left: 64px; top: 50%; translate: 0 -50%; width: 430px; color: #1f2419; font-family: 'Special Gothic', sans-serif; }
-      #og-card .marca { display: flex; align-items: center; gap: 18px; }
+        background: radial-gradient(ellipse 58% 76% at 50% 50%, rgb(248 244 237 / 0.98) 0%, rgb(248 244 237 / 0.95) 48%, rgb(248 244 237 / 0) 76%); }
+      #og-card .inner { position: absolute; left: 50%; top: 50%; translate: -50% -50%; width: 600px; text-align: center; color: #1f2419; font-family: 'Special Gothic', sans-serif; }
+      #og-card .marca { display: flex; align-items: center; justify-content: center; gap: 18px; }
       #og-card svg { display: block; flex: none; }
-      #og-card h1 { margin: 22px 0 16px; font-family: 'Special Gothic', sans-serif; font-weight: 700; font-stretch: 75%; font-size: 104px; line-height: .92; letter-spacing: -.01em; }
-      #og-card .descripcion { margin: 0; font-size: 25px; font-weight: 400; line-height: 1.3; text-wrap: balance; color: #454a3b; }
+      #og-card h1 { margin: 22px 0 16px; font-family: 'Special Gothic', sans-serif; font-weight: 700; font-stretch: 75%; font-size: 92px; line-height: .92; letter-spacing: -.01em; }
+      #og-card .descripcion { max-width: 520px; margin: 0 auto; font-size: 24px; font-weight: 400; line-height: 1.3; text-wrap: balance; color: #454a3b; }
       #og-card .sitio { margin: 0; font-size: 21px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: #536c2a; }
     `,
   })
@@ -134,15 +134,19 @@ try {
   await page.waitForTimeout(3000)
   await quieto()
 
-  // Un pin que no cabe entero en la zona libre se oculta, y su tallo con él. Cada pin con nombre lleva un tallo, que es otro
-  // marcador (muy angosto) anclado en el mismo punto: solo se deja si hay una etiqueta visible justo encima.
-  const ocultos = await page.evaluate((zona) => {
+  // Un pin que se sale de la imagen o que pisa la marca se oculta, y su tallo con él. Cada pin con
+  // nombre lleva un tallo, que es otro marcador (muy angosto) anclado en el mismo punto: solo se deja
+  // si hay una etiqueta visible justo encima.
+  const ocultos = await page.evaluate((texto) => {
     const marcadores = [...document.querySelectorAll<HTMLElement>('.maplibregl-marker')]
     const rect = (el: HTMLElement) => el.getBoundingClientRect()
     const esTallo = (el: HTMLElement) => rect(el).width < 8
     const cabe = (el: HTMLElement) => {
       const r = rect(el)
-      return r.left >= zona.x0 && r.right <= zona.x1 && r.top >= zona.y0 && r.bottom <= zona.y1
+      const dentro = r.left >= 8 && r.right <= 1192 && r.top >= 8 && r.bottom <= 622
+      const tapa =
+        r.right > texto.x0 && r.left < texto.x1 && r.bottom > texto.y0 && r.top < texto.y1
+      return dentro && !tapa
     }
     const etiquetas = marcadores.filter((el) => !esTallo(el))
     for (const el of etiquetas) if (!cabe(el)) el.style.display = 'none'
@@ -157,7 +161,7 @@ try {
       if (!conEtiqueta || !cabe(tallo)) tallo.style.display = 'none'
     }
     return marcadores.filter((el) => el.style.display === 'none').length
-  }, ZONA_LIBRE)
+  }, TEXTO)
   console.log(`  pines y tallos ocultos: ${ocultos}`)
 
   // Que la tipografía sea Special Gothic y no una sustituta: si el nombre de la familia no coincide con

@@ -233,20 +233,21 @@ describe('lo que se comprobó en las fichas concretas de la auditoría', () => {
 })
 
 describe('la portada', () => {
-  it('presenta la guía como un lugar para descubrir Zibatá, sin reducirla a restaurantes', () => {
+  it('presenta la guía local de Zibatá, sin repetir la marca ni reducirla a restaurantes', () => {
     for (const idioma of idiomas) {
       const portada = de(idioma, idioma === 'es' ? '/es' : '/en')
-      expect(portada.title).toContain('Visit Zibatá')
       expect(portada.title.length).toBeLessThanOrEqual(60)
       expect(portada.description.length).toBeLessThanOrEqual(160)
       for (const texto of [portada.title, portada.description]) {
         expect(texto).not.toMatch(/restaurant/i)
-        expect(texto).toContain('Zibatá')
       }
+      expect(portada.title).toContain('Zibatá')
+      expect(portada.title.match(/Zibatá/g) ?? []).toHaveLength(1)
+      expect(portada.description).not.toContain('Zibatá')
     }
     expect(de('es', '/es').title).toMatch(/guía local/i)
-    expect(de('es', '/es').description).toMatch(/negocios y lugares/)
-    expect(de('en', '/en').description).toMatch(/businesses and places/)
+    expect(de('es', '/es').description).toMatch(/negocios, lugares y planes/i)
+    expect(de('en', '/en').description).toMatch(/shops, places and plans/i)
   })
 })
 
