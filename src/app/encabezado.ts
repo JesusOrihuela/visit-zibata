@@ -38,3 +38,31 @@ export function encabezadoDe(
   if (categoria) return t('seo.category.name', { label: localized(categoria.label) })
   return `${t('app.name')} · ${t('app.tagline')}`
 }
+
+/**
+ * El título de la pestaña, para las navegaciones que hace la app sin recargar.
+ *
+ * El HTML servido ya trae el título de cada dirección, pero al movernos por dentro no hay recarga y
+ * el navegador conserva el de la página de donde veníamos: una búsqueda borrada dejaba en la
+ * pestaña el nombre de la categoría que se había abierto. Se recalcula con los mismos textos que
+ * `buildPath` escribe en el archivo, para que la pestaña diga lo que diría al recargar.
+ */
+export function tituloDe(
+  state: Pick<AppState, 'infoTopic' | 'selectedPlaceId' | 'selectedPlazaId' | 'activeCategoryId'>,
+  catalog: Catalog,
+): string {
+  if (state.infoTopic) return t('seo.title', { name: t(TITULO_INFO[state.infoTopic]) })
+  const lugar = state.selectedPlaceId ? catalog.placeById.get(state.selectedPlaceId) : undefined
+  if (lugar) return t('seo.title', { name: lugar.name })
+  const zona = state.selectedPlazaId ? catalog.plazaById.get(state.selectedPlazaId) : undefined
+  if (zona) return t('seo.title', { name: zona.name })
+  const categoria = state.activeCategoryId
+    ? catalog.categoryById.get(state.activeCategoryId)
+    : undefined
+  if (categoria) {
+    return t('seo.title', {
+      name: t('seo.category.name', { label: localized(categoria.label) }),
+    })
+  }
+  return t('seo.home.title')
+}

@@ -46,7 +46,7 @@ import type { Catalog, Place } from '../types/domain.ts'
 import { AppErrorBoundary } from './AppErrorBoundary.tsx'
 import { useAppDispatch } from './AppStateContext.tsx'
 import styles from './Experience.module.css'
-import { encabezadoDe } from './encabezado.ts'
+import { encabezadoDe, tituloDe } from './encabezado.ts'
 import { useExperience } from './useExperience.ts'
 import { useUrlSync } from './useUrlSync.ts'
 
@@ -459,6 +459,13 @@ function ReadyExperience({ catalog }: { catalog: Catalog }) {
       ? undefined
       : `${sheetPeekHeight + 4 + (controlsInRow && veryNarrow ? 52 : 0)}px`,
   } as CSSProperties
+
+  // La pestaña sigue a lo que se está viendo, también cuando se navega sin recargar. Sin lista de
+  // dependencias a propósito: el idioma no vive en el estado de la vista y cambiarlo tiene que
+  // cambiar el título igual.
+  useEffect(() => {
+    document.title = tituloDe(state, catalog)
+  })
 
   return (
     <div className={styles.app} data-layout={isDesktop ? 'desktop' : 'mobile'}>
