@@ -69,13 +69,23 @@ describe('FilterBar', () => {
     expect(active.onCategoryChange).toHaveBeenCalledWith(null)
   })
 
-  it('filtra por plaza con un selector nativo', async () => {
+  it('filtra por plaza con la lista de zonas', async () => {
     const props = setup()
-    await userEvent.selectOptions(
-      screen.getByRole('combobox', { name: 'Filtrar por zona' }),
-      'Plaza Sur',
-    )
+    await userEvent.click(screen.getByRole('combobox', { name: 'Filtrar por zona' }))
+    await userEvent.click(screen.getByRole('option', { name: 'Plaza Sur' }))
     expect(props.onPlazaChange).toHaveBeenCalledWith('plaza-sur')
+  })
+
+  it('la lista de zonas se recorre con el teclado', async () => {
+    const props = setup({ selectedPlazaId: 'plaza-sur' })
+    const boton = screen.getByRole('combobox', { name: 'Filtrar por zona' })
+    expect(boton).toHaveAccessibleName('Filtrar por zona')
+    expect(boton).toHaveTextContent('Plaza Sur')
+    await userEvent.click(boton)
+    expect(boton).toHaveAttribute('aria-expanded', 'true')
+    await userEvent.keyboard('{Escape}')
+    expect(boton).toHaveAttribute('aria-expanded', 'false')
+    expect(props.onPlazaChange).not.toHaveBeenCalled()
   })
 
   it('con una plaza elegida ofrece la salida', async () => {
