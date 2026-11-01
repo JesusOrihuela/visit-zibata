@@ -5,7 +5,7 @@
  *  - edificios.bin: volúmenes de azotea plana. Por vértice: posición (3 float), normal (3 bytes con signo)
  *    más un byte con el grupo de paleta y la semilla del edificio, y color de familia más oclusión
  *    ambiental horneada entre vecinos.
- *  - arboles.bin: una fila por árbol (x, y, base de copa, altura, radio, variante, azar, 0).
+ *  - arboles.bin: una fila por planta (x, y, base de copa, altura, radio, variante, azar, tipo), donde tipo 1 es arbusto y no lleva tronco.
  *
  * Parte de las huellas y los árboles tal como entran a las teselas (los deja `map:build`), de la
  * imagen de Sentinel-2 (color por edificio) y de Open Buildings 2.5D (altura). Alturas estimadas:
@@ -441,9 +441,30 @@ const hashPar = (a: number, b: number): number => {
 }
 const contorno = turf.feature(extent.boundary)
 const filas: number[][] = []
+const varianteDe = (lng: number, lat: number) =>
+  hashPar(Math.round(lng * 1e5), Math.round(lat * 1e5)) % 6
+const azarDe = (x: number, y: number) =>
+  (hash32(Math.round(x * 10) * 7919 + Math.round(y * 10)) % 1000) / 1000
 for (let i = 0; i < arboles.length; i++) {
   const copa = arboles[i]
   const punta = arboles[i + 1]
+  // El arbusto entra como una fila más, con la marca de tipo en el último flotante. El tronco se salta
+  // esa marca en el shader: el arbusto es un solo volumen bajo.
+  if (copa?.properties.part === 'shrub') {
+    const c = centro(copa)
+    if (!turf.booleanPointInPolygon([c.lng, c.lat], contorno)) continue
+    filas.push([
+      c.x,
+      c.y,
+      0,
+      copa.properties.height,
+      c.rad,
+      varianteDe(c.lng, c.lat),
+      azarDe(c.x, c.y),
+      1,
+    ])
+    continue
+  }
   if (copa?.properties.part !== 'crown' || punta?.properties.part !== 'top') continue
   const c = centro(copa)
   if (!turf.booleanPointInPolygon([c.lng, c.lat], contorno)) continue
@@ -453,8 +474,8 @@ for (let i = 0; i < arboles.length; i++) {
     copa.properties.base,
     Math.max(copa.properties.height, punta.properties.height),
     c.rad,
-    hashPar(Math.round(c.lng * 1e5), Math.round(c.lat * 1e5)) % 6,
-    (hash32(Math.round(c.x * 10) * 7919 + Math.round(c.y * 10)) % 1000) / 1000,
+    varianteDe(c.lng, c.lat),
+    azarDe(c.x, c.y),
     0,
   ])
 }

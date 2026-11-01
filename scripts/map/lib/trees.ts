@@ -130,6 +130,8 @@ export interface TreePart {
 const M_PER_DEG_LAT = 111_320
 const CROWN_SIDES = 5
 const TRUNK_SIDES = 3
+/** El arbusto se dibuja con ocho lados: con tres eran triángulos, no matas. */
+const SHRUB_SIDES = 8
 
 /** Polígono regular (copa o tronco) de `radiusM`, con un giro estable para que no parezcan de molde. */
 function disc(center: Position, radiusM: number, sides: number, seed: string, wobble = 0): Polygon {
@@ -267,11 +269,12 @@ export function placeTrees(
             type: 'Feature',
             properties: {
               part: 'shrub',
-              height: Math.round((0.8 + size * 1.0) * 2) / 2,
+              // Bajo y ancho, como una mata: sube menos que el radio que ocupa.
+              height: Math.round((0.6 + size * 0.9) * 2) / 2,
               base: 0,
               species: especie,
             },
-            geometry: disc(point, radioPlanta, 3, id, 0.4),
+            geometry: disc(point, radioPlanta, SHRUB_SIDES, id, 0.4),
           })
           continue
         }
