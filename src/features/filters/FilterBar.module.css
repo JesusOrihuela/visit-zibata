@@ -238,6 +238,12 @@
   .zone select::picker(select) {
     margin-top: 0.35rem;
     padding: 0.3rem;
+    /*
+     * Ancho fijo al contenido, y nunca menos que el botón. Sin esto la lista se pinta primero del
+     * ancho del campo y en el siguiente cuadro se encoge al del texto: el salto que se veía al abrir.
+     */
+    width: max-content;
+    min-width: anchor-size(width);
     border: 0;
     border-radius: var(--radius-md);
     background: var(--color-surface-solid);
