@@ -97,9 +97,15 @@
 
 .zone select {
   min-width: 0;
-  max-width: 11rem;
+  max-width: 13rem;
   height: 100%;
-  padding: 0;
+  /*
+   * El desplegable del navegador se ancla a la caja del campo, y el campo empezaba después del
+   * alfiler: la lista salía corrida a la derecha. Se estira la caja hasta el borde de la cápsula y
+   * se devuelve el hueco como relleno, así el texto no se mueve y la lista abre alineada.
+   */
+  margin-inline-start: calc(-0.7rem - 0.8125rem - 0.5rem);
+  padding: 0 0 0 calc(0.7rem + 0.8125rem + 0.5rem);
   border: 0;
   /* El `select` trae 6,5 px de esquina de serie. No se ve, porque es transparente dentro de la
      cápsula, pero es un sexto valor de radio y el catálogo da cinco. */
