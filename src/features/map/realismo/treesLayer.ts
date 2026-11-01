@@ -18,7 +18,7 @@ import {
 } from './gl.ts'
 
 const POINTS_BELOW_ZOOM = 16.3
-const FINE_MESH_FROM_ZOOM = 18.2
+const FINE_MESH_FROM_ZOOM = 17
 const MESH_DISTANCE_M = 450
 const STRIDE = 32
 
@@ -43,9 +43,9 @@ void main() {
   float zb = a_i0.z, zt = a_i0.w;
   // a_i1.w marca el arbusto: va sentado en el suelo y más redondo, no enterrado como una copa.
   bool mata = a_i1.w > 0.5;
-  float rv = mata ? max(zt * 0.5, 0.7) : max((zt - zb) * 0.5, 0.9);
+  float rv = mata ? max(zt * 0.5, 0.9) : max((zt - zb) * 0.5, 0.9);
   float zc = mata ? rv : (zb + zt) * 0.5;
-  float r = max(a_i1.x, 1.2) * (mata ? 0.95 : 1.12);
+  float r = max(a_i1.x, 1.2) * (mata ? 0.78 : 1.12);
   float n = vn(a_p * 2.4 + a_i1.z * 37.0);
   float s = 1.0 + 0.36 * (n - 0.5);
   vec3 w = vec3(a_i0.x + a_p.x * r * s, a_i0.y + a_p.y * r * s, zc + a_p.z * rv * s);
