@@ -44,7 +44,7 @@ const IMAGENES = [
 /** Encuadre del mapa: el centro de Zibatá, con la marca abajo para que el mapa mande en el cuadro. */
 const CAMARA = {
   center: [-100.3225, 20.6805] as [number, number],
-  zoom: 14.8,
+  zoom: 15.15,
   pitch: 42,
   bearing: -10,
   padding: { left: 0, top: 0, right: 0, bottom: 170 },
@@ -143,9 +143,9 @@ try {
       #og-card { position: fixed; inset: 0; z-index: 100; pointer-events: none;
         background: linear-gradient(to bottom, rgb(248 244 237 / 0) 38%, rgb(248 244 237 / 0.62) 58%, rgb(248 244 237 / 0.92) 76%, rgb(248 244 237 / 1) 100%); }
       #og-card .pie { position: absolute; left: 50%; bottom: 20px; translate: -50% 0; width: 640px; text-align: center; color: #1f2419; font-family: 'Special Gothic', sans-serif; }
-      #og-card .lockup { display: block; width: 540px; height: auto; margin: 0 auto 18px; font-family: 'Special Gothic', sans-serif; font-stretch: 88%; overflow: visible; }
+      #og-card .lockup { display: block; width: 540px; height: auto; margin: 0 auto 8px; font-family: 'Special Gothic', sans-serif; font-stretch: 88%; overflow: visible; }
       #og-card .descripcion { margin: 0 auto; max-width: 500px; font-size: 23px; font-weight: 400; line-height: 1.28; text-wrap: balance; color: #454a3b; }
-      #og-card .sitio { margin: 12px 0 0; font-size: 15px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: #536c2a; }
+      #og-card .sitio { margin: 8px 0 0; font-size: 15px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: #536c2a; }
     `,
   })
   const quieto = () =>
