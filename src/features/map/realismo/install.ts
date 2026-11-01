@@ -20,7 +20,7 @@ export type RealismState = 'cargando' | 'completo' | 'degradado' | 'respaldo'
 /** Capas nativas que cada capa propia sustituye, y la capa nativa antes de la que se inserta. */
 const PARTS = {
   edificios: { native: ['buildings', 'buildings-outside'], before: 'plaza-buildings-inactive' },
-  arboles: { native: ['trees', 'tree-trunks'], before: 'buildings' },
+  arboles: { native: ['trees', 'tree-trunks', 'tree-shrubs'], before: 'buildings' },
 } as const
 
 type Part = keyof typeof PARTS

@@ -1,5 +1,5 @@
 /**
- * Capa propia de árboles, una instancia por árbol (x, y, base de copa, altura, radio, variante, azar):
+ * Capa propia de árboles, una instancia por planta (x, y, base de copa, altura, radio, variante, azar, tipo):
  *  - de lejos (menos de zoom 16,3) o con calidad 1, puntos sombreados como esfera;
  *  - de cerca, copa de icosfera deformada con ruido (20 caras hasta zoom 18,2 y 80 caras después) y tronco;
  *  - solo las celdas de 250 m a menos de 450 m de la cámara llevan malla y sombra; el resto, puntos.
@@ -18,7 +18,7 @@ import {
 } from './gl.ts'
 
 const POINTS_BELOW_ZOOM = 16.3
-const FINE_MESH_FROM_ZOOM = 18.2
+const FINE_MESH_FROM_ZOOM = 17
 const MESH_DISTANCE_M = 450
 const STRIDE = 32
 
@@ -41,8 +41,11 @@ ${PALETTE}
 ${NOISE}
 void main() {
   float zb = a_i0.z, zt = a_i0.w;
-  float rv = max((zt - zb) * 0.5, 0.9), zc = (zb + zt) * 0.5;
-  float r = max(a_i1.x, 1.2) * 1.12;
+  // a_i1.w marca el arbusto: va sentado en el suelo y más redondo, no enterrado como una copa.
+  bool mata = a_i1.w > 0.5;
+  float rv = mata ? max(zt * 0.5, 0.9) : max((zt - zb) * 0.5, 0.9);
+  float zc = mata ? rv : (zb + zt) * 0.5;
+  float r = max(a_i1.x, 1.2) * (mata ? 0.78 : 1.12);
   float n = vn(a_p * 2.4 + a_i1.z * 37.0);
   float s = 1.0 + 0.36 * (n - 0.5);
   vec3 w = vec3(a_i0.x + a_p.x * r * s, a_i0.y + a_p.y * r * s, zc + a_p.z * rv * s);
@@ -57,8 +60,10 @@ in vec3 a_p; in vec4 a_i0; in vec4 a_i1;
 uniform mat4 u_matrix; uniform vec3 u_sun;
 out vec3 v_col;
 void main() {
-  float height = a_i0.z + 0.9;
-  vec3 w = vec3(a_i0.x + a_p.x * 0.24, a_i0.y + a_p.y * 0.24, a_p.z * height);
+  // a_i1.w marca el arbusto: no lleva tronco, así que su prisma se colapsa.
+  float k = a_i1.w > 0.5 ? 0.0 : 1.0;
+  float height = (a_i0.z + 0.9) * k;
+  vec3 w = vec3(a_i0.x + a_p.x * 0.24 * k, a_i0.y + a_p.y * 0.24 * k, a_p.z * height);
   gl_Position = u_matrix * vec4(w, 1.0);
   float d = max(dot(normalize(vec3(a_p.xy, 0.0)), normalize(u_sun)), 0.0);
   v_col = vec3(0.45, 0.35, 0.27) * (0.55 + 0.5 * d);

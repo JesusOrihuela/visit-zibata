@@ -79,20 +79,20 @@
     "Edificios en z13: solo huellas ≥ 60 m² (peso de la vista inicial en móvil)",
     "Etiquetas: se omiten las que quedan a menos de 130 m de una plaza activa (irían bajo su marcador)",
     "Asociación edificio → plaza por centroide dentro de la geometría de la plaza; volumen generado si faltan huellas",
-    "Árboles y arbustos: cobertura arbórea a ~15 m (ESA WorldCover 10 m, a ≤ 150 m del contorno), parques a ~12 m, reserva natural a ~30 m, glorietas a ~7 m, prados a ~30 m, golf a ~40 m y camellones a ~8 m; arbustos a ~8 m en parques, ~5 m en glorietas y ~4 m en camellones, con desplazamiento determinista, sin invadir vías (despeje por clase) ni edificios. Cada árbol es tronco + dos pisos de copa; cada arbusto, un volumen bajo. La especie es una mezcla orientativa por zona; la posición de cada planta es aproximada y la del arbolado, real",
+    "Árboles y arbustos: cobertura arbórea a ~15 m (ESA WorldCover 10 m, a ≤ 150 m del contorno), parques a ~16 m, reserva natural a ~30 m, glorietas a ~18 m, prados a ~32 m, golf a ~40 m y camellones a ~11 m; arbustos a ~13 m en parques, ~8 m en glorietas y ~8 m en camellones, con desplazamiento determinista, sin invadir vías (despeje por clase) ni edificios. Cada árbol es tronco + dos pisos de copa; cada arbusto, un volumen bajo. La especie es una mezcla orientativa por zona; la posición de cada planta es aproximada y la del arbolado, real",
     "Teselado MVT z12–z16 (geojson-vt, extent 4096, tolerancia 3) + gzip, empaquetado PMTiles v3"
   ],
   "outputs": {
     "public/map/zibata.pmtiles": {
-      "bytes": 2590887,
-      "sha256": "cfb0e6ae73e82a51ead7f9afb312e94e0b745ab437238bb6bd57cdad0490e0df",
+      "bytes": 2511709,
+      "sha256": "964a31e82862a87dcbe3f790b826c44d8b547c0153798ab47079306e9ee25116",
       "tiles": 265,
       "bytesByZoom": {
         "12": 46047,
         "13": 245444,
-        "14": 528412,
-        "15": 736336,
-        "16": 1033346
+        "14": 519927,
+        "15": 716843,
+        "16": 982149
       },
       "largestTile": {
         "z": 13,
@@ -107,8 +107,8 @@
         "waterway": 8,
         "buildings": 16020,
         "labels": 20,
-        "trees": 32484,
-        "shrubs": 4704
+        "trees": 30015,
+        "shrubs": 1580
       }
     },
     "public/map/plaza-buildings.geojson": {
@@ -252,8 +252,8 @@
         "sha256": "1c706d2dcda7833c737fcd1b1257196f1479e8bcabcffe3c3c7fe055ace0080f"
       },
       "public/map/realismo/arboles.bin": {
-        "bytes": 133384,
-        "sha256": "cdeb207c998c0ffc7df9223a405ab2d5f97971b9f71da2b322fd7d9a6bfe2d86"
+        "bytes": 142120,
+        "sha256": "04e8e7a26aa1e2a7fd10e97bcf05f166652fc1d8a6dd19918d4660550378b833"
       }
     }
   }
