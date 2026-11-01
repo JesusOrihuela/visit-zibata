@@ -79,10 +79,10 @@ test.describe('Metadatos del HTML publicado', () => {
     request,
   }) => {
     const es = await cabecera(request, '')
-    expect(es.title[0]).toBe('Visit Zibatá · La guía local')
+    expect(es.title[0]).toBe('Visit Zibatá · Tu guía local')
     expect(es.description[0]).toContain('Negocios, lugares y planes')
     const en = await cabecera(request, 'en')
-    expect(en.title[0]).toBe('Visit Zibatá · The local guide')
+    expect(en.title[0]).toBe('Visit Zibatá · Your local guide')
     expect(en.description[0]).toContain('Shops, places and plans')
     for (const texto of [es.title[0], es.description[0], en.title[0], en.description[0]]) {
       expect(texto).not.toMatch(/restaurant/i)

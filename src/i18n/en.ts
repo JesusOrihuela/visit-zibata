@@ -139,7 +139,7 @@ export const en = {
 
   'brand.by': 'A project by',
 
-  'seo.home.title': 'Visit Zibatá · The local guide',
+  'seo.home.title': 'Visit Zibatá · Your local guide',
   'seo.imageAlt': 'Map of Zibatá with its plazas and businesses.',
   'seo.home.description':
     'Shops, places and plans around the area, with hours and contact. ' +
