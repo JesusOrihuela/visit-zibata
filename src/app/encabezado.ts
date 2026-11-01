@@ -10,7 +10,9 @@
  * panel abierto: así, para cualquier dirección, el `h1` renderizado es el del archivo servido. Es
  * texto escondido a la vista (`visually-hidden`), así que no cambia nada de lo que se ve.
  */
-import { localized, t } from '../i18n/index.ts'
+import { locale, localized, t } from '../i18n/index.ts'
+import { lugaresPorCategoria } from '../lib/categorias.ts'
+import { tituloDeCategoria } from '../lib/titulo-categoria.ts'
 import type { InfoTopic } from '../lib/url-state.ts'
 import type { Catalog } from '../types/domain.ts'
 import type { AppState } from './state.ts'
@@ -60,9 +62,8 @@ export function tituloDe(
     ? catalog.categoryById.get(state.activeCategoryId)
     : undefined
   if (categoria) {
-    return t('seo.title', {
-      name: t('seo.category.name', { label: localized(categoria.label) }),
-    })
+    const lugares = lugaresPorCategoria(catalog.places, catalog.categoryOfGiro).get(categoria.id)
+    return tituloDeCategoria(categoria, lugares ?? [], locale, t)
   }
   return t('seo.home.title')
 }

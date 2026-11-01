@@ -21,15 +21,10 @@ import type { Plugin } from 'vite'
 import { en } from '../../src/i18n/en.ts'
 import { es } from '../../src/i18n/es.ts'
 import { whatsappUrl } from '../../src/lib/maps-url.ts'
+import { tituloDeCategoria } from '../../src/lib/titulo-categoria.ts'
 import { buildPath, INFO_TOPICS, type InfoTopic } from '../../src/lib/url-state.ts'
 import type { Category, Place, Plaza } from '../../src/types/domain.ts'
-import {
-  categoriasDe,
-  conCantidad,
-  girosDeCategoria,
-  lugaresPorCategoria,
-  lista as nombresEnLista,
-} from './categorias.ts'
+import { categoriasDe, conCantidad, lugaresPorCategoria } from './categorias.ts'
 import { contenidoDeLista, contenidoDeLugar } from './contenido.ts'
 import { descripcionDeFicha, lugarDe, repetidos } from './metadatos.ts'
 import { robotsTxt } from './robots.ts'
@@ -87,9 +82,6 @@ const trim = (value: string, max = 160): string => {
   const cut = flat.slice(0, max - 1)
   return `${cut.slice(0, cut.lastIndexOf(' '))}…`
 }
-
-/** Hasta dónde llega un título antes de que el buscador lo corte. */
-const TOPE_TITULO = 65
 
 /** Orden de la semana tal como se lee, no como lo guarda el JSON. */
 const DIAS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const
@@ -300,16 +292,9 @@ export function pagesFor(
      * busca como "hamburguesas" o "alitas"): los dos giros con más locales que la etiqueta no dice.
      * Con menos de dos no se añade nada, porque un solo giro suelto sonaría a hueco.
      */
-    const giros = girosDeCategoria(categoria, lugares, locale).slice(0, 2)
-    const conGiros = fill(copy['seo.title'], {
-      name: fill(copy['seo.category.title'], {
-        label: etiqueta,
-        giros: nombresEnLista(giros, locale),
-      }),
-    })
-    const sinGiros = fill(copy['seo.title'], { name })
-    // Solo si caben en un título (unos 60 caracteres): cortado a media palabra sería peor que corto.
-    const titulo = giros.length >= 2 && conGiros.length <= TOPE_TITULO ? conGiros : sinGiros
+    const titulo = tituloDeCategoria(categoria, lugares, locale, (clave, vars) =>
+      fill(copy[clave], vars ?? {}),
+    )
     pages.push({
       href: route({ categorySlug: categoria.slug[locale] }),
       lastmod: masReciente(lugares),
