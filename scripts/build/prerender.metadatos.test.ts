@@ -246,8 +246,8 @@ describe('la portada', () => {
       expect(portada.description).not.toContain('Zibatá')
     }
     expect(de('es', '/es').title).toMatch(/guía local/i)
-    expect(de('es', '/es').description).toMatch(/hecha plaza por plaza/i)
-    expect(de('en', '/en').description).toMatch(/made plaza by plaza/i)
+    expect(de('es', '/es').description).toMatch(/sin llamar antes/i)
+    expect(de('en', '/en').description).toMatch(/without calling ahead/i)
   })
 })
 
