@@ -41,18 +41,61 @@ const IMAGENES = [
   },
 ]
 
-/** Encuadre del mapa: el centro de Zibatá, con la marca en el centro sobre un velo de papel. */
+/** Encuadre del mapa: el centro de Zibatá, con la marca abajo para que el mapa mande en el cuadro. */
 const CAMARA = {
   center: [-100.3225, 20.6805] as [number, number],
-  zoom: 15.1,
+  zoom: 14.8,
   pitch: 42,
   bearing: -10,
-  padding: { left: 0, top: 0, right: 0, bottom: 0 },
+  padding: { left: 0, top: 0, right: 0, bottom: 170 },
 }
 /** Zona que ocupa la marca: un pin que la pise se oculta, y también el que se salga de la imagen. */
-const TEXTO = { x0: 280, x1: 920, y0: 70, y1: 560 }
+const TEXTO = { x0: 260, x1: 940, y0: 340, y1: 630 }
 /** Se captura al doble y se reduce: el texto y los trazos finos del mapa salen más nítidos. */
 const ESCALA = 2
+
+/**
+ * El lockup aprobado, dibujado aquí con la misma geometría que el archivo de marca: símbolo a 2,4
+ * veces la mayúscula y subido un 4 por ciento, VISIT a 600 en olivo, ZIBATÁ a 700 en tinta, 19 px
+ * de hueco a la izquierda y 20 a la derecha. El texto va en SVG y no en HTML para que el bloque no
+ * dependa de las métricas de la caja.
+ */
+const LOCKUP = {
+  cuerpo: 75.4,
+  izquierda: 19,
+  derecha: 20,
+  factorVisit: 2.14,
+  factorNombre: 2.77,
+  factorSimbolo: 2.4 * 0.71,
+  sangradoVisit: 0.01,
+  sangradoNombre: 0.02,
+  recorte: { x: 20, y: 230, ancho: 590, alto: 160 },
+}
+
+function lockup(simbolo: string): string {
+  const interior = simbolo
+    .replace(/^[\s\S]*?<svg[^>]*>/, '')
+    .replace(/<\/svg>\s*$/, '')
+    .replace(/<title>[\s\S]*?<\/title>/, '')
+    .trim()
+  const cuerpo = LOCKUP.cuerpo
+  const anchoVisit = LOCKUP.factorVisit * cuerpo
+  const anchoNombre = LOCKUP.factorNombre * cuerpo
+  const diametro = LOCKUP.factorSimbolo * cuerpo
+  const ancho = anchoVisit + LOCKUP.izquierda + diametro + LOCKUP.derecha + anchoNombre
+  const x0 = (630 - ancho) / 2
+  const xVisit = x0 - LOCKUP.sangradoVisit * cuerpo
+  const xSimbolo = x0 + anchoVisit + LOCKUP.izquierda
+  const xNombre = xSimbolo + diametro + LOCKUP.derecha - LOCKUP.sangradoNombre * cuerpo
+  const base = 315 + (0.71 * cuerpo) / 2
+  const cy = 315 - diametro * 0.04
+  const { x, y, ancho: anchoRecorte, alto } = LOCKUP.recorte
+  return `<svg class="lockup" viewBox="${x} ${y} ${anchoRecorte} ${alto}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Visit Zibatá">
+    <g transform="translate(${xSimbolo.toFixed(2)} ${(cy - diametro / 2).toFixed(2)}) scale(${(diametro / 256).toFixed(4)})">${interior}</g>
+    <text x="${xVisit.toFixed(2)}" y="${base.toFixed(2)}" font-size="${cuerpo}" font-weight="600" letter-spacing="${(cuerpo * 0.02).toFixed(2)}" fill="#536C2A">VISIT</text>
+    <text x="${xNombre.toFixed(2)}" y="${base.toFixed(2)}" font-size="${cuerpo}" font-weight="700" letter-spacing="${(cuerpo * -0.018).toFixed(2)}" fill="#1F2419">ZIBATÁ</text>
+  </svg>`
+}
 
 type Mapa = {
   jumpTo(camara: object): void
@@ -98,13 +141,11 @@ try {
     content: `
       header, aside, footer, fieldset, .maplibregl-ctrl-bottom-left { display: none !important; }
       #og-card { position: fixed; inset: 0; z-index: 100; pointer-events: none;
-        background: radial-gradient(ellipse 58% 76% at 50% 50%, rgb(248 244 237 / 0.98) 0%, rgb(248 244 237 / 0.95) 48%, rgb(248 244 237 / 0) 76%); }
-      #og-card .inner { position: absolute; left: 50%; top: 50%; translate: -50% -50%; width: 600px; text-align: center; color: #1f2419; font-family: 'Special Gothic', sans-serif; }
-      #og-card .marca { display: flex; align-items: center; justify-content: center; gap: 18px; }
-      #og-card svg { display: block; flex: none; }
-      #og-card h1 { margin: 22px 0 16px; font-family: 'Special Gothic', sans-serif; font-weight: 700; font-stretch: 75%; font-size: 92px; line-height: .92; letter-spacing: -.01em; }
-      #og-card .descripcion { max-width: 520px; margin: 0 auto; font-size: 24px; font-weight: 400; line-height: 1.3; text-wrap: balance; color: #454a3b; }
-      #og-card .sitio { margin: 0; font-size: 21px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: #536c2a; }
+        background: linear-gradient(to bottom, rgb(248 244 237 / 0) 38%, rgb(248 244 237 / 0.62) 58%, rgb(248 244 237 / 0.92) 76%, rgb(248 244 237 / 1) 100%); }
+      #og-card .pie { position: absolute; left: 50%; bottom: 20px; translate: -50% 0; width: 640px; text-align: center; color: #1f2419; font-family: 'Special Gothic', sans-serif; }
+      #og-card .lockup { display: block; width: 540px; height: auto; margin: 0 auto 18px; font-family: 'Special Gothic', sans-serif; font-stretch: 88%; overflow: visible; }
+      #og-card .descripcion { margin: 0 auto; max-width: 500px; font-size: 23px; font-weight: 400; line-height: 1.28; text-wrap: balance; color: #454a3b; }
+      #og-card .sitio { margin: 12px 0 0; font-size: 15px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: #536c2a; }
     `,
   })
   const quieto = () =>
@@ -182,15 +223,13 @@ try {
   await page.evaluate((marca) => {
     const card = document.createElement('div')
     card.id = 'og-card'
-    card.innerHTML = `<div class="inner">
-      <div class="marca">${marca}<p class="sitio">visitzibata.com</p></div>
-      <h1>Visit Zibatá</h1>
+    card.innerHTML = `<div class="pie">
+      ${marca}
       <p class="descripcion"></p>
+      <p class="sitio">visitzibata.com</p>
     </div>`
-    card.querySelector('svg')?.setAttribute('width', '64')
-    card.querySelector('svg')?.setAttribute('height', '64')
     document.body.append(card)
-  }, logo)
+  }, lockup(logo))
 
   for (const { archivo, descripcion } of IMAGENES) {
     await page.evaluate((texto) => {
