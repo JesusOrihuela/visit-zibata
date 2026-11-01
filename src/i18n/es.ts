@@ -159,8 +159,8 @@ export const es = {
   'seo.home.title': 'Visit Zibatá · Tu guía local',
   'seo.imageAlt': 'Mapa de Zibatá con sus plazas y comercios.',
   'seo.home.description':
-    'Negocios, lugares y planes de la zona, con horarios y contacto. ' +
-    'Todo lo que necesitas para decidir adónde ir.',
+    'Todo lo que hay en la zona, plaza por plaza: negocios, servicios y lugares, ' +
+    'con horarios, contacto y cómo llegar.',
   'seo.title': '{name} · Visit Zibatá',
   // Solo para los locales cuyo nombre se repite (dos sucursales de una misma cadena).
   'seo.title.zone': '{name} en {plaza} · Visit Zibatá',
