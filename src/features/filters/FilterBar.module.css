@@ -54,6 +54,8 @@
   display: inline-flex;
   gap: 0.5rem;
   min-width: 0;
+  /* El desplegable se ancla a la cápsula entera, no a la caja del `select`, que empieza tras el alfiler. */
+  anchor-name: --zona;
   padding-inline: 0.7rem 0.6rem;
   color: var(--ink-800);
 }
@@ -104,8 +106,7 @@
    * alfiler: la lista salía corrida a la derecha. Se estira la caja hasta el borde de la cápsula y
    * se devuelve el hueco como relleno, así el texto no se mueve y la lista abre alineada.
    */
-  margin-inline-start: calc(-0.7rem - 0.8125rem - 0.5rem);
-  padding: 0 0 0 calc(0.7rem + 0.8125rem + 0.5rem);
+  padding: 0;
   border: 0;
   /* El `select` trae 6,5 px de esquina de serie. No se ve, porque es transparente dentro de la
      cápsula, pero es un sexto valor de radio y el catálogo da cinco. */
@@ -242,8 +243,9 @@
      * Ancho fijo al contenido, y nunca menos que el botón. Sin esto la lista se pinta primero del
      * ancho del campo y en el siguiente cuadro se encoge al del texto: el salto que se veía al abrir.
      */
-    width: max-content;
-    min-width: anchor-size(width);
+    position-anchor: --zona;
+    left: anchor(left);
+    width: anchor-size(--zona width);
     border: 0;
     border-radius: var(--radius-md);
     background: var(--color-surface-solid);
