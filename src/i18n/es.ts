@@ -156,7 +156,7 @@ export const es = {
    * Textos que solo salen en los metadatos de cada página prerenderizada: título de pestaña,
    * resultado de búsqueda y vista previa al compartir. Nunca se ven dentro de la aplicación.
    */
-  'seo.home.title': 'La guía local de Zibatá',
+  'seo.home.title': 'Visit Zibatá · Tu guía local',
   'seo.imageAlt': 'Mapa de Zibatá con sus plazas y comercios.',
   'seo.home.description':
     'Negocios, lugares y planes de la zona, con horarios y contacto. ' +
