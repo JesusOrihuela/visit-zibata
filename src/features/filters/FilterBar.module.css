@@ -62,6 +62,8 @@
   gap: 0.5rem;
   min-width: 0;
   padding-inline: 0.7rem 0.6rem;
+  /* El botón del sistema trae su propio filete y la cápsula no lo lleva: aquí manda la sombra. */
+  border: 0;
   color: var(--ink-800);
   cursor: pointer;
 }
