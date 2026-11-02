@@ -214,7 +214,11 @@ export function FilterBar({
             aria-controls={listaId}
             aria-label={t('filters.plaza')}
             onClick={() => (abierto ? cerrar() : abrir())}
-            onKeyDown={alTeclearBoton}
+            onPointerDown={() => botonRef.current?.setAttribute('data-raton', 'si')}
+            onKeyDown={(event) => {
+              botonRef.current?.removeAttribute('data-raton')
+              alTeclearBoton(event)
+            }}
           >
             <span className={styles.mini} aria-hidden="true" />
             <span className={styles.valor}>{etiquetaZona}</span>
@@ -242,6 +246,7 @@ export function FilterBar({
                   className={styles.opcion}
                   onPointerDown={(event) => {
                     event.preventDefault()
+                    botonRef.current?.setAttribute('data-raton', 'si')
                     elegir(indice)
                   }}
                   onMouseEnter={() => setActivo(indice)}

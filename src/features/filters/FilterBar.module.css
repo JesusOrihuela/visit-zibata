@@ -132,6 +132,15 @@
 }
 
 /*
+ * Con el ratón no hay aro: el botón se queda con el foco al cerrar la lista y el navegador lo trata
+ * como foco de teclado, así que la cápsula amanecía con un filete que ninguna otra lleva. La marca
+ * se pone al pulsar con puntero y se quita en cuanto entra una tecla.
+ */
+.zone[data-raton="si"]:focus-visible {
+  outline: none;
+}
+
+/*
  * La lista es de la app: nace debajo de la cápsula, mide lo que ella o lo que su texto más largo, y
  * no cambia de ancho después de abrir porque no la dimensiona el navegador.
  */
