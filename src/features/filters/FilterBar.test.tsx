@@ -69,13 +69,26 @@ describe('FilterBar', () => {
     expect(active.onCategoryChange).toHaveBeenCalledWith(null)
   })
 
-  it('filtra por plaza con un selector nativo', async () => {
+  it('filtra por plaza con la lista de zonas', async () => {
     const props = setup()
-    await userEvent.selectOptions(
-      screen.getByRole('combobox', { name: 'Filtrar por zona' }),
-      'Plaza Sur',
-    )
+    await userEvent.click(screen.getByRole('button', { name: 'Filtrar por zona' }))
+    await userEvent.click(screen.getByRole('option', { name: 'Plaza Sur' }))
     expect(props.onPlazaChange).toHaveBeenCalledWith('plaza-sur')
+  })
+
+  it('la lista de zonas se recorre con el teclado', async () => {
+    const props = setup({ selectedPlazaId: 'plaza-sur' })
+    const boton = screen.getByRole('button', { name: 'Filtrar por zona' })
+    expect(boton).toHaveTextContent('Plaza Sur')
+    await userEvent.click(boton)
+    expect(boton).toHaveAttribute('aria-expanded', 'true')
+    // Con el ratón no se enciende el aro de foco.
+    expect(boton).not.toHaveAttribute('data-teclado')
+    await userEvent.keyboard('{Escape}')
+    expect(boton).toHaveAttribute('aria-expanded', 'false')
+    // Con el teclado sí: es la única señal de dónde está el foco.
+    expect(boton).toHaveAttribute('data-teclado', 'si')
+    expect(props.onPlazaChange).not.toHaveBeenCalled()
   })
 
   it('con una plaza elegida ofrece la salida', async () => {

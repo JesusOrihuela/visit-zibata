@@ -84,6 +84,9 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
+  /* La fila mide lo que el botón de cerrar aunque no lo lleve: el titular descuenta media fila para
+     quedar a la misma distancia del antetítulo, y sin botón esa mitad no existía y se acercaba. */
+  min-height: 2.5rem;
 }
 
 .eyebrow {

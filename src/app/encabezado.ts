@@ -10,7 +10,9 @@
  * panel abierto: así, para cualquier dirección, el `h1` renderizado es el del archivo servido. Es
  * texto escondido a la vista (`visually-hidden`), así que no cambia nada de lo que se ve.
  */
-import { localized, t } from '../i18n/index.ts'
+import { locale, localized, t } from '../i18n/index.ts'
+import { lugaresPorCategoria } from '../lib/categorias.ts'
+import { tituloDeCategoria } from '../lib/titulo-categoria.ts'
 import type { InfoTopic } from '../lib/url-state.ts'
 import type { Catalog } from '../types/domain.ts'
 import type { AppState } from './state.ts'
@@ -37,4 +39,31 @@ export function encabezadoDe(
     : undefined
   if (categoria) return t('seo.category.name', { label: localized(categoria.label) })
   return `${t('app.name')} · ${t('app.tagline')}`
+}
+
+/**
+ * El título de la pestaña, para las navegaciones que hace la app sin recargar.
+ *
+ * El HTML servido ya trae el título de cada dirección, pero al movernos por dentro no hay recarga y
+ * el navegador conserva el de la página de donde veníamos: una búsqueda borrada dejaba en la
+ * pestaña el nombre de la categoría que se había abierto. Se recalcula con los mismos textos que
+ * `buildPath` escribe en el archivo, para que la pestaña diga lo que diría al recargar.
+ */
+export function tituloDe(
+  state: Pick<AppState, 'infoTopic' | 'selectedPlaceId' | 'selectedPlazaId' | 'activeCategoryId'>,
+  catalog: Catalog,
+): string {
+  if (state.infoTopic) return t('seo.title', { name: t(TITULO_INFO[state.infoTopic]) })
+  const lugar = state.selectedPlaceId ? catalog.placeById.get(state.selectedPlaceId) : undefined
+  if (lugar) return t('seo.title', { name: lugar.name })
+  const zona = state.selectedPlazaId ? catalog.plazaById.get(state.selectedPlazaId) : undefined
+  if (zona) return t('seo.title', { name: zona.name })
+  const categoria = state.activeCategoryId
+    ? catalog.categoryById.get(state.activeCategoryId)
+    : undefined
+  if (categoria) {
+    const lugares = lugaresPorCategoria(catalog.places, catalog.categoryOfGiro).get(categoria.id)
+    return tituloDeCategoria(categoria, lugares ?? [], locale, t)
+  }
+  return t('seo.home.title')
 }

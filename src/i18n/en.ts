@@ -142,8 +142,7 @@ export const en = {
   'seo.home.title': 'Visit Zibatá · Your local guide',
   'seo.imageAlt': 'Map of Zibatá with its plazas and businesses.',
   'seo.home.description':
-    'Shops, places and plans around the area, with hours and contact. ' +
-    'Everything you need to decide where to go.',
+    'Find your next favourite place in Zibatá, with hours, contact and location in one place.',
   'seo.title': '{name} · Visit Zibatá',
   'seo.title.zone': '{name} in {plaza} · Visit Zibatá',
   'seo.place.fallback': '{giros} at {plaza}, Zibatá. Hours, contact and directions.',

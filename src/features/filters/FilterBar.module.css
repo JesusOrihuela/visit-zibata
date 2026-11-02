@@ -49,13 +49,23 @@
  * Sólida y sin desenfoque, aunque flote sobre el mapa: nada que se lea contra calles y arbolado
  * puede fiarse de lo que haya detrás.
  */
+.zonaCaja {
+  position: relative;
+  display: inline-flex;
+  min-width: 0;
+}
+
 .zone {
   composes: pildora sobreMapa from "../../styles/controls.module.css";
   display: inline-flex;
+  align-items: center;
   gap: 0.5rem;
   min-width: 0;
   padding-inline: 0.7rem 0.6rem;
+  /* El botón del sistema trae su propio filete y la cápsula no lo lleva: aquí manda la sombra. */
+  border: 0;
   color: var(--ink-800);
+  cursor: pointer;
 }
 
 /* Reemplaza la superficie del catálogo, así que le toca decir qué hace al pasar por encima. */
@@ -95,22 +105,16 @@
   background: var(--plaza-accent);
 }
 
-.zone select {
+.zone .valor {
   min-width: 0;
   max-width: 11rem;
-  height: 100%;
-  padding: 0;
-  border: 0;
-  /* El `select` trae 6,5 px de esquina de serie. No se ve, porque es transparente dentro de la
-     cápsula, pero es un sexto valor de radio y el catálogo da cinco. */
-  border-radius: 0;
-  background: transparent;
   color: var(--ink-900);
   font-size: var(--text-sm);
   font-weight: var(--weight-strong);
+  text-align: left;
   text-overflow: ellipsis;
-  appearance: none;
-  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .chevron {
@@ -122,23 +126,61 @@
 }
 
 /*
- * El aro de foco va en el campo entero y no en el `select`, que es un trozo del campo: lo que se
- * enfoca con el teclado tiene que verse igual que lo que se pulsa. Donde no haya `:has()`, el
- * navegador pone su propio aro al `select`, que es peor pero no deja a nadie sin señal.
+ * El aro de foco solo aparece si se llegó con el teclado. El botón se queda con el foco al cerrar la
+ * lista y el navegador pinta el aro como si fuera de teclado aunque el último gesto haya sido un
+ * clic: por eso la cápsula amanecía con un filete que ninguna otra lleva.
  */
-.zone:has(select:focus-visible) {
+.zone[data-teclado="si"]:focus-visible {
   outline: 2.5px solid var(--color-focus);
   outline-offset: 2px;
 }
 
-@supports selector(:has(*)) {
-  .zone select:focus-visible {
-    outline: none;
-  }
+/*
+ * La lista es de la app: nace debajo de la cápsula y mide exactamente lo que ella.
+ *
+ * El ancho no depende del texto: si se dejara en `max-content`, en un teléfono con letra grande la
+ * lista abriría del ancho del botón y crecería al medir la opción más larga, que es el salto que se
+ * veía. Con el 100 % del botón no hay nada que medir. Los nombres largos parten en dos renglones.
+ */
+.lista {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  z-index: 30;
+  width: 100%;
+  max-height: 60vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin: 0;
+  padding: 0.25rem;
+  list-style: none;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-solid);
+  box-shadow: var(--shadow-lg);
 }
 
-.zone option {
-  color: var(--ink-900);
+/* El foco vive en la lista mientras está abierta: el resaltado de la opción activa ya lo dice. */
+.lista:focus {
+  outline: none;
+}
+
+.opcion {
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-control);
+  color: var(--ink-800);
+  font-size: var(--text-sm);
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.opcion[data-activo="true"] {
+  background: var(--hover-quiet);
+}
+
+.opcion[aria-selected="true"] {
+  background: var(--olive-600);
+  color: white;
 }
 
 /* ------------------------------------------------------------------ las condiciones */
@@ -202,61 +244,4 @@
  */
 .clear:hover {
   background: var(--hover-strong);
-}
-
-/* ------------------------------------------------------------------ la lista desplegada */
-
-/*
- * La lista de zonas es del sistema operativo y no se puede estilar en todos los navegadores; donde
- * el navegador lo permite (`appearance: base-select`), toma la misma superficie, radios y acento que
- * el resto de la interfaz. Donde no, sigue apareciendo la lista nativa de siempre.
- *
- * `color` vive fuera de este bloque, en `.zone select`: dentro, WebKit se quedaba sin él y pintaba
- * el nombre de la zona a 2,19:1.
- */
-@supports (appearance: base-select) {
-  .zone select,
-  .zone select::picker(select) {
-    appearance: base-select;
-  }
-
-  .zone select {
-    display: inline-flex;
-    align-items: center;
-  }
-
-  .zone select::picker-icon {
-    display: none;
-  }
-
-  .zone select::picker(select) {
-    margin-top: 0.35rem;
-    padding: 0.3rem;
-    border: 0;
-    border-radius: var(--radius-md);
-    background: var(--color-surface-solid);
-    box-shadow:
-      0 0 0 1px var(--color-border),
-      var(--shadow-lg);
-  }
-
-  .zone option {
-    padding: 0.45rem 0.6rem;
-    border-radius: var(--radius-control);
-    color: var(--ink-800);
-    font-size: var(--text-sm);
-  }
-
-  .zone option:hover {
-    background: var(--hover-quiet);
-  }
-
-  .zone option:checked {
-    background: var(--olive-600);
-    color: white;
-  }
-
-  .zone option::checkmark {
-    display: none;
-  }
 }

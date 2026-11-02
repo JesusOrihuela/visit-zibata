@@ -1,6 +1,14 @@
 /** FilterBar: categorías, zona y las dos condiciones, cada familia con su propia forma. */
 import { ChevronDown, Clock, Heart } from 'lucide-react'
-import { type CSSProperties, useId } from 'react'
+import {
+  type CSSProperties,
+  type KeyboardEvent,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { plazaTones } from '../../config/palette.ts'
 import { t } from '../../i18n/index.ts'
 import type { Category, Plaza } from '../../types/domain.ts'
@@ -75,7 +83,13 @@ export function FilterBar({
   filtersActive,
   onClear,
 }: FilterBarProps) {
-  const selectId = useId()
+  const listaId = useId()
+  const botonRef = useRef<HTMLButtonElement>(null)
+  const listaRef = useRef<HTMLDivElement>(null)
+  const cajaRef = useRef<HTMLDivElement>(null)
+  const [abierto, setAbierto] = useState(false)
+  const [activo, setActivo] = useState(0)
+  const tecladoRef = useRef(false)
   const hasSelection = filtersActive || selectedPlazaId !== null
   /*
    * El tono de la zona elegida, para el alfiler en miniatura. `plazaTones` reparte por posición, así
@@ -86,6 +100,126 @@ export function FilterBar({
     selectedPlazaId === null
       ? null
       : (plazaTones(plazas.map((plaza) => plaza.id)).get(selectedPlazaId)?.accent ?? null)
+
+  /*
+   * La lista la dibuja la app y no el navegador.
+   *
+   * El desplegable nativo se ancla a la caja del `select`, que empieza después del alfiler y no mide
+   * lo mismo que el texto: abría corrido a la derecha, se redimensionaba al aparecer y solo
+   * respondía a los clics sobre su propio texto. Con una lista propia, el botón es toda la cápsula y
+   * el ancho lo decide el CSS.
+   */
+  const opciones = useMemo(
+    () => [
+      { id: null, nombre: t('filters.allPlazas') },
+      ...plazas.map((plaza) => ({ id: plaza.id, nombre: plaza.name })),
+    ],
+    [plazas],
+  )
+  const indiceElegido = Math.max(
+    0,
+    opciones.findIndex((opcion) => opcion.id === selectedPlazaId),
+  )
+  const etiquetaZona = opciones[indiceElegido]?.nombre ?? t('filters.allPlazas')
+
+  const abrir = (): void => {
+    setActivo(indiceElegido)
+    setAbierto(true)
+  }
+  const cerrar = (): void => {
+    setAbierto(false)
+    botonRef.current?.focus()
+  }
+  const elegir = (indice: number): void => {
+    onPlazaChange(opciones[indice]?.id ?? null)
+    setAbierto(false)
+    botonRef.current?.focus()
+  }
+
+  // Un clic fuera cierra la lista; el foco no se mueve porque no lo tenía.
+  useEffect(() => {
+    if (!abierto) return
+    const fuera = (event: PointerEvent): void => {
+      if (!cajaRef.current?.contains(event.target as Node)) setAbierto(false)
+    }
+    document.addEventListener('pointerdown', fuera)
+    return () => document.removeEventListener('pointerdown', fuera)
+  }, [abierto])
+
+  // Al abrir, el foco pasa a la lista y la opción elegida queda a la vista sin mover la página.
+  useEffect(() => {
+    if (!abierto) return
+    const lista = listaRef.current
+    if (!lista) return
+    lista.focus({ preventScroll: true })
+    const opcion = lista.children[activo]
+    if (opcion instanceof HTMLElement) {
+      // En jsdom no existe; en el navegador deja la opción elegida a la vista dentro de la lista.
+      if (typeof opcion.scrollIntoView === 'function') {
+        opcion.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+      }
+    }
+  }, [abierto, activo])
+
+  /*
+   * El aro de foco se pinta solo si el último gesto fue el teclado. Sin esto, el foco que devuelve la
+   * lista al cerrarse enciende el aro del sistema aunque se haya usado el ratón, y la cápsula se
+   * queda con un filete que las demás no llevan.
+   */
+  useEffect(() => {
+    const tecla = (): void => {
+      tecladoRef.current = true
+    }
+    const puntero = (): void => {
+      tecladoRef.current = false
+    }
+    window.addEventListener('keydown', tecla, true)
+    window.addEventListener('pointerdown', puntero, true)
+    return () => {
+      window.removeEventListener('keydown', tecla, true)
+      window.removeEventListener('pointerdown', puntero, true)
+    }
+  }, [])
+
+  const alEnfocar = (): void => {
+    if (tecladoRef.current) botonRef.current?.setAttribute('data-teclado', 'si')
+    else botonRef.current?.removeAttribute('data-teclado')
+  }
+
+  const alTeclearBoton = (event: KeyboardEvent<HTMLButtonElement>): void => {
+    if (['ArrowDown', 'ArrowUp', 'Enter', ' '].includes(event.key)) {
+      event.preventDefault()
+      abrir()
+    }
+  }
+
+  const alTeclearLista = (event: KeyboardEvent<HTMLDivElement>): void => {
+    const total = opciones.length
+    if (event.key === 'Escape') {
+      event.preventDefault()
+      cerrar()
+      return
+    }
+    if (event.key === 'Tab') {
+      setAbierto(false)
+      return
+    }
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault()
+      const paso = event.key === 'ArrowDown' ? 1 : -1
+      setActivo((actual) => (actual + paso + total) % total)
+      return
+    }
+    if (event.key === 'Home' || event.key === 'End') {
+      event.preventDefault()
+      setActivo(event.key === 'Home' ? 0 : total - 1)
+      return
+    }
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      elegir(activo)
+    }
+  }
 
   return (
     <div className={styles.bar}>
@@ -104,28 +238,56 @@ export function FilterBar({
          * La zona: un campo, y dentro el mismo alfiler que marca esa zona en el mapa, en miniatura y
          * con su color. No un icono de ubicación de catálogo: la pieza que vas a buscar con los ojos.
          */}
-        <div
-          className={styles.zone}
-          data-active={selectedPlazaId !== null}
-          style={tonoDeZona ? ({ '--plaza-accent': tonoDeZona } as CSSProperties) : undefined}
-        >
-          <span className={styles.mini} aria-hidden="true" />
-          <label htmlFor={selectId} className="visually-hidden">
-            {t('filters.plaza')}
-          </label>
-          <select
-            id={selectId}
-            value={selectedPlazaId ?? ''}
-            onChange={(event) => onPlazaChange(event.target.value || null)}
+        <div className={styles.zonaCaja} ref={cajaRef}>
+          <button
+            type="button"
+            ref={botonRef}
+            className={styles.zone}
+            data-active={selectedPlazaId !== null}
+            style={tonoDeZona ? ({ '--plaza-accent': tonoDeZona } as CSSProperties) : undefined}
+            aria-haspopup="listbox"
+            aria-expanded={abierto}
+            aria-controls={listaId}
+            aria-label={t('filters.plaza')}
+            onClick={() => (abierto ? cerrar() : abrir())}
+            onFocus={alEnfocar}
+            onKeyDown={alTeclearBoton}
           >
-            <option value="">{t('filters.allPlazas')}</option>
-            {plazas.map((plaza) => (
-              <option key={plaza.id} value={plaza.id}>
-                {plaza.name}
-              </option>
-            ))}
-          </select>
-          <ChevronDown aria-hidden="true" className={styles.chevron} />
+            <span className={styles.mini} aria-hidden="true" />
+            <span className={styles.valor}>{etiquetaZona}</span>
+            <ChevronDown aria-hidden="true" className={styles.chevron} />
+          </button>
+          {abierto && (
+            <div
+              id={listaId}
+              ref={listaRef}
+              role="listbox"
+              tabIndex={-1}
+              className={styles.lista}
+              aria-label={t('filters.plaza')}
+              aria-activedescendant={`${listaId}-${activo}`}
+              onKeyDown={alTeclearLista}
+            >
+              {opciones.map((opcion, indice) => (
+                <div
+                  key={opcion.id ?? 'todas'}
+                  id={`${listaId}-${indice}`}
+                  role="option"
+                  tabIndex={-1}
+                  aria-selected={opcion.id === selectedPlazaId}
+                  data-activo={indice === activo}
+                  className={styles.opcion}
+                  onPointerDown={(event) => {
+                    event.preventDefault()
+                    elegir(indice)
+                  }}
+                  onMouseEnter={() => setActivo(indice)}
+                >
+                  {opcion.nombre}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/*
