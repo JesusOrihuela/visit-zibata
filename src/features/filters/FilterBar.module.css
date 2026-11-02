@@ -144,20 +144,24 @@
   max-height: 60vh;
   overflow-y: auto;
   margin: 0;
-  padding: 0.3rem;
+  padding: 0.25rem;
   list-style: none;
   border-radius: var(--radius-md);
   background: var(--color-surface-solid);
-  box-shadow:
-    0 0 0 1px var(--color-border),
-    var(--shadow-lg);
+  box-shadow: var(--shadow-lg);
+}
+
+/* El foco vive en la lista mientras está abierta: el resaltado de la opción activa ya lo dice. */
+.lista:focus {
+  outline: none;
 }
 
 .opcion {
-  padding: 0.45rem 0.6rem;
+  padding: 0.2rem 0.6rem;
   border-radius: var(--radius-control);
   color: var(--ink-800);
   font-size: var(--text-sm);
+  line-height: 1.35;
   cursor: pointer;
 }
 

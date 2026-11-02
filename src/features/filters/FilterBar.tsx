@@ -85,6 +85,7 @@ export function FilterBar({
 }: FilterBarProps) {
   const listaId = useId()
   const botonRef = useRef<HTMLButtonElement>(null)
+  const listaRef = useRef<HTMLDivElement>(null)
   const cajaRef = useRef<HTMLDivElement>(null)
   const [abierto, setAbierto] = useState(false)
   const [activo, setActivo] = useState(0)
@@ -144,13 +145,23 @@ export function FilterBar({
     return () => document.removeEventListener('pointerdown', fuera)
   }, [abierto])
 
-  const alTeclear = (event: KeyboardEvent<HTMLButtonElement>): void => {
+  // Al abrir, el foco pasa a la lista: ahí viven las flechas y el anuncio de la opción activa.
+  useEffect(() => {
+    if (abierto) listaRef.current?.focus()
+  }, [abierto])
+
+  const alTeclearBoton = (event: KeyboardEvent<HTMLButtonElement>): void => {
+    if (['ArrowDown', 'ArrowUp', 'Enter', ' '].includes(event.key)) {
+      event.preventDefault()
+      abrir()
+    }
+  }
+
+  const alTeclearLista = (event: KeyboardEvent<HTMLDivElement>): void => {
     const total = opciones.length
     if (event.key === 'Escape') {
-      if (abierto) {
-        event.preventDefault()
-        cerrar()
-      }
+      event.preventDefault()
+      cerrar()
       return
     }
     if (event.key === 'Tab') {
@@ -159,24 +170,18 @@ export function FilterBar({
     }
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
       event.preventDefault()
-      if (!abierto) {
-        abrir()
-        return
-      }
       const paso = event.key === 'ArrowDown' ? 1 : -1
       setActivo((actual) => (actual + paso + total) % total)
       return
     }
     if (event.key === 'Home' || event.key === 'End') {
-      if (!abierto) return
       event.preventDefault()
       setActivo(event.key === 'Home' ? 0 : total - 1)
       return
     }
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault()
-      if (abierto) elegir(activo)
-      else abrir()
+      elegir(activo)
     }
   }
 
@@ -197,21 +202,19 @@ export function FilterBar({
          * La zona: un campo, y dentro el mismo alfiler que marca esa zona en el mapa, en miniatura y
          * con su color. No un icono de ubicación de catálogo: la pieza que vas a buscar con los ojos.
          */}
-        <div className={styles.zonaCaja}>
+        <div className={styles.zonaCaja} ref={cajaRef}>
           <button
             type="button"
             ref={botonRef}
             className={styles.zone}
             data-active={selectedPlazaId !== null}
             style={tonoDeZona ? ({ '--plaza-accent': tonoDeZona } as CSSProperties) : undefined}
-            role="combobox"
             aria-haspopup="listbox"
             aria-expanded={abierto}
             aria-controls={listaId}
-            aria-activedescendant={abierto ? `${listaId}-${activo}` : undefined}
             aria-label={t('filters.plaza')}
             onClick={() => (abierto ? cerrar() : abrir())}
-            onKeyDown={alTeclear}
+            onKeyDown={alTeclearBoton}
           >
             <span className={styles.mini} aria-hidden="true" />
             <span className={styles.valor}>{etiquetaZona}</span>
@@ -220,10 +223,13 @@ export function FilterBar({
           {abierto && (
             <div
               id={listaId}
+              ref={listaRef}
               role="listbox"
               tabIndex={-1}
               className={styles.lista}
               aria-label={t('filters.plaza')}
+              aria-activedescendant={`${listaId}-${activo}`}
+              onKeyDown={alTeclearLista}
             >
               {opciones.map((opcion, indice) => (
                 <div

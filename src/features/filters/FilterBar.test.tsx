@@ -71,15 +71,14 @@ describe('FilterBar', () => {
 
   it('filtra por plaza con la lista de zonas', async () => {
     const props = setup()
-    await userEvent.click(screen.getByRole('combobox', { name: 'Filtrar por zona' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Filtrar por zona' }))
     await userEvent.click(screen.getByRole('option', { name: 'Plaza Sur' }))
     expect(props.onPlazaChange).toHaveBeenCalledWith('plaza-sur')
   })
 
   it('la lista de zonas se recorre con el teclado', async () => {
     const props = setup({ selectedPlazaId: 'plaza-sur' })
-    const boton = screen.getByRole('combobox', { name: 'Filtrar por zona' })
-    expect(boton).toHaveAccessibleName('Filtrar por zona')
+    const boton = screen.getByRole('button', { name: 'Filtrar por zona' })
     expect(boton).toHaveTextContent('Plaza Sur')
     await userEvent.click(boton)
     expect(boton).toHaveAttribute('aria-expanded', 'true')
