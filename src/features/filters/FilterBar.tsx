@@ -146,10 +146,20 @@ export function FilterBar({
     return () => document.removeEventListener('pointerdown', fuera)
   }, [abierto])
 
-  // Al abrir, el foco pasa a la lista: ahí viven las flechas y el anuncio de la opción activa.
+  // Al abrir, el foco pasa a la lista y la opción elegida queda a la vista sin mover la página.
   useEffect(() => {
-    if (abierto) listaRef.current?.focus()
-  }, [abierto])
+    if (!abierto) return
+    const lista = listaRef.current
+    if (!lista) return
+    lista.focus({ preventScroll: true })
+    const opcion = lista.children[activo]
+    if (opcion instanceof HTMLElement) {
+      // En jsdom no existe; en el navegador deja la opción elegida a la vista dentro de la lista.
+      if (typeof opcion.scrollIntoView === 'function') {
+        opcion.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+      }
+    }
+  }, [abierto, activo])
 
   /*
    * El aro de foco se pinta solo si el último gesto fue el teclado. Sin esto, el foco que devuelve la

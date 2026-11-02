@@ -136,19 +136,21 @@
 }
 
 /*
- * La lista es de la app: nace debajo de la cápsula, mide lo que ella o lo que su texto más largo, y
- * no cambia de ancho después de abrir porque no la dimensiona el navegador.
+ * La lista es de la app: nace debajo de la cápsula y mide exactamente lo que ella.
+ *
+ * El ancho no depende del texto: si se dejara en `max-content`, en un teléfono con letra grande la
+ * lista abriría del ancho del botón y crecería al medir la opción más larga, que es el salto que se
+ * veía. Con el 100 % del botón no hay nada que medir. Los nombres largos parten en dos renglones.
  */
 .lista {
   position: absolute;
   top: calc(100% + 0.35rem);
   left: 0;
   z-index: 30;
-  width: max-content;
-  min-width: 100%;
-  max-width: 16rem;
+  width: 100%;
   max-height: 60vh;
   overflow-y: auto;
+  overscroll-behavior: contain;
   margin: 0;
   padding: 0.25rem;
   list-style: none;
@@ -168,6 +170,7 @@
   color: var(--ink-800);
   font-size: var(--text-sm);
   line-height: 1.35;
+  overflow-wrap: anywhere;
   cursor: pointer;
 }
 
