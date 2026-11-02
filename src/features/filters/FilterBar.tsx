@@ -89,6 +89,7 @@ export function FilterBar({
   const cajaRef = useRef<HTMLDivElement>(null)
   const [abierto, setAbierto] = useState(false)
   const [activo, setActivo] = useState(0)
+  const tecladoRef = useRef(false)
   const hasSelection = filtersActive || selectedPlazaId !== null
   /*
    * El tono de la zona elegida, para el alfiler en miniatura. `plazaTones` reparte por posición, así
@@ -149,6 +150,31 @@ export function FilterBar({
   useEffect(() => {
     if (abierto) listaRef.current?.focus()
   }, [abierto])
+
+  /*
+   * El aro de foco se pinta solo si el último gesto fue el teclado. Sin esto, el foco que devuelve la
+   * lista al cerrarse enciende el aro del sistema aunque se haya usado el ratón, y la cápsula se
+   * queda con un filete que las demás no llevan.
+   */
+  useEffect(() => {
+    const tecla = (): void => {
+      tecladoRef.current = true
+    }
+    const puntero = (): void => {
+      tecladoRef.current = false
+    }
+    window.addEventListener('keydown', tecla, true)
+    window.addEventListener('pointerdown', puntero, true)
+    return () => {
+      window.removeEventListener('keydown', tecla, true)
+      window.removeEventListener('pointerdown', puntero, true)
+    }
+  }, [])
+
+  const alEnfocar = (): void => {
+    if (tecladoRef.current) botonRef.current?.setAttribute('data-teclado', 'si')
+    else botonRef.current?.removeAttribute('data-teclado')
+  }
 
   const alTeclearBoton = (event: KeyboardEvent<HTMLButtonElement>): void => {
     if (['ArrowDown', 'ArrowUp', 'Enter', ' '].includes(event.key)) {
@@ -214,11 +240,8 @@ export function FilterBar({
             aria-controls={listaId}
             aria-label={t('filters.plaza')}
             onClick={() => (abierto ? cerrar() : abrir())}
-            onPointerDown={() => botonRef.current?.setAttribute('data-raton', 'si')}
-            onKeyDown={(event) => {
-              botonRef.current?.removeAttribute('data-raton')
-              alTeclearBoton(event)
-            }}
+            onFocus={alEnfocar}
+            onKeyDown={alTeclearBoton}
           >
             <span className={styles.mini} aria-hidden="true" />
             <span className={styles.valor}>{etiquetaZona}</span>
@@ -246,7 +269,6 @@ export function FilterBar({
                   className={styles.opcion}
                   onPointerDown={(event) => {
                     event.preventDefault()
-                    botonRef.current?.setAttribute('data-raton', 'si')
                     elegir(indice)
                   }}
                   onMouseEnter={() => setActivo(indice)}

@@ -125,19 +125,14 @@
   pointer-events: none;
 }
 
-/* El aro de foco va en la cápsula, que ahora es el botón entero. */
-.zone:focus-visible {
+/*
+ * El aro de foco solo aparece si se llegó con el teclado. El botón se queda con el foco al cerrar la
+ * lista y el navegador pinta el aro como si fuera de teclado aunque el último gesto haya sido un
+ * clic: por eso la cápsula amanecía con un filete que ninguna otra lleva.
+ */
+.zone[data-teclado="si"]:focus-visible {
   outline: 2.5px solid var(--color-focus);
   outline-offset: 2px;
-}
-
-/*
- * Con el ratón no hay aro: el botón se queda con el foco al cerrar la lista y el navegador lo trata
- * como foco de teclado, así que la cápsula amanecía con un filete que ninguna otra lleva. La marca
- * se pone al pulsar con puntero y se quita en cuanto entra una tecla.
- */
-.zone[data-raton="si"]:focus-visible {
-  outline: none;
 }
 
 /*

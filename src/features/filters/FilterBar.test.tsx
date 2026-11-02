@@ -82,8 +82,12 @@ describe('FilterBar', () => {
     expect(boton).toHaveTextContent('Plaza Sur')
     await userEvent.click(boton)
     expect(boton).toHaveAttribute('aria-expanded', 'true')
+    // Con el ratón no se enciende el aro de foco.
+    expect(boton).not.toHaveAttribute('data-teclado')
     await userEvent.keyboard('{Escape}')
     expect(boton).toHaveAttribute('aria-expanded', 'false')
+    // Con el teclado sí: es la única señal de dónde está el foco.
+    expect(boton).toHaveAttribute('data-teclado', 'si')
     expect(props.onPlazaChange).not.toHaveBeenCalled()
   })
 
